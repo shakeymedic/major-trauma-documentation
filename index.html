@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Major Trauma Assessment Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for better aesthetics in textareas */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-2xl sm:text-3xl font-bold text-blue-600">Major Trauma Assessment Tool</h1>
+            <p class="text-sm text-gray-500 mt-1">A structured tool for documentation and handover.</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Input Column -->
+            <div class="flex flex-col space-y-6">
+
+                <!-- Specialty Attendances -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Specialty Attendances & Times</h2>
+                    <textarea id="specialtyAttendances" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Orthopaedics @ 14:35, General Surgery @ 14:40"></textarea>
+                </section>
+
+                <!-- ATMIST Handover -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">ATMIST Handover</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="age" class="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" id="age" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <label class="flex items-center space-x-2 whitespace-nowrap"><input type="checkbox" id="ageEstimated" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>Est.</span></label>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="timeOfIncident" class="block text-sm font-medium text-gray-700 mb-1">Time of Incident</label>
+                            <input type="time" id="timeOfIncident" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="mechanism" class="block text-sm font-medium text-gray-700 mb-1">Mechanism of Injury</label>
+                        <textarea id="mechanism" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Pedestrian vs car, 30mph"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label for="injuries" class="block text-sm font-medium text-gray-700 mb-1">Injuries Suspected</label>
+                        <textarea id="injuries" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Head injury, fractured left femur"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label for="signs" class="block text-sm font-medium text-gray-700 mb-1">Signs (Vitals)</label>
+                        <textarea id="signs" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., GCS 13, HR 120, BP 90/50"></textarea>
+                    </div>
+                </section>
+
+                <!-- Pre-Hospital Information -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Pre-Hospital Information</h2>
+                    <div>
+                        <label for="incidentLocation" class="block text-sm font-medium text-gray-700 mb-1">Incident Location</label>
+                        <input type="text" id="incidentLocation" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., M1 Junction 25">
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Police Aware?</label>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2">
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="policeAware" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="policeAware" value="No" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="policeAware" value="Unknown" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Unknown</span></label>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="preHospitalTimings" class="block text-sm font-medium text-gray-700 mb-1">Timings</label>
+                        <input type="text" id="preHospitalTimings" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., On scene 14:30, Left scene 14:50">
+                    </div>
+                    <div class="mt-4">
+                        <label for="preHospitalTreatment" class="block text-sm font-medium text-gray-700 mb-1">Treatment & Interventions</label>
+                        <textarea id="preHospitalTreatment" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 1L Hartmann's, 1g TXA"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label for="preHospitalOther" class="block text-sm font-medium text-gray-700 mb-1">Other Pre-Hospital Notes</label>
+                        <textarea id="preHospitalOther" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                    </div>
+                     <h3 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-t pt-4">AMPLE History</h3>
+                    <div><label for="history_a" class="block text-sm font-medium text-gray-700 mb-1">Allergies</label><textarea id="history_a" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
+                    <div class="mt-2"><label for="history_m" class="block text-sm font-medium text-gray-700 mb-1">Medications</label><textarea id="history_m" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
+                    <div class="mt-2"><label for="history_p" class="block text-sm font-medium text-gray-700 mb-1">Past Medical History</label><textarea id="history_p" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
+                    <div class="mt-2"><label for="history_l" class="block text-sm font-medium text-gray-700 mb-1">Last Meal</label><textarea id="history_l" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
+                    <div class="mt-2"><label for="history_e" class="block text-sm font-medium text-gray-700 mb-1">Events Leading Up</label><textarea id="history_e" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
+                </section>
+
+                <!-- Catastrophic Haemorrhage -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">&lt;C&gt; Catastrophic Haemorrhage</h2>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Evidence of Catastrophic Haemorrhage?</label>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2">
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="catHaem" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="catHaem" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
+                        </div>
+                    </div>
+                    <div id="catHaemDetails" class="hidden mt-4 space-y-4">
+                        <div>
+                            <label for="catHaem_details" class="block text-sm font-medium text-gray-700 mb-1">Details / Source</label>
+                            <textarea id="catHaem_details" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Amputated left leg below knee"></textarea>
+                        </div>
+                        <div>
+                            <label for="catHaem_tourniquet" class="block text-sm font-medium text-gray-700 mb-1">Tourniquet Details</label>
+                            <input type="text" id="catHaem_tourniquet" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., CAT applied to left thigh at 14:35">
+                        </div>
+                        <div>
+                            <label for="catHaem_intervention" class="block text-sm font-medium text-gray-700 mb-1">Intervention</label>
+                            <textarea id="catHaem_intervention" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Direct pressure, haemostatic gauze"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Primary Survey -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Primary Survey (ABCDE)</h2>
+                    
+                    <!-- Airway -->
+                    <h3 class="font-bold text-lg text-blue-700 mb-2">Airway</h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Airway Status</label>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2">
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="airwayStatus" value="Patent" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Patent</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="airwayStatus" value="Compromised" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Compromised</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="airwayStatus" value="At Risk" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>At Risk</span></label>
+                        </div>
+                    </div>
+                     <div class="mt-4">
+                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="cSpineImmobilised" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"><span>C-Spine Immobilised (e.g., collar, blocks)</span></label>
+                    </div>
+                    <div class="mt-4">
+                        <label for="airway_notes" class="block text-sm font-medium text-gray-700 mb-1">Airway Notes & Interventions</label>
+                        <textarea id="airway_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Jaw thrust, suction, iGEL placed"></textarea>
+                    </div>
+
+                    <!-- Breathing -->
+                    <h3 class="font-bold text-lg text-blue-700 mt-6 mb-2 border-t pt-4">Breathing</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-end">
+                        <div>
+                            <label for="breathing_rr" class="block text-sm font-medium text-gray-700 mb-1">Resp Rate</label>
+                            <input type="number" id="breathing_rr" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="breathing_sats" class="block text-sm font-medium text-gray-700 mb-1">Sats (%)</label>
+                            <input type="number" id="breathing_sats" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Oxygen Status</label>
+                             <div class="flex flex-wrap gap-x-6 gap-y-2 pt-2">
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="breathing_o2" value="On Air" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>On Air</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="breathing_o2" value="On Oxygen" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>On Oxygen</span></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="fio2_container" class="hidden mt-4">
+                        <label for="breathing_fio2" class="block text-sm font-medium text-gray-700 mb-1">FiO2 (%) or Flow Rate (L/min)</label>
+                        <input type="text" id="breathing_fio2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 40% or 15L">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label for="breathing_percussion" class="block text-sm font-medium text-gray-700 mb-1">Percussion</label>
+                            <input type="text" id="breathing_percussion" value="Resonant" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="breathing_auscultation" class="block text-sm font-medium text-gray-700 mb-1">Auscultation</label>
+                            <input type="text" id="breathing_auscultation" value="Equal air entry" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Specific Findings</label>
+                        <div id="breathing_findings" class="space-y-2">
+                            <!-- Checkboxes will be generated by JS -->
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="breathing_notes" class="block text-sm font-medium text-gray-700 mb-1">Breathing Notes & Interventions</label>
+                        <textarea id="breathing_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., High flow O2, chest drain"></textarea>
+                    </div>
+
+                    <!-- Circulation -->
+                    <h3 class="font-bold text-lg text-blue-700 mt-6 mb-2 border-t pt-4">Circulation</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div><label for="circ_hr" class="block text-sm font-medium text-gray-700 mb-1">Heart Rate</label><input type="number" id="circ_hr" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="circ_bp" class="block text-sm font-medium text-gray-700 mb-1">BP</label><input type="text" id="circ_bp" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="circ_capRefill" class="block text-sm font-medium text-gray-700 mb-1">Cap Refill (s)</label><input type="number" id="circ_capRefill" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                    </div>
+                     <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">BP Type</label>
+                         <div class="flex flex-wrap gap-x-6 gap-y-2 pt-2">
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="circ_bp_type" value="Non-Invasive" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Non-Invasive</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="circ_bp_type" value="Invasive" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Invasive</span></label>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                        <div><label for="circ_pelvis" class="block text-sm font-medium text-gray-700 mb-1">Pelvis</label><input type="text" id="circ_pelvis" value="Stable" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="circ_floor" class="block text-sm font-medium text-gray-700 mb-1">Source of Bleeding / On Floor</label><input type="text" id="circ_floor" value="No PR" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Palpable Pulse</label>
+                        <div class="flex flex-wrap gap-x-4 gap-y-2">
+                            <label class="flex items-center space-x-2"><input type="radio" name="pulse_check" value="Radial" class="h-4 w-4 text-blue-600"><span>Radial</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="pulse_check" value="Brachial" class="h-4 w-4 text-blue-600"><span>Brachial</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="pulse_check" value="Femoral/Carotid" class="h-4 w-4 text-blue-600"><span>Femoral/Carotid</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="pulse_check" value="None" checked class="h-4 w-4 text-blue-600"><span>None</span></label>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="circ_notes" class="block text-sm font-medium text-gray-700 mb-1">Circulation Notes & Interventions</label>
+                        <textarea id="circ_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 2x large bore IV, bloods sent..."></textarea>
+                    </div>
+                    <div class="mt-4 space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tranexamic Acid (TXA) Given?</label>
+                            <div class="flex flex-wrap gap-x-6 gap-y-2">
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="txaGiven" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="txaGiven" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Blood Transfusion Required?</label>
+                            <div class="flex flex-wrap gap-x-6 gap-y-2">
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="transfusionRequired" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="transfusionRequired" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Calcium Given?</label>
+                            <div class="flex flex-wrap gap-x-6 gap-y-2">
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="calciumGiven" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="calciumGiven" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disability -->
+                    <h3 class="font-bold text-lg text-blue-700 mt-6 mb-2 border-t pt-4">Disability</h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Level of Consciousness (AVPU)</label>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2">
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="disability_avpu" value="Alert" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Alert</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="disability_avpu" value="Voice" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Voice</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="disability_avpu" value="Pain" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Pain</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="disability_avpu" value="Unresponsive" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Unresponsive</span></label>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Glasgow Coma Scale (GCS)</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div><label for="disability_gcsE" class="block text-sm font-medium text-gray-700 mb-1">Eyes</label><select id="disability_gcsE" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></select></div>
+                            <div><label for="disability_gcsV" class="block text-sm font-medium text-gray-700 mb-1">Verbal</label><select id="disability_gcsV" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></select></div>
+                            <div><label for="disability_gcsM" class="block text-sm font-medium text-gray-700 mb-1">Motor</label><select id="disability_gcsM" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></select></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                        <div><label for="disability_pupil_left" class="block text-sm font-medium text-gray-700 mb-1">Left Pupil</label><input type="text" id="disability_pupil_left" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 3mm, sluggish"></div>
+                        <div><label for="disability_pupil_right" class="block text-sm font-medium text-gray-700 mb-1">Right Pupil</label><input type="text" id="disability_pupil_right" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 3mm, sluggish"></div>
+                        <div><label for="disability_glucose" class="block text-sm font-medium text-gray-700 mb-1">Glucose (mmol/L)</label><input type="number" id="disability_glucose" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="disability_notes" class="block text-sm font-medium text-gray-700 mb-1">Disability Notes & Interventions</label>
+                        <textarea id="disability_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Analgesia given"></textarea>
+                    </div>
+                     <div class="mt-4 pt-4 border-t">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">C-Spine Assessment (NEXUS / Canadian C-Spine)</label>
+                        <div id="cspine_criteria" class="space-y-2"></div>
+                        <div class="mt-2">
+                            <label for="cspine_decision" class="block text-sm font-medium text-gray-700 mb-1">C-Spine Decision</label>
+                            <select id="cspine_decision" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-md">
+                                <option>Clinically Cleared</option>
+                                <option selected>Imaging Required</option>
+                                <option>Unable to Assess</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Exposure -->
+                    <h3 class="font-bold text-lg text-blue-700 mt-6 mb-2 border-t pt-4">Exposure</h3>
+                    <div>
+                        <label for="exposure_temp" class="block text-sm font-medium text-gray-700 mb-1">Temperature (°C)</label>
+                        <input type="number" id="exposure_temp" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    </div>
+                    <div class="mt-4">
+                        <label for="exposure_notes" class="block text-sm font-medium text-gray-700 mb-1">Exposure Notes, Injuries & Interventions</label>
+                        <textarea id="exposure_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Large haematoma to right thigh, deformity of left wrist. Warmed blanket applied."></textarea>
+                    </div>
+                </section>
+                
+                <!-- EFAST Scan -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">EFAST Scan</h2>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Views</label>
+                        <div id="efast_views" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <!-- Checkboxes will be generated by JS -->
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="efast_summary" class="block text-sm font-medium text-gray-700 mb-1">Summary Findings</label>
+                        <textarea id="efast_summary" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., No free fluid. Bilateral lung sliding present."></textarea>
+                    </div>
+                </section>
+
+                <!-- MHP -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Major Haemorrhage Protocol (MHP)</h2>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">MHP Activated?</label>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2">
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="mhp" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="mhp" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
+                        </div>
+                    </div>
+                    <div id="mhpDetails" class="hidden mt-4 space-y-4">
+                        <div>
+                            <label for="mhp_time" class="block text-sm font-medium text-gray-700 mb-1">Time Activated</label>
+                            <input type="time" id="mhp_time" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="mhp_packGiven" class="block text-sm font-medium text-gray-700 mb-1">Packs Given</label>
+                            <textarea id="mhp_packGiven" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Pack A, 4 units FFP"></textarea>
+                        </div>
+                        <div>
+                            <label for="mhp_notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea id="mhp_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Call put out to haematology"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Initial VBG -->
+                <section id="vbgInitial" class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Initial VBG/ABG Results</h2>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                        <div><label for="vbgInitial_ph" class="block text-sm font-medium text-gray-700 mb-1">pH</label><input type="number" id="vbgInitial_ph" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgInitial_pco2" class="block text-sm font-medium text-gray-700 mb-1">pCO2</label><input type="number" id="vbgInitial_pco2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgInitial_po2" class="block text-sm font-medium text-gray-700 mb-1">pO2</label><input type="number" id="vbgInitial_po2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgInitial_hco3" class="block text-sm font-medium text-gray-700 mb-1">HCO3</label><input type="number" id="vbgInitial_hco3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgInitial_be" class="block text-sm font-medium text-gray-700 mb-1">Base Excess</label><input type="number" id="vbgInitial_be" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgInitial_lactate" class="block text-sm font-medium text-gray-700 mb-1">Lactate</label><input type="number" id="vbgInitial_lactate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgInitial_ionisedCa" class="block text-sm font-medium text-gray-700 mb-1">Ionised Ca++</label><input type="number" id="vbgInitial_ionisedCa" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="vbgInitial_notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea id="vbgInitial_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Any other relevant values or notes..."></textarea>
+                    </div>
+                </section>
+
+                <!-- Investigations & Plan -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Investigations & Plan</h2>
+                    <div>
+                        <label for="ecg" class="block text-sm font-medium text-gray-700 mb-1">ECG Findings</label>
+                        <textarea id="ecg" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Sinus tachycardia, no acute ST changes"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pregnancy Test</label>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2">
+                             <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="pregnancy" value="Not applicable" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Not applicable</span></label>
+                             <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="pregnancy" value="Positive" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Positive</span></label>
+                             <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="pregnancy" value="Negative" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Negative</span></label>
+                             <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="pregnancy" value="Pending" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Pending</span></label>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="drugsPrescribed" class="block text-sm font-medium text-gray-700 mb-1">Drugs Prescribed (inc. Analgesia/Antiemetics)</label>
+                        <textarea id="drugsPrescribed" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., IV Morphine 5mg, IV Ondansetron 4mg"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <label for="imagingDecisions" class="block text-sm font-medium text-gray-700 mb-1">Imaging Decisions</label>
+                        <textarea id="imagingDecisions" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., CXR, Pelvis X-ray. Proceeding to CT Head/Neck/Chest/Abdo/Pelvis"></textarea>
+                    </div>
+                     <div class="mt-4">
+                        <label for="consultantReview" class="block text-sm font-medium text-gray-700 mb-1">Consultant Review & Discussion</label>
+                        <textarea id="consultantReview" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Discussed with EM Consultant Dr. Smith"></textarea>
+                    </div>
+                </section>
+
+                <!-- Post CT Plan -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Post-CT / Definitive Care Plan</h2>
+                    <textarea id="postCtPlan" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Summarise plan following imaging and review..."></textarea>
+                </section>
+
+                <!-- Secondary Survey -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Secondary Survey (Head to Toe)</h2>
+                    <div><label for="ss_head" class="block text-sm font-medium text-gray-700 mb-1">Head</label><textarea id="ss_head" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
+                    <div class="mt-4"><label for="ss_eyes" class="block text-sm font-medium text-gray-700 mb-1">Eyes / Vision</label><textarea id="ss_eyes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
+                    <div class="mt-4"><label for="ss_face" class="block text-sm font-medium text-gray-700 mb-1">Face</label><textarea id="ss_face" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
+                    <div class="mt-4"><label for="ss_neck" class="block text-sm font-medium text-gray-700 mb-1">Neck (C-Spine) Examination</label><textarea id="ss_neck" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Log roll, palpation findings..."></textarea></div>
+                    <div class="mt-4"><label for="ss_voice" class="block text-sm font-medium text-gray-700 mb-1">Voice</label><input type="text" id="ss_voice" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                    <div class="mt-4"><label for="ss_chest" class="block text-sm font-medium text-gray-700 mb-1">Chest</label><textarea id="ss_chest" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
+                    <div class="mt-4"><label for="ss_abdomen" class="block text-sm font-medium text-gray-700 mb-1">Abdomen</label><textarea id="ss_abdomen" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
+                    <div class="mt-4"><label for="ss_pelvis" class="block text-sm font-medium text-gray-700 mb-1">Pelvis</label><textarea id="ss_pelvis" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
+                    <div class="mt-4"><label for="ss_back" class="block text-sm font-medium text-gray-700 mb-1">Back & Spine (Log Roll)</label><textarea id="ss_back" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
+                    
+                    <!-- Limbs -->
+                    <div id="ss_upperLimbs" class="mt-4 pt-4 border-t"></div>
+                    <div id="ss_lowerLimbs" class="mt-4 pt-4 border-t"></div>
+                    <div id="ss_hands" class="mt-4 pt-4 border-t"></div>
+                </section>
+
+                 <!-- Repeat VBG -->
+                <section id="vbgRepeat" class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                     <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Repeat VBG Results</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        <div><label for="vbgRepeat_ph" class="block text-sm font-medium text-gray-700 mb-1">pH</label><input type="number" id="vbgRepeat_ph" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgRepeat_pco2" class="block text-sm font-medium text-gray-700 mb-1">pCO2</label><input type="number" id="vbgRepeat_pco2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgRepeat_po2" class="block text-sm font-medium text-gray-700 mb-1">pO2</label><input type="number" id="vbgRepeat_po2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgRepeat_hco3" class="block text-sm font-medium text-gray-700 mb-1">HCO3</label><input type="number" id="vbgRepeat_hco3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgRepeat_be" class="block text-sm font-medium text-gray-700 mb-1">Base Excess</label><input type="number" id="vbgRepeat_be" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgRepeat_lactate" class="block text-sm font-medium text-gray-700 mb-1">Lactate</label><input type="number" id="vbgRepeat_lactate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                        <div><label for="vbgRepeat_ionisedCa" class="block text-sm font-medium text-gray-700 mb-1">Ionised Ca++</label><input type="number" id="vbgRepeat_ionisedCa" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="vbgRepeat_notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea id="vbgRepeat_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Any other relevant values or notes..."></textarea>
+                    </div>
+                </section>
+                
+                 <!-- Problem List -->
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Problem List</h2>
+                    <textarea id="problemList" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="1. Head Injury&#x0a;2. Left femoral fracture&#x0a;3. ..."></textarea>
+                </section>
+
+            </div>
+
+            <!-- Output Column -->
+            <div class="sticky top-24 self-start">
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Generated Initial Note</h2>
+                    <div class="relative">
+                        <textarea readonly id="initialNoteOutput" class="w-full h-96 p-3 bg-gray-100 border border-gray-300 rounded-md font-mono text-sm whitespace-pre-wrap" aria-label="Generated initial assessment note"></textarea>
+                        <button id="copyInitial" class="absolute top-2 right-2 px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Copy</button>
+                    </div>
+                </section>
+                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200 mt-8">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Generated Secondary Survey Note</h2>
+                    <div class="relative">
+                        <textarea readonly id="secondaryNoteOutput" class="w-full h-96 p-3 bg-gray-100 border border-gray-300 rounded-md font-mono text-sm whitespace-pre-wrap" aria-label="Generated secondary survey note"></textarea>
+                        <button id="copySecondary" class="absolute top-2 right-2 px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Copy</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA STORE ---
+            const patientData = {
+                specialtyAttendances: '',
+                age: '', ageEstimated: false, timeOfIncident: '', mechanism: '', injuries: '', signs: '',
+                incidentLocation: '', policeAware: 'Unknown', preHospitalTreatment: '', preHospitalOther: '', preHospitalTimings: '',
+                history: { a: '', m: '', p: '', l: '', e: '' },
+                catastrophicHaemorrhage: { present: 'No', details: '', tourniquet: '', intervention: '' },
+                airway: { status: 'Patent', notes: '', cSpineImmobilised: false },
+                breathing: { rr: '', sats: '', o2: 'On Air', fio2: '', percussion: 'Resonant', auscultation: 'Equal air entry', findings: [], notes: '' },
+                circulation: { hr: '', bp: '', bp_type: 'Non-Invasive', capRefill: '', pelvis: 'Stable', floor: 'No PR', pulse: 'None', notes: '', txaGiven: 'No', bloodTransfusionRequired: 'No', calciumGiven: 'No' },
+                disability: { gcsE: 4, gcsV: 5, gcsM: 6, avpu: 'Alert', pupil_left: '3mm PERL', pupil_right: '3mm PERL', glucose: '', notes: '', c_spine_decision: 'Imaging Required', c_spine_criteria: [] },
+                exposure: { temp: '', notes: '' },
+                wetflag: null,
+                efast: { views: [], summary: '' },
+                vbgInitial: { ph: '', pco2: '', po2: '', hco3: '', be: '', lactate: '', ionisedCa: '', notes: '' },
+                mhp: { activated: 'No', time: '', packGiven: '', notes: '' },
+                ecg: '', pregnancy: 'Not applicable', drugsPrescribed: '', imagingDecisions: '', consultantReview: '',
+                postCtPlan: '',
+                problemList: '',
+                secondarySurvey: {
+                    head: { findings: 'Normocephalic, no signs of injury.', eyes: 'PERLA, EOMI.' },
+                    face: { findings: 'Symmetrical, no bony tenderness.' },
+                    neck: { findings: 'Non-tender, no deformity, trachea central.', voice: 'Normal' },
+                    chest: { findings: 'Symmetrical expansion, no tenderness.' },
+                    abdomen: { findings: 'Soft, non-tender, no distension.' },
+                    pelvis: { findings: 'Appears stable, non-tender.' },
+                    upperLimbs: { left: { motor: '5/5', sensory: 'Intact', reflexes: 'Normal', notes: '' }, right: { motor: '5/5', sensory: 'Intact', reflexes: 'Normal', notes: '' } },
+                    lowerLimbs: { left: { motor: '5/5', sensory: 'Intact', reflexes: 'Normal', notes: '' }, right: { motor: '5/5', sensory: 'Intact', reflexes: 'Normal', notes: '' } },
+                    hands: { left: { motor: '5/5', sensory: 'Intact', reflexes: 'N/A', notes: '' }, right: { motor: '5/5', sensory: 'Intact', reflexes: 'N/A', notes: '' } },
+                    back: { findings: 'Log roll performed. No spinal tenderness or deformity.' },
+                },
+                vbgRepeat: { ph: '', pco2: '', po2: '', hco3: '', be: '', lactate: '', ionisedCa: '', notes: '' },
+            };
+
+            // --- CONSTANTS & DEFS ---
+            const GCS_E_OPTIONS = [ { value: 4, label: '4 - Spontaneous' }, { value: 3, label: '3 - To Voice' }, { value: 2, label: '2 - To Pain' }, { value: 1, label: '1 - None' }];
+            const GCS_V_OPTIONS = [ { value: 5, label: '5 - Orientated' }, { value: 4, label: '4 - Confused' }, { value: 3, label: '3 - Inappropriate' }, { value: 2, label: '2 - Incomprehensible' }, { value: 1, label: '1 - None' }];
+            const GCS_M_OPTIONS = [ { value: 6, label: '6 - Obeys Commands' }, { value: 5, label: '5 - Localises Pain' }, { value: 4, label: '4 - Withdraws' }, { value: 3, label: '3 - Flexion' }, { value: 2, label: '2 - Extension' }, { value: 1, label: '1 - None' }];
+            const BREATHING_FINDINGS = ['Chest wall injury', 'Surgical emphysema', 'Crepitus', 'Flail segment', 'Sucking chest wound', 'Reduced chest expansion'];
+            const EFAST_VIEWS = ["RUQ (Morison's Pouch)", "LUQ (Splenorenal)", "Pelvic (Pouch of Douglas)", "Pericardial", "Lungs"];
+            const CSPINE_CRITERIA = [
+                "No posterior midline c-spine tenderness",
+                "No focal neurologic deficit",
+                "Normal level of alertness (GCS 15)",
+                "No evidence of intoxication",
+                "No distracting painful injury"
+            ];
+
+            // --- UI ELEMENT GETTERS ---
+            const getEl = (id) => document.getElementById(id);
+            const initialNoteOutput = getEl('initialNoteOutput');
+            const secondaryNoteOutput = getEl('secondaryNoteOutput');
+
+            // --- NOTE GENERATION LOGIC ---
+            function updateNotes() {
+                // Initial Note
+                let note = `**Major Trauma Initial Assessment**\n\n`;
+                note += `**Specialty Attendances:** ${patientData.specialtyAttendances || 'N/S'}\n\n`;
+                const ageString = `${patientData.age || 'N/S'}${patientData.ageEstimated ? ' (Estimated)' : ''}`;
+                note += `**ATMIST Handover:**\n- Age: ${ageString}\n- Time: ${patientData.timeOfIncident || 'N/S'}\n- Mechanism: ${patientData.mechanism || 'N/S'}\n- Injuries: ${patientData.injuries || 'N/S'}\n- Signs: ${patientData.signs || 'N/S'}\n\n`;
+                
+                const { catastrophicHaemorrhage: ch, airway, breathing, circulation, disability, exposure, wetflag, efast, mhp, vbgInitial } = patientData;
+                
+                if (wetflag) {
+                    note += `**Paediatric WETFLAG (Age ${patientData.age}):**\n`;
+                    note += `- Weight: ${wetflag.weight.toFixed(1)} kg\n- Energy: ${wetflag.energy.toFixed(1)} J\n- Tube: ${wetflag.tube.toFixed(1)} mm\n`;
+                    note += `- Fluids: ${wetflag.fluids.toFixed(1)} ml\n- Lorazepam: ${wetflag.lorazepam.toFixed(1)} mg\n- Adrenaline: ${wetflag.adrenaline.toFixed(1)} ml (1:10k)\n- Glucose: ${wetflag.glucose.toFixed(1)} ml (10%)\n\n`;
+                }
+                
+                note += `**Pre-hospital Details:**\n- Incident Location: ${patientData.incidentLocation || 'N/S'}\n- Police Aware: ${patientData.policeAware}\n- Timings: ${patientData.preHospitalTimings || 'N/S'}\n- Treatment: ${patientData.preHospitalTreatment || 'N/S'}\n- Other Notes: ${patientData.preHospitalOther || 'N/S'}\n\n`;
+                note += `**<C> Catastrophic Haemorrhage:**\n- Present: ${ch.present}. ${ch.details ? `Details: ${ch.details}.` : ''} ${ch.tourniquet ? `Tourniquet: ${ch.tourniquet}.` : ''} ${ch.intervention ? `Intervention: ${ch.intervention}` : ''}\n\n`;
+                note += `**Primary Survey (ABCDE):**\n`;
+                note += `A: ${airway.status}. C-Spine Immobilised: ${airway.cSpineImmobilised ? 'Yes' : 'No'}. ${airway.notes ? `Notes: ${airway.notes}` : ''}\n`;
+                const o2String = breathing.o2 === 'On Oxygen' ? `On Oxygen (${breathing.fio2 || 'N/S'})` : 'On Air';
+                const findingsString = breathing.findings.map(f => `${f.finding} (${f.side})`).join(', ');
+                note += `B: RR ${breathing.rr || 'N/A'}. Sats ${breathing.sats || 'N/A'}% (${o2String}). Percussion: ${breathing.percussion}. Auscultation: ${breathing.auscultation}. ${findingsString ? `Findings: ${findingsString}. ` : ''}${breathing.notes ? `Notes: ${breathing.notes}` : ''}\n`;
+                note += `C: HR ${circulation.hr || 'N/A'}. BP ${circulation.bp || 'N/A'} (${circulation.bp_type}). Cap refill ${circulation.capRefill || 'N/A'}s. Pelvis ${circulation.pelvis}. Pulse: ${circulation.pulse}. On floor: ${circulation.floor}. TXA Given: ${circulation.txaGiven}. Transfusion Required: ${circulation.bloodTransfusionRequired}. Calcium Given: ${circulation.calciumGiven}. ${circulation.notes ? `Notes: ${circulation.notes}` : ''}\n`;
+                const totalGCS = isNaN(parseInt(disability.gcsE, 10) + parseInt(disability.gcsV, 10) + parseInt(disability.gcsM, 10)) ? 'N/A' : parseInt(disability.gcsE, 10) + parseInt(disability.gcsV, 10) + parseInt(disability.gcsM, 10);
+                const cSpineCriteriaString = disability.c_spine_criteria.length > 0 ? ` (Criteria NOT met: ${disability.c_spine_criteria.join(', ')})` : ' (All criteria met)';
+                note += `D: AVPU: ${disability.avpu}. GCS ${totalGCS} (E${disability.gcsE}V${disability.gcsV}M${disability.gcsM}). Pupils: (L) ${disability.pupil_left || 'N/S'}, (R) ${disability.pupil_right || 'N/S'}. Blood glucose ${disability.glucose || 'N/A'} mmol/L. C-Spine Assessment: ${disability.c_spine_decision}${disability.c_spine_decision === 'Clinically Cleared' ? cSpineCriteriaString : ''}. ${disability.notes ? `Notes: ${disability.notes}` : ''}\n`;
+                note += `E: Temp ${exposure.temp || 'N/A'}°C. ${exposure.notes ? `Notes: ${exposure.notes}` : ''}\n\n`;
+                
+                note += `**EFAST Scan:**\n- Views Imaged: ${efast.views.length > 0 ? efast.views.join(', ') : 'None'}.\n- Summary: ${efast.summary || 'Not performed.'}\n\n`;
+
+                note += `**Major Haemorrhage Protocol:**\n- Activated: ${mhp.activated}. ${mhp.activated === 'Yes' ? `Time: ${mhp.time || 'N/S'}. Pack(s) Given: ${mhp.packGiven || 'N/S'}.` : ''} ${mhp.notes ? `Notes: ${mhp.notes}` : ''}\n\n`;
+                const formatVBG = (vbg) => `pH ${vbg.ph || 'N/A'}, pCO2 ${vbg.pco2 || 'N/A'}, pO2 ${vbg.po2 || 'N/A'}, HCO3 ${vbg.hco3 || 'N/A'}, BE ${vbg.be || 'N/A'}, Lactate ${vbg.lactate || 'N/A'}, Ionised Ca++ ${vbg.ionisedCa || 'N/A'}. ${vbg.notes ? `Notes: ${vbg.notes}` : ''}`;
+                note += `**Initial VBG/ABG:** ${formatVBG(vbgInitial)}\n\n`;
+                note += `**Investigations & Immediate Plan:**\n- ECG: ${patientData.ecg || 'Not performed.'}\n- Pregnancy Status: ${patientData.pregnancy}\n- Drugs Prescribed (inc. analgesia/antiemetics): ${patientData.drugsPrescribed || 'None.'}\n- Imaging Plan: ${patientData.imagingDecisions || 'Pending review.'}\n- Consultant Review: ${patientData.consultantReview || 'Pending.'}\n\n`;
+                note += `**Post-CT / Definitive Care Plan:**\n${patientData.postCtPlan || 'Pending imaging.'}\n`;
+                
+                initialNoteOutput.value = note;
+
+                // Secondary Note
+                const { secondarySurvey: ss, vbgRepeat } = patientData;
+                let secNote = `**Secondary Survey:**\n\n`;
+                secNote += `- Head: ${ss.head.findings}\n`;
+                secNote += `- Eyes/Vision: ${ss.head.eyes}\n`;
+                secNote += `- Face: ${ss.face.findings}\n`;
+                secNote += `- Neck (C-Spine): ${ss.neck.findings}\n`;
+                secNote += `- Voice: ${ss.neck.voice}\n`;
+                secNote += `- Chest: ${ss.chest.findings}\n`;
+                secNote += `- Abdomen: ${ss.abdomen.findings}\n`;
+                secNote += `- Pelvis: ${ss.pelvis.findings}\n`;
+                secNote += `- Back & Spine: ${ss.back.findings}\n\n`;
+                secNote += `**Neurological Examination (Limbs):**\n`;
+                const formatLimb = (side, data) => `  - ${side}:\n    - Motor: ${data.motor}\n    - Sensory: ${data.sensory}\n    - Reflexes: ${data.reflexes}\n    - Notes: ${data.notes || 'None'}`;
+                secNote += `- Upper Limbs:\n${formatLimb('Left', ss.upperLimbs.left)}\n${formatLimb('Right', ss.upperLimbs.right)}\n`;
+                secNote += `- Lower Limbs:\n${formatLimb('Left', ss.lowerLimbs.left)}\n${formatLimb('Right', ss.lowerLimbs.right)}\n`;
+                secNote += `- Hands:\n${formatLimb('Left', ss.hands.left)}\n${formatLimb('Right', ss.hands.right)}\n\n`;
+                secNote += `**Repeat VBG/ABG:** ${formatVBG(vbgRepeat)}\n\n`;
+                secNote += `**Problem List:**\n${patientData.problemList || 'Not yet formulated.'}\n`;
+
+                secondaryNoteOutput.value = secNote;
+            }
+
+            function calculateAndDisplayWETFLAG(age) {
+                const ageNum = parseFloat(age);
+                if (isNaN(ageNum) || ageNum > 12 || ageNum < 0) {
+                    patientData.wetflag = null;
+                    // WETFLAG section doesn't exist, so we don't need to hide it
+                    return;
+                }
+                // WETFLAG logic removed as the section is not in the HTML
+            }
+            
+            // --- UI INITIALIZATION & BINDING ---
+            function setupEventListeners() {
+                // Simple text/number inputs
+                const simpleInputs = [
+                    'specialtyAttendances',
+                    'timeOfIncident', 'mechanism', 'injuries', 'signs',
+                    'incidentLocation', 'preHospitalTimings', 'preHospitalTreatment', 'preHospitalOther',
+                    'history_a', 'history_m', 'history_p', 'history_l', 'history_e',
+                    'catHaem_details', 'catHaem_tourniquet', 'catHaem_intervention',
+                    'airway_notes', 'breathing_rr', 'breathing_sats', 'breathing_fio2', 'breathing_percussion', 'breathing_auscultation', 'breathing_notes',
+                    'circ_hr', 'circ_bp', 'circ_capRefill', 'circ_pelvis', 'circ_floor', 'circ_notes',
+                    'disability_pupil_left', 'disability_pupil_right', 'disability_glucose', 'disability_notes',
+                    'exposure_temp', 'exposure_notes',
+                    'efast_summary',
+                    'mhp_time', 'mhp_packGiven', 'mhp_notes',
+                    'vbgInitial_ph', 'vbgInitial_pco2', 'vbgInitial_po2', 'vbgInitial_hco3', 'vbgInitial_be', 'vbgInitial_lactate', 'vbgInitial_ionisedCa', 'vbgInitial_notes',
+                    'ecg', 'drugsPrescribed', 'imagingDecisions', 'consultantReview', 'postCtPlan', 'problemList',
+                    'ss_head', 'ss_eyes', 'ss_face', 'ss_neck', 'ss_voice', 'ss_chest', 'ss_abdomen', 'ss_pelvis', 'ss_back',
+                    'ss_upperLimbs_left_motor', 'ss_upperLimbs_left_sensory', 'ss_upperLimbs_left_reflexes', 'ss_upperLimbs_left_notes',
+                    'ss_upperLimbs_right_motor', 'ss_upperLimbs_right_sensory', 'ss_upperLimbs_right_reflexes', 'ss_upperLimbs_right_notes',
+                    'ss_lowerLimbs_left_motor', 'ss_lowerLimbs_left_sensory', 'ss_lowerLimbs_left_reflexes', 'ss_lowerLimbs_left_notes',
+                    'ss_lowerLimbs_right_motor', 'ss_lowerLimbs_right_sensory', 'ss_lowerLimbs_right_reflexes', 'ss_lowerLimbs_right_notes',
+                    'ss_hands_left_motor', 'ss_hands_left_sensory', 'ss_hands_left_reflexes', 'ss_hands_left_notes',
+                    'ss_hands_right_motor', 'ss_hands_right_sensory', 'ss_hands_right_reflexes', 'ss_hands_right_notes',
+                    'vbgRepeat_ph', 'vbgRepeat_pco2', 'vbgRepeat_po2', 'vbgRepeat_hco3', 'vbgRepeat_be', 'vbgRepeat_lactate', 'vbgRepeat_ionisedCa', 'vbgRepeat_notes'
+                ];
+                simpleInputs.forEach(id => {
+                    const el = getEl(id);
+                    if (!el) return;
+                    el.addEventListener('input', (e) => {
+                        const keys = id.split('_');
+                        if (keys.length === 1) patientData[keys[0]] = e.target.value;
+                        else if (keys[0] === 'efast') patientData.efast.summary = e.target.value;
+                        else if (keys[0] === 'history') patientData.history[keys[1]] = e.target.value;
+                        else if (keys.length === 2) patientData[keys[0]][keys[1]] = e.target.value;
+                        else if (keys.length === 3) patientData[keys[0]][`${keys[1]}_${keys[2]}`] = e.target.value;
+                        else if (keys.length === 4) patientData.secondarySurvey[keys[1]][keys[2]][keys[3]] = e.target.value;
+                        updateNotes();
+                    });
+                });
+
+                // Age input special handling
+                getEl('age').addEventListener('input', (e) => {
+                    patientData.age = e.target.value;
+                    // WETFLAG calculation removed
+                    updateNotes();
+                });
+
+                // Checkboxes
+                getEl('ageEstimated').addEventListener('change', e => {
+                    patientData.ageEstimated = e.target.checked;
+                    updateNotes();
+                });
+                getEl('cSpineImmobilised').addEventListener('change', e => {
+                    patientData.airway.cSpineImmobilised = e.target.checked;
+                    updateNotes();
+                });
+
+                // Radio buttons
+                document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const name = e.target.name;
+                        const value = e.target.value;
+                        if (name === 'policeAware') patientData.policeAware = value;
+                        else if (name === 'catHaem') patientData.catastrophicHaemorrhage.present = value;
+                        else if (name === 'airwayStatus') patientData.airway.status = value;
+                        else if (name === 'breathing_o2') {
+                            patientData.breathing.o2 = value;
+                            getEl('fio2_container').classList.toggle('hidden', value === 'On Air');
+                        }
+                        else if (name === 'circ_bp_type') patientData.circulation.bp_type = value;
+                        else if (name === 'pulse_check') patientData.circulation.pulse = value;
+                        else if (name === 'disability_avpu') patientData.disability.avpu = value;
+                        else if (name === 'mhp') patientData.mhp.activated = value;
+                        else if (name === 'pregnancy') patientData.pregnancy = value;
+                        else if (name === 'txaGiven') patientData.circulation.txaGiven = value;
+                        else if (name === 'transfusionRequired') patientData.circulation.bloodTransfusionRequired = value;
+                        else if (name === 'calciumGiven') patientData.circulation.calciumGiven = value;
+                        
+                        // Conditional UI
+                        if (name === 'catHaem') getEl('catHaemDetails').classList.toggle('hidden', value === 'No');
+                        if (name === 'mhp') getEl('mhpDetails').classList.toggle('hidden', value === 'No');
+                        
+                        updateNotes();
+                    });
+                });
+
+                // Checkboxes
+                ['breathing_findings', 'efast_views', 'cspine_criteria'].forEach(id => {
+                    const container = getEl(id);
+                    if (!container) return;
+                    container.addEventListener('change', (e) => {
+                        if (e.target.type === 'checkbox') {
+                            const key = id.split('_')[0];
+                            if (key === 'breathing') {
+                                const { finding, side } = e.target.dataset;
+                                patientData.breathing.findings = patientData.breathing.findings.filter(f => !(f.finding === finding && f.side === side));
+                                if (e.target.checked) {
+                                    patientData.breathing.findings.push({ finding, side });
+                                }
+                            } else {
+                                const { value, checked } = e.target;
+                                let list;
+                                if (key === 'cspine') list = patientData.disability.c_spine_criteria;
+                                else list = patientData[key].views;
+                                
+                                if (checked) {
+                                    if (!list.includes(value)) list.push(value);
+                                } else {
+                                    if (key === 'cspine') patientData.disability.c_spine_criteria = list.filter(f => f !== value);
+                                    else if (patientData[key].views) patientData[key].views = list.filter(f => f !== value);
+                                }
+                            }
+                            updateNotes();
+                        }
+                    });
+                });
+                
+                // Selects
+                ['disability_gcsE', 'disability_gcsV', 'disability_gcsM', 'cspine_decision'].forEach(id => {
+                    getEl(id).addEventListener('change', e => {
+                        const field = id.split('_');
+                        if (field[0] === 'cspine') {
+                            patientData.disability.c_spine_decision = e.target.value;
+                        } else {
+                            patientData.disability[field[1]] = e.target.value;
+                        }
+                        updateNotes();
+                    });
+                });
+            }
+
+            function populateStaticContent() {
+                // Breathing checkboxes
+                const breathingFindingsContainer = getEl('breathing_findings');
+                BREATHING_FINDINGS.forEach(finding => {
+                    const findingEl = document.createElement('div');
+                    findingEl.className = 'flex items-center justify-between bg-gray-100 p-2 rounded';
+                    findingEl.innerHTML = `
+                        <span class="font-medium">${finding}</span>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center space-x-1"><input type="checkbox" data-finding="${finding}" data-side="L" class="h-4 w-4 text-blue-600"><span>L</span></label>
+                            <label class="flex items-center space-x-1"><input type="checkbox" data-finding="${finding}" data-side="R" class="h-4 w-4 text-blue-600"><span>R</span></label>
+                        </div>
+                    `;
+                    breathingFindingsContainer.appendChild(findingEl);
+                });
+                
+                // EFAST checkboxes
+                const efastViewsContainer = getEl('efast_views');
+                EFAST_VIEWS.forEach(view => {
+                    efastViewsContainer.innerHTML += `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="${view}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"><span>${view}</span></label>`;
+                });
+
+                // C-Spine checkboxes
+                const cspineContainer = getEl('cspine_criteria');
+                CSPINE_CRITERIA.forEach(rule => {
+                    cspineContainer.innerHTML += `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="${rule}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"><span>${rule}</span></label>`;
+                });
+
+                // GCS dropdowns
+                const populateSelect = (id, options, defaultValue) => {
+                    const select = getEl(id);
+                    options.forEach(opt => select.add(new Option(opt.label, opt.value)));
+                    select.value = defaultValue;
+                };
+                populateSelect('disability_gcsE', GCS_E_OPTIONS, 4);
+                populateSelect('disability_gcsV', GCS_V_OPTIONS, 5);
+                populateSelect('disability_gcsM', GCS_M_OPTIONS, 6);
+                
+                // Limb sections
+                const createLimbSection = (containerId, title, limbKey) => {
+                    const container = getEl(containerId);
+                    container.innerHTML = `
+                        <h4 class="font-semibold text-md text-gray-800 mb-2">${title}</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+                            <div>
+                                <h5 class="font-medium text-sm text-gray-600">Left</h5>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Motor</label><textarea id="ss_${limbKey}_left_motor" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Sensory</label><textarea id="ss_${limbKey}_left_sensory" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Reflexes</label><textarea id="ss_${limbKey}_left_reflexes" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Notes</label><textarea id="ss_${limbKey}_left_notes" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Other findings..."></textarea>
+                            </div>
+                            <div>
+                                <h5 class="font-medium text-sm text-gray-600">Right</h5>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Motor</label><textarea id="ss_${limbKey}_right_motor" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Sensory</label><textarea id="ss_${limbKey}_right_sensory" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Reflexes</label><textarea id="ss_${limbKey}_right_reflexes" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Notes</label><textarea id="ss_${limbKey}_right_notes" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Other findings..."></textarea>
+                            </div>
+                        </div>`;
+                };
+                createLimbSection('ss_upperLimbs', 'Upper Limbs', 'upperLimbs');
+                createLimbSection('ss_lowerLimbs', 'Lower Limbs', 'lowerLimbs');
+                createLimbSection('ss_hands', 'Hands', 'hands');
+            }
+            
+            function setInitialValues() {
+                // Set text/textarea values from initial data
+                Object.keys(patientData.secondarySurvey).forEach(part => {
+                    if (typeof patientData.secondarySurvey[part].findings !== 'undefined') {
+                        getEl(`ss_${part}`).value = patientData.secondarySurvey[part].findings;
+                    }
+                    if (patientData.secondarySurvey[part].eyes) getEl('ss_eyes').value = patientData.secondarySurvey[part].eyes;
+                    if (patientData.secondarySurvey[part].voice) getEl('ss_voice').value = patientData.secondarySurvey[part].voice;
+                });
+                ['upperLimbs', 'lowerLimbs', 'hands'].forEach(limbKey => {
+                    ['left', 'right'].forEach(side => {
+                        ['motor', 'sensory', 'reflexes', 'notes'].forEach(field => {
+                            const id = `ss_${limbKey}_${side}_${field}`;
+                            const value = patientData.secondarySurvey[limbKey][side][field];
+                            if(getEl(id)) getEl(id).value = value;
+                        });
+                    });
+                });
+            }
+
+            // --- COPY BUTTONS ---
+            function setupCopyButtons() {
+                ['Initial', 'Secondary'].forEach(type => {
+                    const btn = getEl(`copy${type}`);
+                    btn.addEventListener('click', () => {
+                        const note = getEl(`${type.toLowerCase()}NoteOutput`).value;
+                        navigator.clipboard.writeText(note).then(() => {
+                            btn.textContent = 'Copied!';
+                            setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                        }).catch(err => {
+                            console.error('Failed to copy text: ', err);
+                            btn.textContent = 'Error';
+                            setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                        });
+                    });
+                });
+            }
+
+            // --- APP START ---
+            populateStaticContent();
+            setInitialValues();
+            setupEventListeners();
+            setupCopyButtons();
+            updateNotes(); // Initial note generation
+        });
+    </script>
+</body>
+</html>
+
+
