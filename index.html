@@ -9,474 +9,501 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Custom scrollbar for better aesthetics in textareas */
-        textarea::-webkit-scrollbar {
-            width: 8px;
-        }
-        textarea::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        textarea::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        textarea::-webkit-scrollbar-thumb:hover {
-            background: #555;
+        body { font-family: 'Inter', sans-serif; }
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        html { scroll-behavior: smooth; }
+        
+        /* Utility for toggle buttons */
+        .toggle-radio:checked + div {
+            background-color: #2563eb;
+            color: white;
+            border-color: #2563eb;
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-slate-100 text-slate-800 antialiased">
 
-    <header class="bg-white shadow-md sticky top-0 z-10">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <h1 class="text-2xl sm:text-3xl font-bold text-blue-600">Major Trauma Assessment Tool</h1>
-            <p class="text-sm text-gray-500 mt-1">A structured tool for documentation and handover.</p>
+    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    Trauma Documentation
+                </h1>
+                <p class="text-xs text-slate-500 font-medium">ED Assessment & Handover Tool</p>
+            </div>
+            <nav class="hidden md:flex space-x-1 bg-slate-100 p-1 rounded-lg text-xs font-semibold text-slate-600">
+                <a href="#sec-atmist" class="px-3 py-1 hover:bg-white hover:shadow-sm rounded transition">ATMIST</a>
+                <a href="#sec-primary" class="px-3 py-1 hover:bg-white hover:shadow-sm rounded transition">Primary Survey</a>
+                <a href="#sec-investigations" class="px-3 py-1 hover:bg-white hover:shadow-sm rounded transition">Plan</a>
+                <a href="#sec-secondary" class="px-3 py-1 hover:bg-white hover:shadow-sm rounded transition">Secondary</a>
+            </nav>
         </div>
     </header>
 
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Input Column -->
-            <div class="flex flex-col space-y-6">
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <div class="lg:col-span-7 xl:col-span-8 flex flex-col space-y-6">
 
-                <!-- Specialty Attendances -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Specialty Attendances & Times</h2>
-                    <textarea id="specialtyAttendances" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Orthopaedics @ 14:35, General Surgery @ 14:40"></textarea>
+                <section class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-900 mb-3 flex items-center">
+                        <span class="w-1.5 h-6 bg-slate-800 mr-2 rounded-full"></span>Specialty Attendances
+                    </h2>
+                    <textarea id="specialtyAttendances" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition" placeholder="e.g., Orthopaedics @ 14:35, Gen Surg @ 14:40"></textarea>
                 </section>
 
-                <!-- ATMIST Handover -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">ATMIST Handover</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <section id="sec-atmist" class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                        <span class="w-1.5 h-6 bg-blue-600 mr-2 rounded-full"></span>ATMIST Handover
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label for="age" class="block text-sm font-medium text-gray-700 mb-1">Age</label>
-                            <div class="flex items-center space-x-2">
-                                <input type="number" id="age" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                <label class="flex items-center space-x-2 whitespace-nowrap"><input type="checkbox" id="ageEstimated" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span>Est.</span></label>
+                            <label for="age" class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Age</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="age" class="flex-1 px-3 py-2 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                <label class="flex items-center space-x-2 text-sm text-slate-600 bg-slate-50 px-3 py-2 border rounded-md cursor-pointer hover:bg-slate-100">
+                                    <input type="checkbox" id="ageEstimated" class="rounded text-blue-600 focus:ring-blue-500">
+                                    <span class="font-medium">Est.</span>
+                                </label>
                             </div>
                         </div>
                         <div>
-                            <label for="timeOfIncident" class="block text-sm font-medium text-gray-700 mb-1">Time of Incident</label>
-                            <input type="time" id="timeOfIncident" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <label for="timeOfIncident" class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Time of Incident</label>
+                            <input type="time" id="timeOfIncident" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <label for="mechanism" class="block text-sm font-medium text-gray-700 mb-1">Mechanism of Injury</label>
-                        <textarea id="mechanism" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Pedestrian vs car, 30mph"></textarea>
-                    </div>
-                    <div class="mt-4">
-                        <label for="injuries" class="block text-sm font-medium text-gray-700 mb-1">Injuries Suspected</label>
-                        <textarea id="injuries" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Head injury, fractured left femur"></textarea>
-                    </div>
-                    <div class="mt-4">
-                        <label for="signs" class="block text-sm font-medium text-gray-700 mb-1">Signs (Vitals)</label>
-                        <textarea id="signs" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., GCS 13, HR 120, BP 90/50"></textarea>
-                    </div>
-                </section>
-
-                <!-- Pre-Hospital Information -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Pre-Hospital Information</h2>
-                    <div>
-                        <label for="incidentLocation" class="block text-sm font-medium text-gray-700 mb-1">Incident Location</label>
-                        <input type="text" id="incidentLocation" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., M1 Junction 25">
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Police Aware?</label>
-                        <div class="flex flex-wrap gap-x-6 gap-y-2">
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="policeAware" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="policeAware" value="No" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="policeAware" value="Unknown" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Unknown</span></label>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="preHospitalTimings" class="block text-sm font-medium text-gray-700 mb-1">Timings</label>
-                        <input type="text" id="preHospitalTimings" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., On scene 14:30, Left scene 14:50">
-                    </div>
-                    <div class="mt-4">
-                        <label for="preHospitalTreatment" class="block text-sm font-medium text-gray-700 mb-1">Treatment & Interventions</label>
-                        <textarea id="preHospitalTreatment" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 1L Hartmann's, 1g TXA"></textarea>
-                    </div>
-                    <div class="mt-4">
-                        <label for="preHospitalOther" class="block text-sm font-medium text-gray-700 mb-1">Other Pre-Hospital Notes</label>
-                        <textarea id="preHospitalOther" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
-                    </div>
-                     <h3 class="text-lg font-semibold text-gray-700 mt-6 mb-3 border-t pt-4">AMPLE History</h3>
-                    <div><label for="history_a" class="block text-sm font-medium text-gray-700 mb-1">Allergies</label><textarea id="history_a" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
-                    <div class="mt-2"><label for="history_m" class="block text-sm font-medium text-gray-700 mb-1">Medications</label><textarea id="history_m" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
-                    <div class="mt-2"><label for="history_p" class="block text-sm font-medium text-gray-700 mb-1">Past Medical History</label><textarea id="history_p" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
-                    <div class="mt-2"><label for="history_l" class="block text-sm font-medium text-gray-700 mb-1">Last Meal</label><textarea id="history_l" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
-                    <div class="mt-2"><label for="history_e" class="block text-sm font-medium text-gray-700 mb-1">Events Leading Up</label><textarea id="history_e" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md"></textarea></div>
-                </section>
-
-                <!-- Catastrophic Haemorrhage -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">&lt;C&gt; Catastrophic Haemorrhage</h2>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Evidence of Catastrophic Haemorrhage?</label>
-                        <div class="flex flex-wrap gap-x-6 gap-y-2">
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="catHaem" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="catHaem" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
-                        </div>
-                    </div>
-                    <div id="catHaemDetails" class="hidden mt-4 space-y-4">
-                        <div>
-                            <label for="catHaem_details" class="block text-sm font-medium text-gray-700 mb-1">Details / Source</label>
-                            <textarea id="catHaem_details" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Amputated left leg below knee"></textarea>
-                        </div>
-                        <div>
-                            <label for="catHaem_tourniquet" class="block text-sm font-medium text-gray-700 mb-1">Tourniquet Details</label>
-                            <input type="text" id="catHaem_tourniquet" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., CAT applied to left thigh at 14:35">
-                        </div>
-                        <div>
-                            <label for="catHaem_intervention" class="block text-sm font-medium text-gray-700 mb-1">Intervention</label>
-                            <textarea id="catHaem_intervention" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Direct pressure, haemostatic gauze"></textarea>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Primary Survey -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Primary Survey (ABCDE)</h2>
                     
-                    <!-- Airway -->
-                    <h3 class="font-bold text-lg text-blue-700 mb-2">Airway</h3>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Airway Status</label>
-                        <div class="flex flex-wrap gap-x-6 gap-y-2">
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="airwayStatus" value="Patent" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Patent</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="airwayStatus" value="Compromised" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Compromised</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="airwayStatus" value="At Risk" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>At Risk</span></label>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="mechanism" class="block text-sm font-medium text-slate-700 mb-1">Mechanism</label>
+                            <textarea id="mechanism" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="e.g., High speed MVC, rollover"></textarea>
+                        </div>
+                        <div>
+                            <label for="injuries" class="block text-sm font-medium text-slate-700 mb-1">Injuries Suspected</label>
+                            <textarea id="injuries" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="e.g., Chest pain, open tibial fracture"></textarea>
+                        </div>
+                        <div>
+                            <label for="signs" class="block text-sm font-medium text-slate-700 mb-1">Signs (Initial Vitals)</label>
+                            <textarea id="signs" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="e.g., Tachycardic, hypotensive"></textarea>
                         </div>
                     </div>
-                     <div class="mt-4">
-                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="cSpineImmobilised" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"><span>C-Spine Immobilised (e.g., collar, blocks)</span></label>
-                    </div>
-                    <div class="mt-4">
-                        <label for="airway_notes" class="block text-sm font-medium text-gray-700 mb-1">Airway Notes & Interventions</label>
-                        <textarea id="airway_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Jaw thrust, suction, iGEL placed"></textarea>
-                    </div>
+                </section>
 
-                    <!-- Breathing -->
-                    <h3 class="font-bold text-lg text-blue-700 mt-6 mb-2 border-t pt-4">Breathing</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-end">
+                <section class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                        <span class="w-1.5 h-6 bg-slate-400 mr-2 rounded-full"></span>Pre-Hospital Info
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label for="breathing_rr" class="block text-sm font-medium text-gray-700 mb-1">Resp Rate</label>
-                            <input type="number" id="breathing_rr" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <label for="incidentLocation" class="block text-xs font-semibold text-slate-500 uppercase mb-1">Location</label>
+                            <input type="text" id="incidentLocation" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
                         </div>
                         <div>
-                            <label for="breathing_sats" class="block text-sm font-medium text-gray-700 mb-1">Sats (%)</label>
-                            <input type="number" id="breathing_sats" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Oxygen Status</label>
-                             <div class="flex flex-wrap gap-x-6 gap-y-2 pt-2">
-                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="breathing_o2" value="On Air" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>On Air</span></label>
-                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="breathing_o2" value="On Oxygen" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>On Oxygen</span></label>
+                             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Police Aware?</label>
+                             <div class="flex rounded-md shadow-sm" role="group">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="policeAware" value="Yes" class="sr-only toggle-radio peer">
+                                    <div class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-l-md hover:bg-slate-50 text-center transition">Yes</div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="policeAware" value="No" class="sr-only toggle-radio peer">
+                                    <div class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border-t border-b border-r border-slate-300 hover:bg-slate-50 text-center transition">No</div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="policeAware" value="Unknown" checked class="sr-only toggle-radio peer">
+                                    <div class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border-t border-b border-r border-slate-300 rounded-r-md hover:bg-slate-50 text-center transition">Unk</div>
+                                </label>
                             </div>
                         </div>
                     </div>
-                    <div id="fio2_container" class="hidden mt-4">
-                        <label for="breathing_fio2" class="block text-sm font-medium text-gray-700 mb-1">FiO2 (%) or Flow Rate (L/min)</label>
-                        <input type="text" id="breathing_fio2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 40% or 15L">
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                        <div>
-                            <label for="breathing_percussion" class="block text-sm font-medium text-gray-700 mb-1">Percussion</label>
-                            <input type="text" id="breathing_percussion" value="Resonant" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="breathing_auscultation" class="block text-sm font-medium text-gray-700 mb-1">Auscultation</label>
-                            <input type="text" id="breathing_auscultation" value="Equal air entry" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Specific Findings</label>
-                        <div id="breathing_findings" class="space-y-2">
-                            <!-- Checkboxes will be generated by JS -->
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="breathing_notes" class="block text-sm font-medium text-gray-700 mb-1">Breathing Notes & Interventions</label>
-                        <textarea id="breathing_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., High flow O2, chest drain"></textarea>
-                    </div>
-
-                    <!-- Circulation -->
-                    <h3 class="font-bold text-lg text-blue-700 mt-6 mb-2 border-t pt-4">Circulation</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <div><label for="circ_hr" class="block text-sm font-medium text-gray-700 mb-1">Heart Rate</label><input type="number" id="circ_hr" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="circ_bp" class="block text-sm font-medium text-gray-700 mb-1">BP</label><input type="text" id="circ_bp" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="circ_capRefill" class="block text-sm font-medium text-gray-700 mb-1">Cap Refill (s)</label><input type="number" id="circ_capRefill" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                    </div>
-                     <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">BP Type</label>
-                         <div class="flex flex-wrap gap-x-6 gap-y-2 pt-2">
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="circ_bp_type" value="Non-Invasive" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Non-Invasive</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="circ_bp_type" value="Invasive" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Invasive</span></label>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                        <div><label for="circ_pelvis" class="block text-sm font-medium text-gray-700 mb-1">Pelvis</label><input type="text" id="circ_pelvis" value="Stable" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="circ_floor" class="block text-sm font-medium text-gray-700 mb-1">Source of Bleeding / On Floor</label><input type="text" id="circ_floor" value="No PR" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Palpable Pulse</label>
-                        <div class="flex flex-wrap gap-x-4 gap-y-2">
-                            <label class="flex items-center space-x-2"><input type="radio" name="pulse_check" value="Radial" class="h-4 w-4 text-blue-600"><span>Radial</span></label>
-                            <label class="flex items-center space-x-2"><input type="radio" name="pulse_check" value="Brachial" class="h-4 w-4 text-blue-600"><span>Brachial</span></label>
-                            <label class="flex items-center space-x-2"><input type="radio" name="pulse_check" value="Femoral/Carotid" class="h-4 w-4 text-blue-600"><span>Femoral/Carotid</span></label>
-                            <label class="flex items-center space-x-2"><input type="radio" name="pulse_check" value="None" checked class="h-4 w-4 text-blue-600"><span>None</span></label>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="circ_notes" class="block text-sm font-medium text-gray-700 mb-1">Circulation Notes & Interventions</label>
-                        <textarea id="circ_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 2x large bore IV, bloods sent..."></textarea>
-                    </div>
-                    <div class="mt-4 space-y-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tranexamic Acid (TXA) Given?</label>
-                            <div class="flex flex-wrap gap-x-6 gap-y-2">
-                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="txaGiven" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
-                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="txaGiven" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Blood Transfusion Required?</label>
-                            <div class="flex flex-wrap gap-x-6 gap-y-2">
-                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="transfusionRequired" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
-                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="transfusionRequired" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Calcium Given?</label>
-                            <div class="flex flex-wrap gap-x-6 gap-y-2">
-                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="calciumGiven" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
-                                <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="calciumGiven" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Disability -->
-                    <h3 class="font-bold text-lg text-blue-700 mt-6 mb-2 border-t pt-4">Disability</h3>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Level of Consciousness (AVPU)</label>
-                        <div class="flex flex-wrap gap-x-6 gap-y-2">
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="disability_avpu" value="Alert" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Alert</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="disability_avpu" value="Voice" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Voice</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="disability_avpu" value="Pain" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Pain</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="disability_avpu" value="Unresponsive" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Unresponsive</span></label>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Glasgow Coma Scale (GCS)</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div><label for="disability_gcsE" class="block text-sm font-medium text-gray-700 mb-1">Eyes</label><select id="disability_gcsE" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></select></div>
-                            <div><label for="disability_gcsV" class="block text-sm font-medium text-gray-700 mb-1">Verbal</label><select id="disability_gcsV" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></select></div>
-                            <div><label for="disability_gcsM" class="block text-sm font-medium text-gray-700 mb-1">Motor</label><select id="disability_gcsM" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></select></div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                        <div><label for="disability_pupil_left" class="block text-sm font-medium text-gray-700 mb-1">Left Pupil</label><input type="text" id="disability_pupil_left" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 3mm, sluggish"></div>
-                        <div><label for="disability_pupil_right" class="block text-sm font-medium text-gray-700 mb-1">Right Pupil</label><input type="text" id="disability_pupil_right" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., 3mm, sluggish"></div>
-                        <div><label for="disability_glucose" class="block text-sm font-medium text-gray-700 mb-1">Glucose (mmol/L)</label><input type="number" id="disability_glucose" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="disability_notes" class="block text-sm font-medium text-gray-700 mb-1">Disability Notes & Interventions</label>
-                        <textarea id="disability_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Analgesia given"></textarea>
-                    </div>
-                     <div class="mt-4 pt-4 border-t">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">C-Spine Assessment (NEXUS / Canadian C-Spine)</label>
-                        <div id="cspine_criteria" class="space-y-2"></div>
-                        <div class="mt-2">
-                            <label for="cspine_decision" class="block text-sm font-medium text-gray-700 mb-1">C-Spine Decision</label>
-                            <select id="cspine_decision" class="w-full px-3 py-2 border border-gray-300 bg-white rounded-md">
-                                <option>Clinically Cleared</option>
-                                <option selected>Imaging Required</option>
-                                <option>Unable to Assess</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Exposure -->
-                    <h3 class="font-bold text-lg text-blue-700 mt-6 mb-2 border-t pt-4">Exposure</h3>
-                    <div>
-                        <label for="exposure_temp" class="block text-sm font-medium text-gray-700 mb-1">Temperature (°C)</label>
-                        <input type="number" id="exposure_temp" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                    </div>
-                    <div class="mt-4">
-                        <label for="exposure_notes" class="block text-sm font-medium text-gray-700 mb-1">Exposure Notes, Injuries & Interventions</label>
-                        <textarea id="exposure_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Large haematoma to right thigh, deformity of left wrist. Warmed blanket applied."></textarea>
-                    </div>
-                </section>
-                
-                <!-- EFAST Scan -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">EFAST Scan</h2>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Views</label>
-                        <div id="efast_views" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            <!-- Checkboxes will be generated by JS -->
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="efast_summary" class="block text-sm font-medium text-gray-700 mb-1">Summary Findings</label>
-                        <textarea id="efast_summary" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., No free fluid. Bilateral lung sliding present."></textarea>
-                    </div>
-                </section>
-
-                <!-- MHP -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Major Haemorrhage Protocol (MHP)</h2>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">MHP Activated?</label>
-                        <div class="flex flex-wrap gap-x-6 gap-y-2">
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="mhp" value="No" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>No</span></label>
-                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="mhp" value="Yes" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Yes</span></label>
-                        </div>
-                    </div>
-                    <div id="mhpDetails" class="hidden mt-4 space-y-4">
-                        <div>
-                            <label for="mhp_time" class="block text-sm font-medium text-gray-700 mb-1">Time Activated</label>
-                            <input type="time" id="mhp_time" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="mhp_packGiven" class="block text-sm font-medium text-gray-700 mb-1">Packs Given</label>
-                            <textarea id="mhp_packGiven" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Pack A, 4 units FFP"></textarea>
-                        </div>
-                        <div>
-                            <label for="mhp_notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                            <textarea id="mhp_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Call put out to haematology"></textarea>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Initial VBG -->
-                <section id="vbgInitial" class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Initial VBG/ABG Results</h2>
-                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                        <div><label for="vbgInitial_ph" class="block text-sm font-medium text-gray-700 mb-1">pH</label><input type="number" id="vbgInitial_ph" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgInitial_pco2" class="block text-sm font-medium text-gray-700 mb-1">pCO2</label><input type="number" id="vbgInitial_pco2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgInitial_po2" class="block text-sm font-medium text-gray-700 mb-1">pO2</label><input type="number" id="vbgInitial_po2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgInitial_hco3" class="block text-sm font-medium text-gray-700 mb-1">HCO3</label><input type="number" id="vbgInitial_hco3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgInitial_be" class="block text-sm font-medium text-gray-700 mb-1">Base Excess</label><input type="number" id="vbgInitial_be" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgInitial_lactate" class="block text-sm font-medium text-gray-700 mb-1">Lactate</label><input type="number" id="vbgInitial_lactate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgInitial_ionisedCa" class="block text-sm font-medium text-gray-700 mb-1">Ionised Ca++</label><input type="number" id="vbgInitial_ionisedCa" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="vbgInitial_notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                        <textarea id="vbgInitial_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Any other relevant values or notes..."></textarea>
-                    </div>
-                </section>
-
-                <!-- Investigations & Plan -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Investigations & Plan</h2>
-                    <div>
-                        <label for="ecg" class="block text-sm font-medium text-gray-700 mb-1">ECG Findings</label>
-                        <textarea id="ecg" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Sinus tachycardia, no acute ST changes"></textarea>
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Pregnancy Test</label>
-                        <div class="flex flex-wrap gap-x-6 gap-y-2">
-                             <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="pregnancy" value="Not applicable" checked class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Not applicable</span></label>
-                             <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="pregnancy" value="Positive" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Positive</span></label>
-                             <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="pregnancy" value="Negative" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Negative</span></label>
-                             <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="pregnancy" value="Pending" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><span>Pending</span></label>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="drugsPrescribed" class="block text-sm font-medium text-gray-700 mb-1">Drugs Prescribed (inc. Analgesia/Antiemetics)</label>
-                        <textarea id="drugsPrescribed" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., IV Morphine 5mg, IV Ondansetron 4mg"></textarea>
-                    </div>
-                    <div class="mt-4">
-                        <label for="imagingDecisions" class="block text-sm font-medium text-gray-700 mb-1">Imaging Decisions</label>
-                        <textarea id="imagingDecisions" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., CXR, Pelvis X-ray. Proceeding to CT Head/Neck/Chest/Abdo/Pelvis"></textarea>
-                    </div>
-                     <div class="mt-4">
-                        <label for="consultantReview" class="block text-sm font-medium text-gray-700 mb-1">Consultant Review & Discussion</label>
-                        <textarea id="consultantReview" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Discussed with EM Consultant Dr. Smith"></textarea>
-                    </div>
-                </section>
-
-                <!-- Post CT Plan -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Post-CT / Definitive Care Plan</h2>
-                    <textarea id="postCtPlan" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Summarise plan following imaging and review..."></textarea>
-                </section>
-
-                <!-- Secondary Survey -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Secondary Survey (Head to Toe)</h2>
-                    <div><label for="ss_head" class="block text-sm font-medium text-gray-700 mb-1">Head</label><textarea id="ss_head" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
-                    <div class="mt-4"><label for="ss_eyes" class="block text-sm font-medium text-gray-700 mb-1">Eyes / Vision</label><textarea id="ss_eyes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
-                    <div class="mt-4"><label for="ss_face" class="block text-sm font-medium text-gray-700 mb-1">Face</label><textarea id="ss_face" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
-                    <div class="mt-4"><label for="ss_neck" class="block text-sm font-medium text-gray-700 mb-1">Neck (C-Spine) Examination</label><textarea id="ss_neck" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Log roll, palpation findings..."></textarea></div>
-                    <div class="mt-4"><label for="ss_voice" class="block text-sm font-medium text-gray-700 mb-1">Voice</label><input type="text" id="ss_voice" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                    <div class="mt-4"><label for="ss_chest" class="block text-sm font-medium text-gray-700 mb-1">Chest</label><textarea id="ss_chest" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
-                    <div class="mt-4"><label for="ss_abdomen" class="block text-sm font-medium text-gray-700 mb-1">Abdomen</label><textarea id="ss_abdomen" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
-                    <div class="mt-4"><label for="ss_pelvis" class="block text-sm font-medium text-gray-700 mb-1">Pelvis</label><textarea id="ss_pelvis" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
-                    <div class="mt-4"><label for="ss_back" class="block text-sm font-medium text-gray-700 mb-1">Back & Spine (Log Roll)</label><textarea id="ss_back" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea></div>
                     
-                    <!-- Limbs -->
-                    <div id="ss_upperLimbs" class="mt-4 pt-4 border-t"></div>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div><label class="block text-sm font-medium text-slate-700 mb-1">Timings</label><input type="text" id="preHospitalTimings" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="On scene / Left scene"></div>
+                             <div><label class="block text-sm font-medium text-slate-700 mb-1">Interventions</label><input type="text" id="preHospitalTreatment" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Fluids, TXA, Splinting"></div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Other Notes</label>
+                            <textarea id="preHospitalOther" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-100">
+                        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">AMPLE History</h3>
+                        <div class="grid grid-cols-1 gap-2">
+                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">A</span><input type="text" id="history_a" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm" placeholder="Allergies"></div>
+                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">M</span><input type="text" id="history_m" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm" placeholder="Medications"></div>
+                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">P</span><input type="text" id="history_p" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm" placeholder="Past Medical History"></div>
+                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">L</span><input type="text" id="history_l" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm" placeholder="Last Meal"></div>
+                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">E</span><input type="text" id="history_e" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm" placeholder="Events"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-red-50 p-5 rounded-lg shadow-sm border border-red-200">
+                    <h2 class="text-lg font-bold text-red-800 mb-4 flex items-center">
+                        <span class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center text-sm font-bold mr-2">&lt;C&gt;</span> Catastrophic Haemorrhage
+                    </h2>
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="text-sm font-medium text-red-900">Evidence of Catastrophic Haemorrhage?</span>
+                        <div class="inline-flex rounded-md shadow-sm" role="group">
+                             <label class="cursor-pointer">
+                                <input type="radio" name="catHaem" value="No" checked class="sr-only toggle-radio peer">
+                                <div class="px-4 py-1.5 text-sm font-medium bg-white border border-red-300 rounded-l-md text-slate-700 hover:bg-red-100 transition">No</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="catHaem" value="Yes" class="sr-only toggle-radio peer">
+                                <div class="px-4 py-1.5 text-sm font-medium bg-white border-t border-b border-r border-red-300 rounded-r-md text-slate-700 hover:bg-red-100 transition">Yes</div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="catHaemDetails" class="hidden space-y-3 pl-2 border-l-2 border-red-300">
+                        <div><label class="block text-xs font-semibold text-red-700 uppercase mb-1">Source</label><input type="text" id="catHaem_details" class="w-full px-3 py-2 border border-red-300 rounded text-sm focus:ring-red-500"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div><label class="block text-xs font-semibold text-red-700 uppercase mb-1">Tourniquet</label><input type="text" id="catHaem_tourniquet" class="w-full px-3 py-2 border border-red-300 rounded text-sm focus:ring-red-500"></div>
+                            <div><label class="block text-xs font-semibold text-red-700 uppercase mb-1">Intervention</label><input type="text" id="catHaem_intervention" class="w-full px-3 py-2 border border-red-300 rounded text-sm focus:ring-red-500"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <div id="sec-primary" class="pt-2"><h2 class="text-2xl font-bold text-slate-800 border-b pb-2">Primary Survey</h2></div>
+
+                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-blue-500 border-y border-r border-slate-200">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-blue-800">A - Airway</h3>
+                        <div class="flex rounded-md shadow-sm bg-slate-100 p-1">
+                             <label class="cursor-pointer">
+                                <input type="radio" name="airwayStatus" value="Patent" checked class="sr-only toggle-radio peer">
+                                <div class="px-3 py-1 rounded text-sm font-medium transition">Patent</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="airwayStatus" value="Compromised" class="sr-only toggle-radio peer">
+                                <div class="px-3 py-1 rounded text-sm font-medium transition">Compromised</div>
+                            </label>
+                             <label class="cursor-pointer">
+                                <input type="radio" name="airwayStatus" value="At Risk" class="sr-only toggle-radio peer">
+                                <div class="px-3 py-1 rounded text-sm font-medium transition">At Risk</div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                         <label class="flex items-center p-3 border border-blue-100 bg-blue-50 rounded-md cursor-pointer hover:bg-blue-100 transition">
+                            <input type="checkbox" id="cSpineImmobilised" class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                            <span class="ml-3 font-medium text-blue-900">C-Spine Immobilised (Collar/Blocks)</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label for="airway_notes" class="block text-sm font-medium text-slate-700 mb-1">Notes & Interventions</label>
+                        <textarea id="airway_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="e.g., Suction, OPA/NPA, iGel..."></textarea>
+                    </div>
+                </section>
+
+                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-sky-400 border-y border-r border-slate-200">
+                    <h3 class="text-xl font-bold text-sky-700 mb-4">B - Breathing</h3>
+                    
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">RR</label>
+                                <input type="number" id="breathing_rr" class="w-full text-lg font-mono font-semibold px-3 py-2 border border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 text-center" placeholder="--">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Sats (%)</label>
+                                <input type="number" id="breathing_sats" class="w-full text-lg font-mono font-semibold px-3 py-2 border border-slate-300 rounded focus:ring-sky-500 focus:border-sky-500 text-center" placeholder="--">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">O2 Delivery</label>
+                                <div class="flex w-full">
+                                    <div class="inline-flex rounded-md shadow-sm flex-1" role="group">
+                                        <label class="cursor-pointer flex-1">
+                                            <input type="radio" name="breathing_o2" value="On Air" checked class="sr-only toggle-radio peer">
+                                            <div class="w-full px-2 py-2.5 text-sm font-medium bg-white border border-slate-300 rounded-l hover:bg-slate-50 text-center">Air</div>
+                                        </label>
+                                        <label class="cursor-pointer flex-1">
+                                            <input type="radio" name="breathing_o2" value="On Oxygen" class="sr-only toggle-radio peer">
+                                            <div class="w-full px-2 py-2.5 text-sm font-medium bg-white border-y border-r border-slate-300 rounded-r hover:bg-slate-50 text-center">Oxygen</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="fio2_container" class="hidden mt-3 pt-3 border-t border-slate-200">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">FiO2 / Flow (L/min)</label>
+                            <input type="text" id="breathing_fio2" class="w-full px-3 py-1 border border-slate-300 rounded text-sm" placeholder="e.g. 15L NRB">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div><label class="block text-sm font-medium text-slate-600">Percussion</label><input type="text" id="breathing_percussion" value="Resonant" class="w-full px-3 py-2 border border-slate-300 rounded text-sm"></div>
+                        <div><label class="block text-sm font-medium text-slate-600">Auscultation</label><input type="text" id="breathing_auscultation" value="Equal air entry" class="w-full px-3 py-2 border border-slate-300 rounded text-sm"></div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Findings</label>
+                        <div id="breathing_findings" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+                    </div>
+
+                    <textarea id="breathing_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Notes & Interventions..."></textarea>
+                </section>
+
+                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-red-500 border-y border-r border-slate-200">
+                    <h3 class="text-xl font-bold text-red-700 mb-4">C - Circulation</h3>
+                    
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Heart Rate</label>
+                                <input type="number" id="circ_hr" class="w-full text-lg font-mono font-semibold px-3 py-2 border border-slate-300 rounded focus:ring-red-500 focus:border-red-500 text-center" placeholder="--">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">BP</label>
+                                <input type="text" id="circ_bp" class="w-full text-lg font-mono font-semibold px-3 py-2 border border-slate-300 rounded focus:ring-red-500 focus:border-red-500 text-center" placeholder="--/--">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">CRT (s)</label>
+                                <input type="number" id="circ_capRefill" class="w-full text-lg font-mono font-semibold px-3 py-2 border border-slate-300 rounded focus:ring-red-500 focus:border-red-500 text-center" placeholder="--">
+                            </div>
+                        </div>
+                        <div class="mt-3 flex gap-2">
+                             <div class="inline-flex rounded-md shadow-sm w-full" role="group">
+                                <label class="cursor-pointer flex-1">
+                                    <input type="radio" name="circ_bp_type" value="Non-Invasive" checked class="sr-only toggle-radio peer">
+                                    <div class="w-full px-2 py-1 text-xs font-bold bg-white border border-slate-300 rounded-l hover:bg-slate-50 text-center text-slate-500 uppercase">NIBP</div>
+                                </label>
+                                <label class="cursor-pointer flex-1">
+                                    <input type="radio" name="circ_bp_type" value="Invasive" class="sr-only toggle-radio peer">
+                                    <div class="w-full px-2 py-1 text-xs font-bold bg-white border-y border-r border-slate-300 rounded-r hover:bg-slate-50 text-center text-slate-500 uppercase">Art. Line</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div><label class="block text-sm font-medium text-slate-600 mb-1">Pelvis Stability</label><input type="text" id="circ_pelvis" value="Stable" class="w-full px-3 py-2 border border-slate-300 rounded text-sm"></div>
+                             <div><label class="block text-sm font-medium text-slate-600 mb-1">Blood on Floor / PR</label><input type="text" id="circ_floor" value="No PR" class="w-full px-3 py-2 border border-slate-300 rounded text-sm"></div>
+                        </div>
+                        
+                        <div>
+                             <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Palpable Pulse</label>
+                             <div class="flex flex-wrap gap-2">
+                                 <label class="cursor-pointer"><input type="radio" name="pulse_check" value="Radial" class="peer sr-only"><span class="px-3 py-1 border rounded-full text-sm peer-checked:bg-red-600 peer-checked:text-white peer-checked:border-red-600">Radial</span></label>
+                                 <label class="cursor-pointer"><input type="radio" name="pulse_check" value="Brachial" class="peer sr-only"><span class="px-3 py-1 border rounded-full text-sm peer-checked:bg-red-600 peer-checked:text-white peer-checked:border-red-600">Brachial</span></label>
+                                 <label class="cursor-pointer"><input type="radio" name="pulse_check" value="Femoral/Carotid" class="peer sr-only"><span class="px-3 py-1 border rounded-full text-sm peer-checked:bg-red-600 peer-checked:text-white peer-checked:border-red-600">Central</span></label>
+                                 <label class="cursor-pointer"><input type="radio" name="pulse_check" value="None" checked class="peer sr-only"><span class="px-3 py-1 border rounded-full text-sm peer-checked:bg-slate-600 peer-checked:text-white peer-checked:border-slate-600">None</span></label>
+                             </div>
+                        </div>
+
+                        <div class="bg-red-50 p-3 rounded border border-red-100 grid grid-cols-1 md:grid-cols-3 gap-4">
+                             <div>
+                                 <span class="block text-xs font-bold text-red-800 uppercase mb-1">TXA Given?</span>
+                                 <div class="inline-flex rounded shadow-sm w-full">
+                                    <label class="cursor-pointer flex-1"><input type="radio" name="txaGiven" value="Yes" class="sr-only toggle-radio peer"><div class="px-2 py-1 text-sm bg-white border border-red-200 rounded-l text-center">Yes</div></label>
+                                    <label class="cursor-pointer flex-1"><input type="radio" name="txaGiven" value="No" checked class="sr-only toggle-radio peer"><div class="px-2 py-1 text-sm bg-white border-y border-r border-red-200 rounded-r text-center">No</div></label>
+                                 </div>
+                             </div>
+                             <div>
+                                 <span class="block text-xs font-bold text-red-800 uppercase mb-1">Transfusion?</span>
+                                 <div class="inline-flex rounded shadow-sm w-full">
+                                    <label class="cursor-pointer flex-1"><input type="radio" name="transfusionRequired" value="Yes" class="sr-only toggle-radio peer"><div class="px-2 py-1 text-sm bg-white border border-red-200 rounded-l text-center">Yes</div></label>
+                                    <label class="cursor-pointer flex-1"><input type="radio" name="transfusionRequired" value="No" checked class="sr-only toggle-radio peer"><div class="px-2 py-1 text-sm bg-white border-y border-r border-red-200 rounded-r text-center">No</div></label>
+                                 </div>
+                             </div>
+                             <div>
+                                 <span class="block text-xs font-bold text-red-800 uppercase mb-1">Calcium?</span>
+                                 <div class="inline-flex rounded shadow-sm w-full">
+                                    <label class="cursor-pointer flex-1"><input type="radio" name="calciumGiven" value="Yes" class="sr-only toggle-radio peer"><div class="px-2 py-1 text-sm bg-white border border-red-200 rounded-l text-center">Yes</div></label>
+                                    <label class="cursor-pointer flex-1"><input type="radio" name="calciumGiven" value="No" checked class="sr-only toggle-radio peer"><div class="px-2 py-1 text-sm bg-white border-y border-r border-red-200 rounded-r text-center">No</div></label>
+                                 </div>
+                             </div>
+                        </div>
+                        
+                        <textarea id="circ_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Circulation Notes..."></textarea>
+                    </div>
+                </section>
+
+                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-yellow-400 border-y border-r border-slate-200">
+                    <h3 class="text-xl font-bold text-yellow-700 mb-4">D - Disability</h3>
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">AVPU</label>
+                        <div class="inline-flex rounded-md shadow-sm w-full" role="group">
+                            <label class="cursor-pointer flex-1"><input type="radio" name="disability_avpu" value="Alert" checked class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold bg-white border border-slate-300 rounded-l hover:bg-slate-50 text-center">A</div></label>
+                            <label class="cursor-pointer flex-1"><input type="radio" name="disability_avpu" value="Voice" class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold bg-white border-y border-r border-slate-300 hover:bg-slate-50 text-center">V</div></label>
+                            <label class="cursor-pointer flex-1"><input type="radio" name="disability_avpu" value="Pain" class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold bg-white border-y border-r border-slate-300 hover:bg-slate-50 text-center">P</div></label>
+                            <label class="cursor-pointer flex-1"><input type="radio" name="disability_avpu" value="Unresponsive" class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold bg-white border-y border-r border-slate-300 rounded-r hover:bg-slate-50 text-center">U</div></label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                         <div><label class="block text-xs font-medium text-slate-500 mb-1">GCS Eyes</label><select id="disability_gcsE" class="w-full text-sm border-slate-300 rounded"></select></div>
+                         <div><label class="block text-xs font-medium text-slate-500 mb-1">GCS Verbal</label><select id="disability_gcsV" class="w-full text-sm border-slate-300 rounded"></select></div>
+                         <div><label class="block text-xs font-medium text-slate-500 mb-1">GCS Motor</label><select id="disability_gcsM" class="w-full text-sm border-slate-300 rounded"></select></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 bg-yellow-50 p-3 rounded border border-yellow-100">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Left Pupil</label><input type="text" id="disability_pupil_left" class="w-full px-2 py-1 border border-slate-300 rounded text-sm" placeholder="e.g. 3mm"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Right Pupil</label><input type="text" id="disability_pupil_right" class="w-full px-2 py-1 border border-slate-300 rounded text-sm" placeholder="e.g. 3mm"></div>
+                        <div class="col-span-2 md:col-span-1"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Glucose</label><input type="number" id="disability_glucose" class="w-full px-2 py-1 border border-slate-300 rounded text-sm" placeholder="mmol/L"></div>
+                    </div>
+
+                    <textarea id="disability_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Disability Notes..."></textarea>
+                    
+                    <div class="mt-4 pt-4 border-t border-slate-200">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">C-Spine Assessment</label>
+                        <div id="cspine_criteria" class="space-y-2 mb-3"></div>
+                        <select id="cspine_decision" class="w-full px-3 py-2 border-slate-300 bg-slate-50 rounded-md text-sm font-medium">
+                            <option>Clinically Cleared</option>
+                            <option selected>Imaging Required</option>
+                            <option>Unable to Assess</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-green-500 border-y border-r border-slate-200">
+                    <h3 class="text-xl font-bold text-green-700 mb-4">E - Exposure</h3>
+                    <div class="mb-3 w-1/3">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Temperature</label>
+                        <input type="number" id="exposure_temp" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="°C">
+                    </div>
+                    <textarea id="exposure_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Injuries, Warming measures..."></textarea>
+                </section>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <section class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                        <h2 class="text-lg font-bold text-slate-800 mb-3">EFAST Scan</h2>
+                        <div id="efast_views" class="space-y-2 mb-3 text-sm"></div>
+                        <textarea id="efast_summary" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded text-sm" placeholder="Summary..."></textarea>
+                    </section>
+                    
+                    <section class="bg-red-50 p-5 rounded-lg shadow-sm border border-red-200">
+                        <h2 class="text-lg font-bold text-red-800 mb-3">Massive Haemorrhage</h2>
+                        <div class="mb-3">
+                             <div class="inline-flex rounded-md shadow-sm w-full">
+                                <label class="cursor-pointer flex-1">
+                                    <input type="radio" name="mhp" value="No" checked class="sr-only toggle-radio peer">
+                                    <div class="px-4 py-2 text-sm font-medium bg-white border border-red-200 rounded-l hover:bg-red-50 text-slate-600 text-center">No</div>
+                                </label>
+                                <label class="cursor-pointer flex-1">
+                                    <input type="radio" name="mhp" value="Yes" class="sr-only toggle-radio peer">
+                                    <div class="px-4 py-2 text-sm font-bold bg-white border-y border-r border-red-200 rounded-r hover:bg-red-50 text-red-600 text-center">ACTIVATED</div>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="mhpDetails" class="hidden space-y-2">
+                            <input type="time" id="mhp_time" class="w-full px-2 py-1 border border-red-300 rounded text-sm">
+                            <textarea id="mhp_packGiven" rows="1" class="w-full px-2 py-1 border border-red-300 rounded text-sm" placeholder="Packs..."></textarea>
+                            <textarea id="mhp_notes" rows="1" class="w-full px-2 py-1 border border-red-300 rounded text-sm" placeholder="Notes..."></textarea>
+                        </div>
+                    </section>
+                </div>
+
+                <section id="sec-investigations" class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4">Investigations & Plan</h2>
+                    
+                    <div class="bg-slate-50 p-3 rounded border border-slate-200 mb-4">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Initial VBG/ABG</h4>
+                        <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                            <div><label class="block text-[10px] uppercase text-slate-500">pH</label><input type="number" id="vbgInitial_ph" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">pCO2</label><input type="number" id="vbgInitial_pco2" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">pO2</label><input type="number" id="vbgInitial_po2" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">HCO3</label><input type="number" id="vbgInitial_hco3" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">BE</label><input type="number" id="vbgInitial_be" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">Lac</label><input type="number" id="vbgInitial_lactate" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">Ca++</label><input type="number" id="vbgInitial_ionisedCa" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                        </div>
+                        <textarea id="vbgInitial_notes" rows="1" class="w-full mt-2 px-2 py-1 text-sm border-slate-300 rounded" placeholder="VBG Notes"></textarea>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div><label class="block text-sm font-medium mb-1">ECG</label><textarea id="ecg" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm"></textarea></div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Pregnancy</label>
+                            <div class="flex flex-wrap gap-2">
+                                <label class="cursor-pointer"><input type="radio" name="pregnancy" value="Not applicable" checked class="peer sr-only"><span class="px-3 py-1 bg-slate-100 rounded text-xs peer-checked:bg-blue-600 peer-checked:text-white">N/A</span></label>
+                                <label class="cursor-pointer"><input type="radio" name="pregnancy" value="Positive" class="peer sr-only"><span class="px-3 py-1 bg-slate-100 rounded text-xs peer-checked:bg-blue-600 peer-checked:text-white">Pos</span></label>
+                                <label class="cursor-pointer"><input type="radio" name="pregnancy" value="Negative" class="peer sr-only"><span class="px-3 py-1 bg-slate-100 rounded text-xs peer-checked:bg-blue-600 peer-checked:text-white">Neg</span></label>
+                                <label class="cursor-pointer"><input type="radio" name="pregnancy" value="Pending" class="peer sr-only"><span class="px-3 py-1 bg-slate-100 rounded text-xs peer-checked:bg-blue-600 peer-checked:text-white">Pending</span></label>
+                            </div>
+                        </div>
+
+                        <div><label class="block text-sm font-medium mb-1">Drugs (Analgesia/Antiemetics)</label><textarea id="drugsPrescribed" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded text-sm"></textarea></div>
+                        <div><label class="block text-sm font-medium mb-1">Imaging Decisions</label><textarea id="imagingDecisions" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded text-sm"></textarea></div>
+                        <div><label class="block text-sm font-medium mb-1">Consultant Review</label><textarea id="consultantReview" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm"></textarea></div>
+                    </div>
+                </section>
+
+                <section class="bg-blue-50 p-5 rounded-lg shadow-sm border border-blue-200">
+                    <h2 class="text-lg font-bold text-blue-900 mb-2">Post-CT / Definitive Care Plan</h2>
+                    <textarea id="postCtPlan" rows="4" class="w-full px-3 py-2 border border-blue-300 rounded-md shadow-sm text-sm" placeholder="Summary..."></textarea>
+                </section>
+
+                <section id="sec-secondary" class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4 pb-2 border-b">Secondary Survey</h2>
+                    <div class="space-y-3">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase">Head/Face</label><textarea id="ss_head" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm mb-2" placeholder="Head"></textarea><textarea id="ss_face" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm" placeholder="Face"></textarea></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase">Eyes/Neck</label><textarea id="ss_eyes" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm mb-2" placeholder="Eyes"></textarea><textarea id="ss_neck" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm" placeholder="Neck"></textarea></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase">Chest/Abdo/Pelvis</label><textarea id="ss_chest" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm mb-2" placeholder="Chest"></textarea><textarea id="ss_abdomen" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm mb-2" placeholder="Abdomen"></textarea><textarea id="ss_pelvis" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm" placeholder="Pelvis"></textarea></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase">Back/Voice</label><textarea id="ss_back" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm mb-2" placeholder="Back"></textarea><input type="text" id="ss_voice" class="w-full px-3 py-2 border border-slate-300 rounded text-sm" placeholder="Voice"></div>
+                    </div>
+                    
+                    <div id="ss_upperLimbs" class="mt-6 pt-4 border-t"></div>
                     <div id="ss_lowerLimbs" class="mt-4 pt-4 border-t"></div>
                     <div id="ss_hands" class="mt-4 pt-4 border-t"></div>
-                </section>
-
-                 <!-- Repeat VBG -->
-                <section id="vbgRepeat" class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                     <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Repeat VBG Results</h2>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        <div><label for="vbgRepeat_ph" class="block text-sm font-medium text-gray-700 mb-1">pH</label><input type="number" id="vbgRepeat_ph" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgRepeat_pco2" class="block text-sm font-medium text-gray-700 mb-1">pCO2</label><input type="number" id="vbgRepeat_pco2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgRepeat_po2" class="block text-sm font-medium text-gray-700 mb-1">pO2</label><input type="number" id="vbgRepeat_po2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgRepeat_hco3" class="block text-sm font-medium text-gray-700 mb-1">HCO3</label><input type="number" id="vbgRepeat_hco3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgRepeat_be" class="block text-sm font-medium text-gray-700 mb-1">Base Excess</label><input type="number" id="vbgRepeat_be" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgRepeat_lactate" class="block text-sm font-medium text-gray-700 mb-1">Lactate</label><input type="number" id="vbgRepeat_lactate" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                        <div><label for="vbgRepeat_ionisedCa" class="block text-sm font-medium text-gray-700 mb-1">Ionised Ca++</label><input type="number" id="vbgRepeat_ionisedCa" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="vbgRepeat_notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                        <textarea id="vbgRepeat_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Any other relevant values or notes..."></textarea>
+                    
+                    <div class="mt-6 bg-slate-50 p-3 rounded border border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Repeat VBG</h4>
+                         <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                            <div><label class="block text-[10px] uppercase text-slate-500">pH</label><input type="number" id="vbgRepeat_ph" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">pCO2</label><input type="number" id="vbgRepeat_pco2" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">pO2</label><input type="number" id="vbgRepeat_po2" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">HCO3</label><input type="number" id="vbgRepeat_hco3" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">BE</label><input type="number" id="vbgRepeat_be" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">Lac</label><input type="number" id="vbgRepeat_lactate" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">Ca++</label><input type="number" id="vbgRepeat_ionisedCa" class="w-full px-1 py-1 text-sm border-slate-300 rounded"></div>
+                        </div>
+                        <textarea id="vbgRepeat_notes" rows="1" class="w-full mt-2 px-2 py-1 text-sm border-slate-300 rounded" placeholder="Repeat VBG Notes"></textarea>
                     </div>
                 </section>
                 
-                 <!-- Problem List -->
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Problem List</h2>
-                    <textarea id="problemList" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="1. Head Injury&#x0a;2. Left femoral fracture&#x0a;3. ..."></textarea>
+                 <section class="bg-slate-800 p-5 rounded-lg shadow-md text-white">
+                    <h2 class="text-lg font-bold mb-3">Problem List / Impression</h2>
+                    <textarea id="problemList" rows="5" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm text-white placeholder-slate-400" placeholder="1. ...&#x0a;2. ..."></textarea>
                 </section>
-
             </div>
 
-            <!-- Output Column -->
-            <div class="sticky top-24 self-start">
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Generated Initial Note</h2>
-                    <div class="relative">
-                        <textarea readonly id="initialNoteOutput" class="w-full h-96 p-3 bg-gray-100 border border-gray-300 rounded-md font-mono text-sm whitespace-pre-wrap" aria-label="Generated initial assessment note"></textarea>
-                        <button id="copyInitial" class="absolute top-2 right-2 px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Copy</button>
-                    </div>
-                </section>
-                <section class="bg-white p-4 sm:p-6 rounded-xl shadow-md border border-gray-200 mt-8">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 border-b-2 border-blue-500 pb-2 mb-4">Generated Secondary Survey Note</h2>
-                    <div class="relative">
-                        <textarea readonly id="secondaryNoteOutput" class="w-full h-96 p-3 bg-gray-100 border border-gray-300 rounded-md font-mono text-sm whitespace-pre-wrap" aria-label="Generated secondary survey note"></textarea>
-                        <button id="copySecondary" class="absolute top-2 right-2 px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Copy</button>
-                    </div>
-                </section>
+            <div class="lg:col-span-5 xl:col-span-4 relative">
+                <div class="sticky top-24 space-y-6">
+                    <section class="bg-white p-4 rounded-lg shadow-lg border border-slate-200">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Initial Note</h2>
+                            <button id="copyInitial" class="px-3 py-1 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-700 transition active:scale-95">Copy</button>
+                        </div>
+                        <textarea readonly id="initialNoteOutput" class="w-full h-80 p-3 bg-slate-50 border border-slate-200 rounded text-xs font-mono text-slate-600 whitespace-pre-wrap focus:outline-none resize-none"></textarea>
+                    </section>
+                    
+                    <section class="bg-white p-4 rounded-lg shadow-lg border border-slate-200">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Secondary Survey Note</h2>
+                            <button id="copySecondary" class="px-3 py-1 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-700 transition active:scale-95">Copy</button>
+                        </div>
+                        <textarea readonly id="secondaryNoteOutput" class="w-full h-80 p-3 bg-slate-50 border border-slate-200 rounded text-xs font-mono text-slate-600 whitespace-pre-wrap focus:outline-none resize-none"></textarea>
+                    </section>
+                </div>
             </div>
         </div>
     </main>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- DATA STORE ---
+            // --- DATA STORE (UNCHANGED) ---
             const patientData = {
                 specialtyAttendances: '',
                 age: '', ageEstimated: false, timeOfIncident: '', mechanism: '', injuries: '', signs: '',
@@ -529,7 +556,7 @@
             const initialNoteOutput = getEl('initialNoteOutput');
             const secondaryNoteOutput = getEl('secondaryNoteOutput');
 
-            // --- NOTE GENERATION LOGIC ---
+            // --- NOTE GENERATION LOGIC (UNCHANGED) ---
             function updateNotes() {
                 // Initial Note
                 let note = `**Major Trauma Initial Assessment**\n\n`;
@@ -591,16 +618,6 @@
                 secondaryNoteOutput.value = secNote;
             }
 
-            function calculateAndDisplayWETFLAG(age) {
-                const ageNum = parseFloat(age);
-                if (isNaN(ageNum) || ageNum > 12 || ageNum < 0) {
-                    patientData.wetflag = null;
-                    // WETFLAG section doesn't exist, so we don't need to hide it
-                    return;
-                }
-                // WETFLAG logic removed as the section is not in the HTML
-            }
-            
             // --- UI INITIALIZATION & BINDING ---
             function setupEventListeners() {
                 // Simple text/number inputs
@@ -645,7 +662,6 @@
                 // Age input special handling
                 getEl('age').addEventListener('input', (e) => {
                     patientData.age = e.target.value;
-                    // WETFLAG calculation removed
                     updateNotes();
                 });
 
@@ -688,7 +704,7 @@
                     });
                 });
 
-                // Checkboxes
+                // Checkboxes for lists
                 ['breathing_findings', 'efast_views', 'cspine_criteria'].forEach(id => {
                     const container = getEl(id);
                     if (!container) return;
@@ -734,31 +750,31 @@
             }
 
             function populateStaticContent() {
-                // Breathing checkboxes
+                // Breathing checkboxes - RE-STYLED
                 const breathingFindingsContainer = getEl('breathing_findings');
                 BREATHING_FINDINGS.forEach(finding => {
                     const findingEl = document.createElement('div');
-                    findingEl.className = 'flex items-center justify-between bg-gray-100 p-2 rounded';
+                    findingEl.className = 'flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100 text-sm';
                     findingEl.innerHTML = `
-                        <span class="font-medium">${finding}</span>
-                        <div class="flex space-x-4">
-                            <label class="flex items-center space-x-1"><input type="checkbox" data-finding="${finding}" data-side="L" class="h-4 w-4 text-blue-600"><span>L</span></label>
-                            <label class="flex items-center space-x-1"><input type="checkbox" data-finding="${finding}" data-side="R" class="h-4 w-4 text-blue-600"><span>R</span></label>
+                        <span class="font-medium text-slate-700">${finding}</span>
+                        <div class="flex space-x-2">
+                            <label class="flex items-center space-x-1 cursor-pointer hover:bg-slate-200 px-1 rounded"><input type="checkbox" data-finding="${finding}" data-side="L" class="h-3 w-3 text-sky-600 rounded"><span>L</span></label>
+                            <label class="flex items-center space-x-1 cursor-pointer hover:bg-slate-200 px-1 rounded"><input type="checkbox" data-finding="${finding}" data-side="R" class="h-3 w-3 text-sky-600 rounded"><span>R</span></label>
                         </div>
                     `;
                     breathingFindingsContainer.appendChild(findingEl);
                 });
                 
-                // EFAST checkboxes
+                // EFAST checkboxes - RE-STYLED
                 const efastViewsContainer = getEl('efast_views');
                 EFAST_VIEWS.forEach(view => {
-                    efastViewsContainer.innerHTML += `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="${view}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"><span>${view}</span></label>`;
+                    efastViewsContainer.innerHTML += `<label class="flex items-center space-x-2 cursor-pointer p-1 hover:bg-slate-50 rounded"><input type="checkbox" value="${view}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"><span class="text-slate-700">${view}</span></label>`;
                 });
 
-                // C-Spine checkboxes
+                // C-Spine checkboxes - RE-STYLED
                 const cspineContainer = getEl('cspine_criteria');
                 CSPINE_CRITERIA.forEach(rule => {
-                    cspineContainer.innerHTML += `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="${rule}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"><span>${rule}</span></label>`;
+                    cspineContainer.innerHTML += `<label class="flex items-start space-x-2 cursor-pointer p-1 hover:bg-red-50 rounded"><input type="checkbox" value="${rule}" class="mt-0.5 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"><span class="text-sm text-slate-700">${rule}</span></label>`;
                 });
 
                 // GCS dropdowns
@@ -771,25 +787,29 @@
                 populateSelect('disability_gcsV', GCS_V_OPTIONS, 5);
                 populateSelect('disability_gcsM', GCS_M_OPTIONS, 6);
                 
-                // Limb sections
+                // Limb sections - RE-STYLED
                 const createLimbSection = (containerId, title, limbKey) => {
                     const container = getEl(containerId);
                     container.innerHTML = `
-                        <h4 class="font-semibold text-md text-gray-800 mb-2">${title}</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-                            <div>
-                                <h5 class="font-medium text-sm text-gray-600">Left</h5>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Motor</label><textarea id="ss_${limbKey}_left_motor" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Sensory</label><textarea id="ss_${limbKey}_left_sensory" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Reflexes</label><textarea id="ss_${limbKey}_left_reflexes" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Notes</label><textarea id="ss_${limbKey}_left_notes" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Other findings..."></textarea>
+                        <h4 class="font-bold text-sm text-slate-800 mb-3 bg-slate-100 p-2 rounded">${title}</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-50 p-3 rounded border border-slate-100">
+                                <h5 class="font-bold text-xs text-slate-500 uppercase mb-2 border-b pb-1">Left</h5>
+                                <div class="space-y-2">
+                                    <div><label class="block text-[10px] uppercase font-bold text-slate-400">Motor</label><textarea id="ss_${limbKey}_left_motor" rows="1" class="w-full px-2 py-1 text-sm border-slate-300 rounded"></textarea></div>
+                                    <div><label class="block text-[10px] uppercase font-bold text-slate-400">Sensory</label><textarea id="ss_${limbKey}_left_sensory" rows="1" class="w-full px-2 py-1 text-sm border-slate-300 rounded"></textarea></div>
+                                    <div><label class="block text-[10px] uppercase font-bold text-slate-400">Reflexes</label><textarea id="ss_${limbKey}_left_reflexes" rows="1" class="w-full px-2 py-1 text-sm border-slate-300 rounded"></textarea></div>
+                                    <div><label class="block text-[10px] uppercase font-bold text-slate-400">Notes</label><textarea id="ss_${limbKey}_left_notes" rows="1" class="w-full px-2 py-1 text-sm border-slate-300 rounded"></textarea></div>
+                                </div>
                             </div>
-                            <div>
-                                <h5 class="font-medium text-sm text-gray-600">Right</h5>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Motor</label><textarea id="ss_${limbKey}_right_motor" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Sensory</label><textarea id="ss_${limbKey}_right_sensory" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Reflexes</label><textarea id="ss_${limbKey}_right_reflexes" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
-                                <label class="block text-sm font-medium text-gray-700 mb-1 mt-2">Notes</label><textarea id="ss_${limbKey}_right_notes" rows="1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Other findings..."></textarea>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-100">
+                                <h5 class="font-bold text-xs text-slate-500 uppercase mb-2 border-b pb-1">Right</h5>
+                                <div class="space-y-2">
+                                    <div><label class="block text-[10px] uppercase font-bold text-slate-400">Motor</label><textarea id="ss_${limbKey}_right_motor" rows="1" class="w-full px-2 py-1 text-sm border-slate-300 rounded"></textarea></div>
+                                    <div><label class="block text-[10px] uppercase font-bold text-slate-400">Sensory</label><textarea id="ss_${limbKey}_right_sensory" rows="1" class="w-full px-2 py-1 text-sm border-slate-300 rounded"></textarea></div>
+                                    <div><label class="block text-[10px] uppercase font-bold text-slate-400">Reflexes</label><textarea id="ss_${limbKey}_right_reflexes" rows="1" class="w-full px-2 py-1 text-sm border-slate-300 rounded"></textarea></div>
+                                    <div><label class="block text-[10px] uppercase font-bold text-slate-400">Notes</label><textarea id="ss_${limbKey}_right_notes" rows="1" class="w-full px-2 py-1 text-sm border-slate-300 rounded"></textarea></div>
+                                </div>
                             </div>
                         </div>`;
                 };
@@ -818,19 +838,25 @@
                 });
             }
 
-            // --- COPY BUTTONS ---
+            // --- COPY BUTTONS - ENHANCED FEEDBACK ---
             function setupCopyButtons() {
                 ['Initial', 'Secondary'].forEach(type => {
                     const btn = getEl(`copy${type}`);
                     btn.addEventListener('click', () => {
                         const note = getEl(`${type.toLowerCase()}NoteOutput`).value;
                         navigator.clipboard.writeText(note).then(() => {
+                            const originalText = btn.textContent;
                             btn.textContent = 'Copied!';
-                            setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+                            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                            btn.classList.add('bg-green-600', 'hover:bg-green-700');
+                            setTimeout(() => { 
+                                btn.textContent = originalText; 
+                                btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                                btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                            }, 2000);
                         }).catch(err => {
                             console.error('Failed to copy text: ', err);
                             btn.textContent = 'Error';
-                            setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
                         });
                     });
                 });
@@ -846,5 +872,3 @@
     </script>
 </body>
 </html>
-
-
