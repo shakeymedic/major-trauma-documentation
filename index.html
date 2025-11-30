@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Major Trauma Assessment Tool</title>
+    <title>WMEBEM Major Trauma Tool</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
         textarea::-webkit-scrollbar { width: 8px; }
         textarea::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        textarea::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        textarea::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        textarea::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
         html { scroll-behavior: smooth; }
         
         .toggle-radio:checked + div {
@@ -21,29 +18,41 @@
             color: white;
             border-color: #2563eb;
         }
-        .tag-checkbox:checked + span {
-            background-color: #e2e8f0;
-            border-color: #94a3b8;
-            color: #1e293b;
-            font-weight: 600;
+        
+        /* Breathing L/R Button Styles */
+        .lr-btn { transition: all 0.1s; }
+        .lr-btn.active { 
+            background-color: #0284c7; 
+            color: white; 
+            font-weight: bold;
+            border-color: #0284c7;
         }
+
+        /* Stick Figure Styles */
+        .body-part { cursor: pointer; fill: #e2e8f0; stroke: #64748b; stroke-width: 2; transition: all 0.2s; }
+        .body-part:hover { fill: #cbd5e1; }
+        .body-part.has-iv { fill: #93c5fd; stroke: #2563eb; } /* Blue for IV */
+        .body-part.has-io { fill: #fca5a5; stroke: #dc2626; } /* Red for IO */
+        .body-part.has-cvc { fill: #86efac; stroke: #16a34a; } /* Green for CVC */
+        .body-part.has-art { fill: #fde047; stroke: #ca8a04; } /* Yellow for Art */
+
+        .access-label { font-size: 10px; font-weight: bold; pointer-events: none; text-anchor: middle; fill: #1e293b; }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased">
+<body class="bg-slate-100 text-slate-800 antialiased pb-20">
 
     <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    Trauma Tool
-                </h1>
+            <div class="flex items-center gap-3">
+                <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-10 w-auto object-contain">
+                <div>
+                    <h1 class="text-lg md:text-xl font-extrabold text-slate-900 leading-tight">Major Trauma Tool</h1>
+                    <p class="text-[10px] text-slate-500 font-medium">© 2025 WMEBEM. Used with permission.</p>
+                </div>
             </div>
-            <nav class="hidden md:flex space-x-1 bg-slate-100 p-1 rounded-lg text-xs font-semibold text-slate-600">
-                <a href="#sec-primary" class="px-3 py-1 hover:bg-white rounded transition">Primary</a>
-                <a href="#sec-mhp" class="px-3 py-1 hover:bg-white rounded transition">MHP</a>
-                <a href="#sec-secondary" class="px-3 py-1 hover:bg-white rounded transition">Secondary</a>
-            </nav>
+            <div class="flex gap-2">
+                 <button id="btn-arrival-now" class="hidden md:block px-3 py-1 bg-slate-800 text-white text-xs font-bold rounded hover:bg-slate-700 shadow-sm">Set Arrival: NOW</button>
+            </div>
         </div>
     </header>
 
@@ -52,31 +61,30 @@
             
             <div class="lg:col-span-7 xl:col-span-8 flex flex-col space-y-6">
 
-                <section class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-lg font-bold text-slate-900 flex items-center">
-                            <span class="w-1.5 h-6 bg-slate-800 mr-2 rounded-full"></span>Arrival & Specialties
-                        </h2>
-                        <button id="btn-arrival-now" class="px-3 py-1 bg-slate-800 text-white text-xs font-bold rounded hover:bg-slate-700">Set Arrival Time: NOW</button>
+                        <h2 class="text-lg font-bold text-slate-900">Arrival & Specialties</h2>
+                        <button id="btn-arrival-mobile" class="md:hidden px-3 py-1 bg-slate-800 text-white text-xs font-bold rounded">Set Arrival: NOW</button>
                     </div>
-                    <div class="mb-3 flex gap-2 overflow-x-auto pb-2">
-                        <button type="button" class="specialty-btn px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-xs font-bold hover:bg-blue-100" data-spec="T&O">T&O Arrived</button>
-                        <button type="button" class="specialty-btn px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-xs font-bold hover:bg-blue-100" data-spec="Gen Surg">Gen Surg Arrived</button>
-                        <button type="button" class="specialty-btn px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-xs font-bold hover:bg-blue-100" data-spec="ICU/Anaesthetics">ICU/Anaes Arrived</button>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button type="button" class="specialty-btn px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold hover:bg-blue-100 active:scale-95 transition" data-spec="T&O">T&O</button>
+                        <button type="button" class="specialty-btn px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold hover:bg-blue-100 active:scale-95 transition" data-spec="Gen Surg">Gen Surg</button>
+                        <button type="button" class="specialty-btn px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold hover:bg-blue-100 active:scale-95 transition" data-spec="ICU/Anaesthetics">ICU/Anaes</button>
+                        <button type="button" class="specialty-btn px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold hover:bg-blue-100 active:scale-95 transition" data-spec="ED Consultant">ED Cons</button>
                     </div>
-                    <textarea id="specialtyAttendances" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-md text-sm transition" placeholder="Specialty arrival times..."></textarea>
+                    <textarea id="specialtyAttendances" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-md text-sm transition focus:ring-2 focus:ring-blue-500" placeholder="Other specialties or notes..."></textarea>
                 </section>
 
-                <section id="sec-atmist" class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
                     <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
                         <span class="w-1.5 h-6 bg-blue-600 mr-2 rounded-full"></span>ATMIST Handover
                     </h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Age</label>
                             <div class="flex items-center gap-2">
-                                <input type="number" id="age" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm">
-                                <label class="flex items-center space-x-2 text-sm text-slate-600 bg-slate-50 px-3 py-2 border rounded-md cursor-pointer"><input type="checkbox" id="ageEstimated" class="rounded text-blue-600"><span>Est.</span></label>
+                                <input type="number" id="age" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm">
+                                <label class="flex items-center space-x-1 text-sm text-slate-600 bg-slate-50 px-2 py-2 border rounded-md cursor-pointer"><input type="checkbox" id="ageEstimated" class="rounded text-blue-600"><span>Est.</span></label>
                             </div>
                         </div>
                         <div>
@@ -85,108 +93,161 @@
                         </div>
                     </div>
                     <div class="space-y-3">
-                        <div><input type="text" id="mechanism" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Mechanism"></div>
-                        <div><input type="text" id="injuries" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Injuries Suspected"></div>
-                        <div><input type="text" id="signs" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Signs (Vitals)"></div>
+                        <input type="text" id="mechanism" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Mechanism">
+                        <input type="text" id="injuries" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Injuries Suspected">
+                        <input type="text" id="signs" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Signs (Vitals)">
                     </div>
                 </section>
 
-                <section class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
-                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center"><span class="w-1.5 h-6 bg-slate-400 mr-2 rounded-full"></span>Pre-Hospital</h2>
-                    <textarea id="preHospitalOther" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mb-4" placeholder="Notes..."></textarea>
-                    
-                    <div class="pt-4 border-t border-slate-100">
-                        <h3 class="text-sm font-bold text-slate-700 uppercase mb-3">AMPLE History</h3>
-                        <div class="grid grid-cols-1 gap-2">
-                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">A</span><input type="text" id="history_a" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm"></div>
-                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">M</span><input type="text" id="history_m" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm"></div>
-                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">P</span><input type="text" id="history_p" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm"></div>
-                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">L</span><input type="text" id="history_l" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm"></div>
-                            <div class="flex items-center gap-2"><span class="w-8 font-bold text-slate-400">E</span><input type="text" id="history_e" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm"></div>
-                        </div>
+                <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center"><span class="w-1.5 h-6 bg-slate-400 mr-2 rounded-full"></span>Pre-Hospital / AMPLE</h2>
+                    <textarea id="preHospitalOther" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mb-4" placeholder="Pre-hospital interventions & notes..."></textarea>
+                    <div class="grid grid-cols-1 gap-2 pt-2 border-t border-slate-100">
+                        <div class="flex items-center gap-2"><span class="w-6 font-bold text-slate-400 text-center">A</span><input type="text" id="history_a" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm placeholder-slate-400" placeholder="Allergies"></div>
+                        <div class="flex items-center gap-2"><span class="w-6 font-bold text-slate-400 text-center">M</span><input type="text" id="history_m" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm placeholder-slate-400" placeholder="Medications"></div>
+                        <div class="flex items-center gap-2"><span class="w-6 font-bold text-slate-400 text-center">P</span><input type="text" id="history_p" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm placeholder-slate-400" placeholder="PMHx"></div>
+                        <div class="flex items-center gap-2"><span class="w-6 font-bold text-slate-400 text-center">L</span><input type="text" id="history_l" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm placeholder-slate-400" placeholder="Last Meal"></div>
+                        <div class="flex items-center gap-2"><span class="w-6 font-bold text-slate-400 text-center">E</span><input type="text" id="history_e" class="flex-1 px-3 py-1.5 border border-slate-300 rounded text-sm placeholder-slate-400" placeholder="Events"></div>
                     </div>
                 </section>
 
-                <div id="sec-primary" class="pt-2"><h2 class="text-2xl font-bold text-slate-800 border-b pb-2">Primary Survey</h2></div>
+                <div id="sec-primary" class="pt-2"><h2 class="text-2xl font-black text-slate-800 border-b-2 border-slate-800 pb-2">Primary Survey</h2></div>
 
-                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-blue-500 border-y border-r border-slate-200">
+                <section class="bg-white p-5 rounded-xl shadow-sm border-l-[6px] border-blue-600">
                     <h3 class="text-xl font-bold text-blue-800 mb-4">A - Airway</h3>
                     
-                    <div class="mb-4">
-                        <label class="flex items-center space-x-2 mb-3">
+                    <div class="mb-4 space-y-3">
+                         <label class="flex items-center space-x-3 p-3 bg-red-50 border border-red-200 rounded-lg w-full cursor-pointer hover:bg-red-100 transition">
                             <input type="checkbox" id="preHospitalRSI" class="w-5 h-5 text-red-600 rounded border-gray-300 focus:ring-red-500">
-                            <span class="font-bold text-red-700">Pre-Hospital RSI Performed</span>
+                            <span class="font-bold text-red-800">Pre-Hospital RSI Performed</span>
                         </label>
+                        
+                        <div id="rsiDetails" class="hidden pl-4 border-l-2 border-red-300 space-y-3 py-2 bg-red-50/50 rounded-r-lg">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div><label class="block text-xs font-bold text-red-700 uppercase">Tube Size</label><input type="text" id="rsi_size" class="w-full px-2 py-1 border border-red-200 rounded text-sm"></div>
+                                <div><label class="block text-xs font-bold text-red-700 uppercase">@ Teeth (cm)</label><input type="text" id="rsi_length" class="w-full px-2 py-1 border border-red-200 rounded text-sm"></div>
+                                <div><label class="block text-xs font-bold text-red-700 uppercase">Grade</label><select id="rsi_grade" class="w-full px-2 py-1 border border-red-200 rounded text-sm bg-white"><option></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+                                <div><label class="block text-xs font-bold text-red-700 uppercase">ETCO2 (kPa)</label><input type="text" id="rsi_etco2" class="w-full px-2 py-1 border border-red-200 rounded text-sm"></div>
+                            </div>
+                            <div><label class="block text-xs font-bold text-red-700 uppercase">Drugs (Induction/Paralysis)</label><input type="text" id="rsi_drugs" class="w-full px-2 py-1 border border-red-200 rounded text-sm" placeholder="e.g. Ketamine / Rocuronium"></div>
+                        </div>
 
-                        <div class="flex rounded-md shadow-sm bg-slate-100 p-1 mb-4">
-                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Patent" checked class="sr-only toggle-radio peer"><div class="px-2 py-1.5 rounded text-sm font-medium transition">Patent</div></label>
-                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Compromised" class="sr-only toggle-radio peer"><div class="px-2 py-1.5 rounded text-sm font-medium transition">Compromised</div></label>
-                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="At Risk" class="sr-only toggle-radio peer"><div class="px-2 py-1.5 rounded text-sm font-medium transition">At Risk</div></label>
-                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Intubated" class="sr-only toggle-radio peer"><div class="px-2 py-1.5 rounded text-sm font-medium transition">Intubated</div></label>
+                        <div class="flex rounded-lg shadow-sm bg-slate-100 p-1">
+                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Patent" checked class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition">Patent</div></label>
+                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Compromised" class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition">Compromised</div></label>
+                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="At Risk" class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition">At Risk</div></label>
                         </div>
                     </div>
                     
                     <div class="bg-blue-50 p-3 rounded border border-blue-100 mb-3">
                         <span class="text-xs font-bold text-blue-800 uppercase block mb-2">C-Spine Protection</span>
                         <div class="flex gap-4">
-                             <label class="flex items-center space-x-2"><input type="checkbox" id="cspine_collar" class="w-4 h-4 text-blue-600 rounded"><span>Collar</span></label>
-                             <label class="flex items-center space-x-2"><input type="checkbox" id="cspine_blocks" class="w-4 h-4 text-blue-600 rounded"><span>Blocks</span></label>
+                             <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="cspine_collar" class="w-5 h-5 text-blue-600 rounded"><span>Collar</span></label>
+                             <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="cspine_blocks" class="w-5 h-5 text-blue-600 rounded"><span>Blocks</span></label>
                         </div>
                     </div>
 
-                    <textarea id="airway_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Airway Notes (Tube size, grade, length)..."></textarea>
+                    <textarea id="airway_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Additional Airway Notes..."></textarea>
                 </section>
 
-                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-sky-400 border-y border-r border-slate-200">
+                <section class="bg-white p-5 rounded-xl shadow-sm border-l-[6px] border-sky-400">
                     <h3 class="text-xl font-bold text-sky-700 mb-4">B - Breathing</h3>
-                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">RR</label><input type="number" id="breathing_rr" class="w-full text-lg font-mono font-bold px-2 py-1 border border-slate-300 rounded text-center"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Sats (%)</label><input type="number" id="breathing_sats" class="w-full text-lg font-mono font-bold px-2 py-1 border border-slate-300 rounded text-center"></div>
-                            <div class="col-span-2">
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">O2 Delivery</label>
-                                <div class="flex rounded-md shadow-sm w-full bg-white">
-                                    <label class="cursor-pointer flex-1"><input type="radio" name="breathing_o2" value="Air" checked class="sr-only toggle-radio peer"><div class="py-1.5 text-sm font-medium border border-slate-300 rounded-l text-center">Air</div></label>
-                                    <label class="cursor-pointer flex-1"><input type="radio" name="breathing_o2" value="O2" class="sr-only toggle-radio peer"><div class="py-1.5 text-sm font-medium border-y border-r border-slate-300 rounded-r text-center">Oxygen</div></label>
-                                </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">RR</label><input type="number" id="breathing_rr" class="w-full text-xl font-mono font-bold px-2 py-2 border border-slate-300 rounded text-center focus:ring-sky-500"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Sats (%)</label><input type="number" id="breathing_sats" class="w-full text-xl font-mono font-bold px-2 py-2 border border-slate-300 rounded text-center focus:ring-sky-500"></div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Oxygen</label>
+                            <div class="flex rounded-md shadow-sm w-full bg-white">
+                                <label class="cursor-pointer flex-1"><input type="radio" name="breathing_o2" value="Air" checked class="sr-only toggle-radio peer"><div class="py-2.5 text-sm font-bold border border-slate-300 rounded-l text-center">Air</div></label>
+                                <label class="cursor-pointer flex-1"><input type="radio" name="breathing_o2" value="O2" class="sr-only toggle-radio peer"><div class="py-2.5 text-sm font-bold border-y border-r border-slate-300 rounded-r text-center">Oxygen</div></label>
                             </div>
                         </div>
-                        <div id="fio2_container" class="hidden mt-3"><input type="text" id="breathing_fio2" class="w-full px-2 py-1 border border-slate-300 rounded text-sm" placeholder="Flow Rate / FiO2"></div>
                     </div>
-                    <div class="mb-4"><label class="block text-sm font-bold text-slate-700 mb-2">Findings</label><div id="breathing_findings" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div></div>
-                    <textarea id="breathing_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Notes..."></textarea>
+                    <div id="fio2_container" class="hidden mb-4"><input type="text" id="breathing_fio2" class="w-full px-3 py-2 border border-slate-300 rounded text-sm" placeholder="Flow Rate / FiO2 details"></div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Findings</label>
+                        <div id="breathing_findings" class="space-y-2">
+                            </div>
+                    </div>
+                    <textarea id="breathing_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Breathing Notes..."></textarea>
                 </section>
 
-                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-red-500 border-y border-r border-slate-200">
+                <section class="bg-white p-5 rounded-xl shadow-sm border-l-[6px] border-red-600">
                     <h3 class="text-xl font-bold text-red-700 mb-4">C - Circulation</h3>
                     
-                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
                         <div class="grid grid-cols-3 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">HR</label><input type="number" id="circ_hr" class="w-full text-lg font-mono font-bold px-2 py-1 border border-slate-300 rounded text-center"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">BP</label><input type="text" id="circ_bp" class="w-full text-lg font-mono font-bold px-2 py-1 border border-slate-300 rounded text-center"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">CRT</label><input type="number" id="circ_capRefill" class="w-full text-lg font-mono font-bold px-2 py-1 border border-slate-300 rounded text-center"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">HR</label><input type="number" id="circ_hr" class="w-full text-xl font-mono font-bold px-2 py-2 border border-slate-300 rounded text-center focus:ring-red-500"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">BP</label><input type="text" id="circ_bp" class="w-full text-xl font-mono font-bold px-2 py-2 border border-slate-300 rounded text-center focus:ring-red-500"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">CRT</label><input type="number" id="circ_capRefill" class="w-full text-xl font-mono font-bold px-2 py-2 border border-slate-300 rounded text-center focus:ring-red-500"></div>
                         </div>
                     </div>
 
-                    <div class="mb-4 space-y-3">
-                         <div>
-                            <span class="text-xs font-bold text-slate-500 uppercase">Access & Lines</span>
-                            <div class="flex flex-wrap gap-2 mt-1">
-                                <button type="button" class="access-btn px-2 py-1 bg-white border border-slate-300 rounded text-xs hover:bg-slate-50" data-text="IV Access (L) ACF">IV (L)</button>
-                                <button type="button" class="access-btn px-2 py-1 bg-white border border-slate-300 rounded text-xs hover:bg-slate-50" data-text="IV Access (R) ACF">IV (R)</button>
-                                <button type="button" class="access-btn px-2 py-1 bg-white border border-slate-300 rounded text-xs hover:bg-slate-50" data-text="IO Access (Humeral)">IO (Humeral)</button>
-                                <button type="button" class="access-btn px-2 py-1 bg-white border border-slate-300 rounded text-xs hover:bg-slate-50" data-text="IO Access (Tibial)">IO (Tibial)</button>
-                                <button type="button" class="access-btn px-2 py-1 bg-white border border-slate-300 rounded text-xs hover:bg-slate-50" data-text="Central Line">Central Line</button>
-                                <button type="button" class="access-btn px-2 py-1 bg-white border border-slate-300 rounded text-xs hover:bg-slate-50" data-text="Arterial Line">Art. Line</button>
+                    <div class="bg-red-100 p-4 rounded-lg border-2 border-red-500 mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <h2 class="text-lg font-black text-red-900">Major Haemorrhage Protocol</h2>
+                             <label class="cursor-pointer flex items-center bg-white px-3 py-1 border border-red-300 rounded shadow-sm">
+                                <input type="checkbox" id="mhp_activated" class="w-5 h-5 text-red-600 rounded focus:ring-red-600">
+                                <span class="ml-2 font-bold text-red-800">ACTIVATED</span>
+                            </label>
+                        </div>
+                        <div class="bg-white border-l-4 border-red-600 p-2 mb-3 shadow-sm text-center">
+                            <p class="font-black text-red-600 text-sm">⚠️ PROMPT: GIVE TRANEXAMIC ACID & CALCIUM ⚠️</p>
+                        </div>
+                        <div id="mhpDetails" class="hidden space-y-3">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div><label class="block text-[10px] font-bold text-red-800 uppercase mb-1">PRBC (Units)</label><input type="number" id="mhp_prbc" class="w-full px-2 py-1 border border-red-300 rounded text-center font-mono font-bold" placeholder="0"></div>
+                                <div><label class="block text-[10px] font-bold text-red-800 uppercase mb-1">FFP</label><input type="number" id="mhp_ffp" class="w-full px-2 py-1 border border-red-300 rounded text-center font-mono font-bold" placeholder="0"></div>
+                                <div><label class="block text-[10px] font-bold text-red-800 uppercase mb-1">Platelets</label><input type="number" id="mhp_plt" class="w-full px-2 py-1 border border-red-300 rounded text-center font-mono font-bold" placeholder="0"></div>
+                                <div><label class="block text-[10px] font-bold text-red-800 uppercase mb-1">Cryo</label><input type="number" id="mhp_cryo" class="w-full px-2 py-1 border border-red-300 rounded text-center font-mono font-bold" placeholder="0"></div>
                             </div>
                         </div>
-                        <div>
-                            <span class="text-xs font-bold text-slate-500 uppercase">Haemorrhage Control</span>
-                            <div class="flex flex-wrap gap-2 mt-1">
-                                <button type="button" class="access-btn px-2 py-1 bg-red-50 border border-red-200 text-red-700 rounded text-xs hover:bg-red-100" data-text="Pelvic Binder applied">Pelvic Binder</button>
-                                <button type="button" class="access-btn px-2 py-1 bg-red-50 border border-red-200 text-red-700 rounded text-xs hover:bg-red-100" data-text="KTD Splint applied">KTD</button>
-                                <button type="button" class="access-btn px-2 py-1 bg-red-50 border border-red-200 text-red-700 rounded text-xs hover:bg-red-100" data-text="Tourniquet applied">Tourniquet</button>
-                            </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <span class="block text-sm font-bold text-slate-700 mb-2">Access & Lines (Tap body part to cycle: IV -> IO -> CVC -> Art -> None)</span>
+                        <div class="flex justify-center bg-white p-4 border border-slate-200 rounded-lg">
+                            <svg width="240" height="300" viewBox="0 0 200 300" id="bodyMap">
+                                <circle cx="100" cy="30" r="20" class="fill-slate-200 stroke-slate-400" stroke-width="2"/>
+                                <rect x="90" y="50" width="20" height="15" class="body-part" data-part="neck" rx="2" />
+                                <text x="100" y="61" class="access-label" id="label-neck"></text>
+                                
+                                <rect x="80" y="65" width="40" height="100" class="fill-slate-200 stroke-slate-400" stroke-width="2" rx="5"/>
+                                
+                                <line x1="80" y1="75" x2="40" y2="120" class="stroke-slate-400" stroke-width="2"/>
+                                <rect x="30" y="110" width="20" height="40" class="body-part" data-part="l_arm" rx="5" transform="rotate(20 40 130)"/>
+                                <text x="35" y="135" class="access-label" id="label-l_arm"></text>
+
+                                <line x1="120" y1="75" x2="160" y2="120" class="stroke-slate-400" stroke-width="2"/>
+                                <rect x="150" y="110" width="20" height="40" class="body-part" data-part="r_arm" rx="5" transform="rotate(-20 160 130)"/>
+                                <text x="165" y="135" class="access-label" id="label-r_arm"></text>
+
+                                <rect x="75" y="160" width="20" height="20" class="body-part" data-part="l_groin" rx="2"/>
+                                <text x="85" y="174" class="access-label" id="label-l_groin"></text>
+
+                                <rect x="105" y="160" width="20" height="20" class="body-part" data-part="r_groin" rx="2"/>
+                                <text x="115" y="174" class="access-label" id="label-r_groin"></text>
+
+                                <line x1="90" y1="165" x2="70" y2="280" class="stroke-slate-400" stroke-width="2"/>
+                                <rect x="60" y="210" width="20" height="40" class="body-part" data-part="l_leg" rx="5"/>
+                                <text x="70" y="235" class="access-label" id="label-l_leg"></text>
+
+                                <line x1="110" y1="165" x2="130" y2="280" class="stroke-slate-400" stroke-width="2"/>
+                                <rect x="120" y="210" width="20" height="40" class="body-part" data-part="r_leg" rx="5"/>
+                                <text x="130" y="235" class="access-label" id="label-r_leg"></text>
+                            </svg>
+                        </div>
+                        <p class="text-xs text-center text-slate-500 mt-1">Blue: IV | Red: IO | Green: CVC | Yellow: Art</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <span class="text-xs font-bold text-slate-500 uppercase">Haemorrhage Control</span>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                            <button type="button" class="access-btn px-3 py-2 bg-red-50 border border-red-200 text-red-700 rounded text-xs font-bold hover:bg-red-100" data-text="Pelvic Binder applied">Pelvic Binder</button>
+                            <button type="button" class="access-btn px-3 py-2 bg-red-50 border border-red-200 text-red-700 rounded text-xs font-bold hover:bg-red-100" data-text="KTD Splint applied">KTD</button>
+                            <button type="button" class="access-btn px-3 py-2 bg-red-50 border border-red-200 text-red-700 rounded text-xs font-bold hover:bg-red-100" data-text="Tourniquet applied">Tourniquet</button>
                         </div>
                     </div>
 
@@ -202,68 +263,43 @@
                     <textarea id="circ_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Circulation Notes..."></textarea>
                 </section>
 
-                <section id="sec-mhp" class="bg-red-100 p-5 rounded-lg shadow-sm border-2 border-red-500">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl font-bold text-red-900">Major Haemorrhage Protocol (MHP)</h2>
-                         <label class="cursor-pointer flex items-center bg-white px-3 py-1 border border-red-300 rounded shadow-sm">
-                            <input type="checkbox" id="mhp_activated" class="w-5 h-5 text-red-600 rounded">
-                            <span class="ml-2 font-bold text-red-800">ACTIVATED</span>
-                        </label>
-                    </div>
-
-                    <div class="bg-white border-l-4 border-red-600 p-3 mb-4 shadow-sm">
-                        <p class="font-black text-red-600 text-center">⚠️ PROMPT: GIVE TRANEXAMIC ACID & CALCIUM ⚠️</p>
-                    </div>
-
-                    <div id="mhpDetails" class="hidden space-y-4">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div><label class="block text-xs font-bold text-red-800 uppercase mb-1">PRBC</label><input type="number" id="mhp_prbc" class="w-full px-2 py-1 border border-red-300 rounded text-center font-mono" placeholder="0"></div>
-                            <div><label class="block text-xs font-bold text-red-800 uppercase mb-1">FFP</label><input type="number" id="mhp_ffp" class="w-full px-2 py-1 border border-red-300 rounded text-center font-mono" placeholder="0"></div>
-                            <div><label class="block text-xs font-bold text-red-800 uppercase mb-1">Platelets</label><input type="number" id="mhp_plt" class="w-full px-2 py-1 border border-red-300 rounded text-center font-mono" placeholder="0"></div>
-                            <div><label class="block text-xs font-bold text-red-800 uppercase mb-1">Cryo</label><input type="number" id="mhp_cryo" class="w-full px-2 py-1 border border-red-300 rounded text-center font-mono" placeholder="0"></div>
-                        </div>
-                        <div><label class="block text-xs font-bold text-red-800 uppercase mb-1">Notes</label><textarea id="mhp_notes" rows="2" class="w-full px-3 py-2 border border-red-300 rounded text-sm"></textarea></div>
-                    </div>
-                </section>
-
-                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-yellow-400 border-y border-r border-slate-200">
+                <section class="bg-white p-5 rounded-xl shadow-sm border-l-[6px] border-yellow-400">
                     <h3 class="text-xl font-bold text-yellow-700 mb-4">D - Disability</h3>
                     
                     <div class="mb-4">
-                        <label class="flex items-center space-x-2 p-2 bg-yellow-50 border border-yellow-200 rounded w-fit mb-3">
+                        <label class="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg w-full mb-4 cursor-pointer hover:bg-yellow-100">
                             <input type="checkbox" id="headInjury" class="w-5 h-5 text-yellow-600 rounded border-gray-300 focus:ring-yellow-500">
                             <span class="font-bold text-yellow-800">Head Injury Suspected</span>
                         </label>
                         
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">AVPU</label>
-                        <div class="inline-flex rounded-md shadow-sm w-full" role="group">
-                            <label class="cursor-pointer flex-1"><input type="radio" name="disability_avpu" value="Alert" checked class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold bg-white border border-slate-300 rounded-l hover:bg-slate-50 text-center">A</div></label>
-                            <label class="cursor-pointer flex-1"><input type="radio" name="disability_avpu" value="Voice" class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold bg-white border-y border-r border-slate-300 hover:bg-slate-50 text-center">V</div></label>
-                            <label class="cursor-pointer flex-1"><input type="radio" name="disability_avpu" value="Pain" class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold bg-white border-y border-r border-slate-300 hover:bg-slate-50 text-center">P</div></label>
-                            <label class="cursor-pointer flex-1"><input type="radio" name="disability_avpu" value="Unresponsive" class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold bg-white border-y border-r border-slate-300 rounded-r hover:bg-slate-50 text-center">U</div></label>
+                        <div class="flex rounded-lg shadow-sm bg-slate-100 p-1 mb-4">
+                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Alert" checked class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold rounded transition">A</div></label>
+                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Voice" class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold rounded transition">V</div></label>
+                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Pain" class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold rounded transition">P</div></label>
+                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Unresponsive" class="sr-only toggle-radio peer"><div class="px-2 py-2 text-sm font-bold rounded transition">U</div></label>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-3 mb-4">
-                         <div><label class="block text-xs font-medium text-slate-500 mb-1">GCS Eyes</label><select id="disability_gcsE" class="w-full text-sm border-slate-300 rounded"></select></div>
-                         <div><label class="block text-xs font-medium text-slate-500 mb-1">GCS Verbal</label><select id="disability_gcsV" class="w-full text-sm border-slate-300 rounded"></select></div>
-                         <div><label class="block text-xs font-medium text-slate-500 mb-1">GCS Motor</label><select id="disability_gcsM" class="w-full text-sm border-slate-300 rounded"></select></div>
+                         <div><label class="block text-xs font-medium text-slate-500 mb-1">Eyes</label><select id="disability_gcsE" class="w-full text-sm border-slate-300 rounded bg-white py-2"></select></div>
+                         <div><label class="block text-xs font-medium text-slate-500 mb-1">Verbal</label><select id="disability_gcsV" class="w-full text-sm border-slate-300 rounded bg-white py-2"></select></div>
+                         <div><label class="block text-xs font-medium text-slate-500 mb-1">Motor</label><select id="disability_gcsM" class="w-full text-sm border-slate-300 rounded bg-white py-2"></select></div>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 bg-yellow-50 p-3 rounded border border-yellow-100">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">L Pupil</label><input type="text" id="disability_pupil_left" class="w-full px-2 py-1 border border-slate-300 rounded text-sm" placeholder="e.g. 3mm"></div>
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">R Pupil</label><input type="text" id="disability_pupil_right" class="w-full px-2 py-1 border border-slate-300 rounded text-sm" placeholder="e.g. 3mm"></div>
                         <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Glucose</label><input type="number" id="disability_glucose" class="w-full px-2 py-1 border border-slate-300 rounded text-sm" placeholder="mmol/L"></div>
                     </div>
                 </section>
 
-                <section class="bg-white p-5 rounded-lg shadow-sm border-l-4 border-green-500 border-y border-r border-slate-200">
+                <section class="bg-white p-5 rounded-xl shadow-sm border-l-[6px] border-green-500">
                     <h3 class="text-xl font-bold text-green-700 mb-3">E - Exposure</h3>
                     <div class="w-1/3 mb-3"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Temp</label><input type="number" id="exposure_temp" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm"></div>
-                    <textarea id="exposure_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Notes..."></textarea>
+                    <textarea id="exposure_notes" rows="2" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Exposure notes..."></textarea>
                 </section>
 
-                <section class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
                     <h2 class="text-lg font-bold text-slate-800 mb-4">Investigations & Plan</h2>
                      <div class="bg-slate-50 p-3 rounded border border-slate-200 mb-4">
                         <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Initial VBG/ABG</h4>
@@ -282,13 +318,33 @@
                     </div>
                 </section>
 
-                <section id="sec-secondary" class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
+                <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
                     <h2 class="text-xl font-bold text-slate-800 mb-4 pb-2 border-b">Secondary Survey</h2>
-                    
                     <div id="secondary_container" class="space-y-4"></div>
                 </section>
+
+                <section class="bg-indigo-50 p-5 rounded-xl shadow-sm border border-indigo-200">
+                    <h2 class="text-xl font-bold text-indigo-900 mb-4">Definitive Care & Medications</h2>
+                    <p class="text-xs font-bold text-indigo-700 uppercase mb-2">Checklist</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-100 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Analgesia Given"><span>Analgesia</span></label>
+                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-100 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Antiemetics Given"><span>Antiemetics</span></label>
+                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-100 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Antibiotics Given"><span>Antibiotics (if indicated)</span></label>
+                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-100 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Tetanus/Immunoglobulin"><span>Tetanus / Ig</span></label>
+                    </div>
+                    
+                    <p class="text-xs font-bold text-indigo-700 uppercase mb-2">Time Critical Meds Given?</p>
+                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-100 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Parkinsons Meds"><span>Parkinson's Meds</span></label>
+                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-100 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Insulin"><span>Insulin</span></label>
+                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-100 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Epilepsy Meds"><span>Epilepsy Meds</span></label>
+                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-100 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Steroids"><span>Steroids</span></label>
+                    </div>
+
+                    <textarea id="definitivePlan" rows="3" class="w-full px-3 py-2 border border-indigo-300 rounded-md text-sm bg-white" placeholder="Definitive Care Plan & Disposition..."></textarea>
+                </section>
                 
-                 <section class="bg-slate-800 p-5 rounded-lg shadow-md text-white">
+                 <section class="bg-slate-800 p-5 rounded-xl shadow-md text-white">
                     <h2 class="text-lg font-bold mb-3">Problem List / Impression</h2>
                     <textarea id="problemList" rows="5" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm text-white placeholder-slate-400"></textarea>
                 </section>
@@ -296,20 +352,20 @@
 
             <div class="lg:col-span-5 xl:col-span-4 relative">
                 <div class="sticky top-24 space-y-6">
-                    <section class="bg-white p-4 rounded-lg shadow-lg border border-slate-200">
+                    <section class="bg-white p-4 rounded-xl shadow-lg border border-slate-200">
                         <div class="flex justify-between items-center mb-3">
                             <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Initial Note</h2>
                             <button id="copyInitial" class="px-3 py-1 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-700 transition">Copy</button>
                         </div>
-                        <textarea readonly id="initialNoteOutput" class="w-full h-80 p-3 bg-slate-50 border border-slate-200 rounded text-xs font-mono text-slate-600 whitespace-pre-wrap focus:outline-none resize-none"></textarea>
+                        <textarea readonly id="initialNoteOutput" class="w-full h-80 p-3 bg-slate-50 border border-slate-200 rounded-md text-xs font-mono text-slate-600 whitespace-pre-wrap focus:outline-none resize-none"></textarea>
                     </section>
                     
-                    <section class="bg-white p-4 rounded-lg shadow-lg border border-slate-200">
+                    <section class="bg-white p-4 rounded-xl shadow-lg border border-slate-200">
                         <div class="flex justify-between items-center mb-3">
                             <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Secondary Survey Note</h2>
                             <button id="copySecondary" class="px-3 py-1 text-xs font-bold bg-blue-600 text-white rounded hover:bg-blue-700 transition">Copy</button>
                         </div>
-                        <textarea readonly id="secondaryNoteOutput" class="w-full h-80 p-3 bg-slate-50 border border-slate-200 rounded text-xs font-mono text-slate-600 whitespace-pre-wrap focus:outline-none resize-none"></textarea>
+                        <textarea readonly id="secondaryNoteOutput" class="w-full h-80 p-3 bg-slate-50 border border-slate-200 rounded-md text-xs font-mono text-slate-600 whitespace-pre-wrap focus:outline-none resize-none"></textarea>
                     </section>
                 </div>
             </div>
@@ -318,20 +374,20 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            
             // --- DATA STORE ---
             const patientData = {
                 arrival: { time: '', specialties: [] },
                 atmist: { age: '', ageEst: false, time: '', mech: '', inj: '', signs: '' },
                 prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
-                airway: { status: 'Patent', rsi: false, collar: false, blocks: false, notes: '' },
+                airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, collar: false, blocks: false, notes: '' },
                 breathing: { rr: '', sats: '', o2: 'Air', fio2: '', findings: [], notes: '' },
-                circulation: { hr: '', bp: '', crt: '', access: [], txa: 'None', binder: false, ktd: false, tourniquet: false, notes: '' },
-                mhp: { activated: false, prbc: '', ffp: '', plt: '', cryo: '', notes: '' },
+                circulation: { hr: '', bp: '', crt: '', lines: [], txa: 'None', binder: false, ktd: false, tourniquet: false, notes: '' },
+                mhp: { activated: false, prbc: '', ffp: '', plt: '', cryo: '' },
                 disability: { avpu: 'Alert', headInjury: false, gcsE: 4, gcsV: 5, gcsM: 6, pupilL: '', pupilR: '', glucose: '' },
                 exposure: { temp: '', notes: '' },
                 investigations: { vbg: {ph:'', pco2:'', po2:'', hco3:'', be:'', lac:'', ca:''}, imaging: '' },
-                secondary: {}, // Populated dynamically
+                secondary: {},
+                definitive: { meds: [], plan: '' },
                 problemList: ''
             };
 
@@ -347,11 +403,40 @@
                 { id: 'limbs', label: 'Limbs', tags: ['Move 4 limbs', 'Neuro Intact', 'Deformity', 'Fracture Suspected'] }
             ];
 
+            const BREATHING_OPTS = ['Chest Wall Injury', 'Sucking Chest Wound', 'Flail Segment', 'Surgical Emphysema', 'Crepitus', 'Bruising', 'Deformity', 'Reduced Expansion'];
+
             // --- UI HELPERS ---
             const getEl = (id) => document.getElementById(id);
             const getTime = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-            // --- RENDER SECONDARY SURVEY UI ---
+            // --- BUILD UI ---
+            
+            // 1. Breathing Buttons
+            const bContainer = getEl('breathing_findings');
+            BREATHING_OPTS.forEach(opt => {
+                bContainer.innerHTML += `
+                    <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-2">
+                        <span class="text-sm font-semibold text-slate-700">${opt}</span>
+                        <div class="flex gap-2">
+                            <button class="lr-btn w-10 h-10 rounded-md border border-slate-300 bg-white font-bold text-slate-600 hover:bg-slate-100" data-f="${opt}" data-s="L">L</button>
+                            <button class="lr-btn w-10 h-10 rounded-md border border-slate-300 bg-white font-bold text-slate-600 hover:bg-slate-100" data-f="${opt}" data-s="R">R</button>
+                        </div>
+                    </div>
+                `;
+            });
+            bContainer.addEventListener('click', e => {
+                if(e.target.classList.contains('lr-btn')) {
+                    e.preventDefault();
+                    e.target.classList.toggle('active');
+                    const { f, s } = e.target.dataset;
+                    const exists = patientData.breathing.findings.find(x => x.f === f && x.s === s);
+                    if(exists) patientData.breathing.findings = patientData.breathing.findings.filter(x => !(x.f===f && x.s===s));
+                    else patientData.breathing.findings.push({f,s});
+                    updateNotes();
+                }
+            });
+
+            // 2. Secondary Survey Tags
             const secContainer = getEl('secondary_container');
             SS_AREAS.forEach(area => {
                 const div = document.createElement('div');
@@ -369,14 +454,75 @@
                     <textarea id="ss_${area.id}" rows="1" class="w-full px-3 py-2 border border-slate-300 rounded text-sm" placeholder="Details..."></textarea>
                 `;
                 secContainer.appendChild(div);
-                
-                // Initialize data storage for this area
                 patientData.secondary[area.id] = { tags: [], text: '' };
             });
 
-            // --- UPDATE LOGIC ---
+            // 3. Stick Figure Logic
+            const ACCESS_TYPES = [
+                { type: 'iv', label: 'IV', class: 'has-iv' },
+                { type: 'io', label: 'IO', class: 'has-io' },
+                { type: 'cvc', label: 'CVC', class: 'has-cvc' },
+                { type: 'art', label: 'Art', class: 'has-art' }
+            ];
+            
+            // Map logic: Click body part -> cycle state -> update Data
+            const bodyPartsState = { neck: -1, l_arm: -1, r_arm: -1, l_groin: -1, r_groin: -1, l_leg: -1, r_leg: -1 };
+            
+            document.querySelectorAll('.body-part').forEach(part => {
+                part.addEventListener('click', (e) => {
+                    const id = e.target.dataset.part;
+                    
+                    // Logic: Arms (IV->Art->None), Legs(IO->None), Neck/Groin(CVC->Art->IV->None)
+                    // Simplified: Just cycle through all relevant types for that part
+                    let allowed = [];
+                    if(id.includes('arm')) allowed = ['iv', 'io', 'art'];
+                    else if(id.includes('leg')) allowed = ['io'];
+                    else if(id.includes('neck') || id.includes('groin')) allowed = ['cvc', 'art', 'iv'];
+
+                    // Find current index in allowed list
+                    let currentType = null;
+                    if(bodyPartsState[id] > -1) currentType = ACCESS_TYPES[bodyPartsState[id]].type;
+                    
+                    let nextIndex = -1; // Default none
+                    if (currentType) {
+                        const idxInAllowed = allowed.indexOf(currentType);
+                        if (idxInAllowed < allowed.length - 1) {
+                            // Go to next allowed
+                            const nextType = allowed[idxInAllowed + 1];
+                            nextIndex = ACCESS_TYPES.findIndex(x => x.type === nextType);
+                        } else {
+                            // Cycle back to none
+                            nextIndex = -1; 
+                        }
+                    } else {
+                        // Start at first allowed
+                        const firstType = allowed[0];
+                        nextIndex = ACCESS_TYPES.findIndex(x => x.type === firstType);
+                    }
+                    
+                    bodyPartsState[id] = nextIndex;
+                    
+                    // Update UI
+                    part.className.baseVal = "body-part " + (nextIndex > -1 ? ACCESS_TYPES[nextIndex].class : "");
+                    getEl(`label-${id}`).textContent = nextIndex > -1 ? ACCESS_TYPES[nextIndex].label : "";
+                    
+                    // Rebuild data
+                    patientData.circulation.lines = [];
+                    Object.keys(bodyPartsState).forEach(key => {
+                        const idx = bodyPartsState[key];
+                        if(idx > -1) {
+                            // Format: "IV (L Arm)"
+                            const niceName = key.replace('l_', 'Left ').replace('r_', 'Right ').replace('_', ' '); // simple formatting
+                            const label = niceName.charAt(0).toUpperCase() + niceName.slice(1);
+                            patientData.circulation.lines.push(`${ACCESS_TYPES[idx].label} (${label})`);
+                        }
+                    });
+                    updateNotes();
+                });
+            });
+
+            // --- NOTE GENERATION ---
             function updateNotes() {
-                // INITIAL NOTE
                 const p = patientData;
                 let t = `**Major Trauma Assessment**\n`;
                 if(p.arrival.time) t += `Arrival Time: ${p.arrival.time}\n`;
@@ -388,24 +534,30 @@
                 t += `AMPLE: A:${p.prehosp.history.a} M:${p.prehosp.history.m} P:${p.prehosp.history.p} L:${p.prehosp.history.l} E:${p.prehosp.history.e}\n`;
 
                 t += `\n**PRIMARY SURVEY**\n`;
-                t += `A: ${p.airway.status}. ${p.airway.rsi ? 'Pre-Hosp RSI. ' : ''}C-Spine: ${p.airway.collar?'Collar ':''}${p.airway.blocks?'Blocks':''}. ${p.airway.notes}\n`;
                 
+                // Airway
+                t += `A: ${p.airway.status}. `;
+                if (p.airway.rsi) {
+                    t += `Pre-Hosp RSI: Size ${p.airway.rsiData.size}, Length ${p.airway.rsiData.length}cm, Grade ${p.airway.rsiData.grade}, ETCO2 ${p.airway.rsiData.etco2}. Drugs: ${p.airway.rsiData.drugs}. `;
+                }
+                t += `C-Spine: ${p.airway.collar?'Collar ':''}${p.airway.blocks?'Blocks':''}. ${p.airway.notes}\n`;
+                
+                // Breathing
                 let o2 = p.breathing.o2 === 'Air' ? 'Air' : `O2 ${p.breathing.fio2}`;
                 t += `B: RR ${p.breathing.rr} Sats ${p.breathing.sats}% (${o2}). ${p.breathing.findings.map(f=>`${f.f}(${f.s})`).join(', ')}. ${p.breathing.notes}\n`;
                 
+                // Circ
                 t += `C: HR ${p.circulation.hr} BP ${p.circulation.bp} CRT ${p.circulation.crt}. TXA: ${p.circulation.txa}.\n`;
-                if(p.circulation.access.length) t += `   Access/Lines: ${p.circulation.access.join(', ')}\n`;
-                if(p.circulation.binder || p.circulation.ktd || p.circulation.tourniquet) {
-                    let interventions = [];
-                    if(p.circulation.binder) interventions.push("Binder");
-                    if(p.circulation.ktd) interventions.push("KTD");
-                    if(p.circulation.tourniquet) interventions.push("Tourniquet");
-                    t += `   Interventions: ${interventions.join(', ')}\n`;
-                }
+                if(p.circulation.lines.length) t += `   Access: ${p.circulation.lines.join(', ')}\n`;
+                let interventions = [];
+                if(p.circulation.binder) interventions.push("Binder");
+                if(p.circulation.ktd) interventions.push("KTD");
+                if(p.circulation.tourniquet) interventions.push("Tourniquet");
+                if(interventions.length) t += `   Interventions: ${interventions.join(', ')}\n`;
                 t += `   ${p.circulation.notes}\n`;
 
                 if(p.mhp.activated) {
-                    t += `**MHP ACTIVATED**\nGiven: PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}. ${p.mhp.notes}\n`;
+                    t += `**MHP ACTIVATED**\nGiven: PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.\n`;
                 }
 
                 let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
@@ -429,76 +581,48 @@
                         s += `- ${area.label}: ${data.tags.join(', ')}${hasTags && hasText ? '. ' : ''}${data.text}\n`;
                     }
                 });
+                
+                s += `\n**Definitive Care Plan & Meds**\n`;
+                if(p.definitive.meds.length) s += `- Checklist: ${p.definitive.meds.join(', ')}\n`;
+                s += `${p.definitive.plan}\n`;
+                
                 s += `\n**Problem List**\n${p.problemList}`;
                 getEl('secondaryNoteOutput').value = s;
             }
 
-            // --- EVENT LISTENERS ---
-            
+            // --- LISTENERS ---
+            const bind = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('input', e => { obj[key] = e.target.value; updateNotes(); }); };
+            const bindCheck = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.checked; updateNotes(); }); };
+
             // Buttons
-            getEl('btn-arrival-now').addEventListener('click', () => {
-                patientData.arrival.time = getTime();
+            getEl('btn-arrival-now').addEventListener('click', () => { patientData.arrival.time = getTime(); updateNotes(); });
+            getEl('btn-arrival-mobile').addEventListener('click', () => { patientData.arrival.time = getTime(); updateNotes(); });
+            
+            document.querySelectorAll('.specialty-btn').forEach(btn => btn.addEventListener('click', e => {
+                const spec = e.target.dataset.spec;
+                patientData.arrival.specialties.push(`${spec} @ ${getTime()}`);
                 updateNotes();
-            });
+            }));
 
-            document.querySelectorAll('.specialty-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const txt = `${e.target.dataset.spec} @ ${getTime()}`;
-                    patientData.arrival.specialties.push(txt);
-                    // Also append to text area for manual edit
-                    const ta = getEl('specialtyAttendances');
-                    ta.value = ta.value ? ta.value + ', ' + txt : txt;
-                    updateNotes();
-                });
-            });
+            document.querySelectorAll('.access-btn').forEach(btn => btn.addEventListener('click', e => {
+                e.target.classList.toggle('bg-red-100');
+                const txt = e.target.dataset.text;
+                if(txt.includes('Binder')) patientData.circulation.binder = !patientData.circulation.binder;
+                if(txt.includes('KTD')) patientData.circulation.ktd = !patientData.circulation.ktd;
+                if(txt.includes('Tourniquet')) patientData.circulation.tourniquet = !patientData.circulation.tourniquet;
+                updateNotes();
+            }));
 
-            document.querySelectorAll('.access-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const val = e.target.dataset.text;
-                    e.target.classList.toggle('bg-blue-100'); // Visual toggle
-                    e.target.classList.toggle('border-blue-500');
-                    
-                    if(val.includes('Binder')) patientData.circulation.binder = !patientData.circulation.binder;
-                    else if(val.includes('KTD')) patientData.circulation.ktd = !patientData.circulation.ktd;
-                    else if(val.includes('Tourniquet')) patientData.circulation.tourniquet = !patientData.circulation.tourniquet;
-                    else {
-                        // Access lines list
-                        if(patientData.circulation.access.includes(val)) {
-                            patientData.circulation.access = patientData.circulation.access.filter(i => i !== val);
-                        } else {
-                            patientData.circulation.access.push(val);
-                        }
-                    }
-                    updateNotes();
-                });
-            });
+            // Med Checkboxes
+            document.querySelectorAll('.med-check').forEach(chk => chk.addEventListener('change', e => {
+                const val = e.target.value;
+                if(e.target.checked) patientData.definitive.meds.push(val);
+                else patientData.definitive.meds = patientData.definitive.meds.filter(x => x !== val);
+                updateNotes();
+            }));
 
-            // Input Bindings
-            const bind = (id, path, key) => {
-                const el = getEl(id);
-                if(!el) return;
-                el.addEventListener('input', (e) => {
-                    path[key] = e.target.value;
-                    updateNotes();
-                });
-            };
-
-            const bindCheck = (id, path, key) => {
-                const el = getEl(id);
-                if(!el) return;
-                el.addEventListener('change', (e) => {
-                    path[key] = e.target.checked;
-                    if(id === 'breathing_o2' || id === 'mhp_activated') {
-                        // Toggle UI visibility
-                        if(id === 'breathing_o2') getEl('fio2_container').classList.toggle('hidden', !e.target.checked);
-                        if(id === 'mhp_activated') getEl('mhpDetails').classList.toggle('hidden', !e.target.checked);
-                    }
-                    updateNotes();
-                });
-            };
-
-            // Bind Top & ATMIST
-            bind('specialtyAttendances', patientData.arrival, 'specialties'); // Actually string, handled in update
+            // Standard Inputs
+            bind('specialtyAttendances', patientData.arrival, 'specialties'); // note: overwrites array if manually edited. Acceptable for now.
             bind('age', patientData.atmist, 'age');
             bindCheck('ageEstimated', patientData.atmist, 'ageEst');
             bind('timeOfIncident', patientData.atmist, 'time');
@@ -508,14 +632,15 @@
             bind('preHospitalOther', patientData.prehosp, 'notes');
             ['a','m','p','l','e'].forEach(k => bind(`history_${k}`, patientData.prehosp.history, k));
 
-            // Bind Airway
             bindCheck('preHospitalRSI', patientData.airway, 'rsi');
+            getEl('preHospitalRSI').addEventListener('change', e => getEl('rsiDetails').classList.toggle('hidden', !e.target.checked));
+            ['size','length','grade','etco2','drugs'].forEach(k => bind(`rsi_${k}`, patientData.airway.rsiData, k));
+
             bindCheck('cspine_collar', patientData.airway, 'collar');
             bindCheck('cspine_blocks', patientData.airway, 'blocks');
             bind('airway_notes', patientData.airway, 'notes');
             document.querySelectorAll('input[name="airwayStatus"]').forEach(r => r.addEventListener('change', e => { patientData.airway.status = e.target.value; updateNotes(); }));
 
-            // Bind Breathing
             bind('breathing_rr', patientData.breathing, 'rr');
             bind('breathing_sats', patientData.breathing, 'sats');
             bind('breathing_fio2', patientData.breathing, 'fio2');
@@ -525,46 +650,17 @@
                 getEl('fio2_container').classList.toggle('hidden', e.target.value === 'Air');
                 updateNotes(); 
             }));
-            
-            // Breathing Findings Checkboxes generated in HTML (re-using prev logic simplified)
-            const bFindingsDiv = getEl('breathing_findings');
-            ['Crepitus', 'Surg Emphysema', 'Bruising', 'Deformity'].forEach(f => {
-                bFindingsDiv.innerHTML += `
-                    <div class="flex items-center justify-between bg-slate-50 px-2 py-1 rounded text-xs border border-slate-100">
-                        <span>${f}</span>
-                        <div class="space-x-1">
-                            <label class="cursor-pointer font-bold hover:text-blue-600"><input type="checkbox" data-f="${f}" data-s="L" class="b-find hidden">L</label>
-                            <label class="cursor-pointer font-bold hover:text-blue-600"><input type="checkbox" data-f="${f}" data-s="R" class="b-find hidden">R</label>
-                        </div>
-                    </div>`;
-            });
-            bFindingsDiv.addEventListener('change', e => {
-                if(e.target.classList.contains('b-find')) {
-                    const { f, s } = e.target.dataset;
-                    if(e.target.checked) patientData.breathing.findings.push({f,s});
-                    else patientData.breathing.findings = patientData.breathing.findings.filter(x => !(x.f===f && x.s===s));
-                    if(e.target.checked) e.target.parentElement.classList.add('text-blue-600');
-                    else e.target.parentElement.classList.remove('text-blue-600');
-                    updateNotes();
-                }
-            });
 
-            // Bind Circ
             bind('circ_hr', patientData.circulation, 'hr');
             bind('circ_bp', patientData.circulation, 'bp');
             bind('circ_capRefill', patientData.circulation, 'crt');
             bind('circ_notes', patientData.circulation, 'notes');
             document.querySelectorAll('input[name="txaGiven"]').forEach(r => r.addEventListener('change', e => { patientData.circulation.txa = e.target.value; updateNotes(); }));
 
-            // Bind MHP
             bindCheck('mhp_activated', patientData.mhp, 'activated');
-            bind('mhp_prbc', patientData.mhp, 'prbc');
-            bind('mhp_ffp', patientData.mhp, 'ffp');
-            bind('mhp_plt', patientData.mhp, 'plt');
-            bind('mhp_cryo', patientData.mhp, 'cryo');
-            bind('mhp_notes', patientData.mhp, 'notes');
+            getEl('mhp_activated').addEventListener('change', e => getEl('mhpDetails').classList.toggle('hidden', !e.target.checked));
+            ['prbc','ffp','plt','cryo'].forEach(k => bind(`mhp_${k}`, patientData.mhp, k));
 
-            // Bind Disability
             bindCheck('headInjury', patientData.disability, 'headInjury');
             document.querySelectorAll('input[name="disability_avpu"]').forEach(r => r.addEventListener('change', e => { patientData.disability.avpu = e.target.value; updateNotes(); }));
             const popSel = (id, opts, def) => { const s=getEl(id); opts.forEach(o=>s.add(new Option(o,o))); s.value=def; s.addEventListener('change',e=>{patientData.disability[id.split('_')[1]]=e.target.value; updateNotes();})};
@@ -575,17 +671,18 @@
             bind('disability_pupil_right', patientData.disability, 'pupilR');
             bind('disability_glucose', patientData.disability, 'glucose');
 
-            // Bind Exposure & Inv
             bind('exposure_temp', patientData.exposure, 'temp');
             bind('exposure_notes', patientData.exposure, 'notes');
+
             ['ph','pco2','po2','hco3','be','lactate','ionisedCa'].forEach(k => {
                 const map = {lactate:'lac', ionisedCa:'ca'};
                 bind(`vbgInitial_${k}`, patientData.investigations.vbg, map[k]||k);
             });
             bind('imagingDecisions', patientData.investigations, 'imaging');
+            bind('definitivePlan', patientData.definitive, 'plan');
             bind('problemList', patientData, 'problemList');
 
-            // Bind Secondary Survey Tags & Text
+            // Secondary Tags
             secContainer.addEventListener('change', (e) => {
                 const areaId = e.target.dataset.area || e.target.id.replace('ss_', '');
                 if (e.target.classList.contains('tag-checkbox')) {
@@ -597,8 +694,8 @@
                 }
                 updateNotes();
             });
-            
-             // Copy Logic
+
+            // Copy
             ['Initial', 'Secondary'].forEach(type => {
                 const btn = getEl(`copy${type}`);
                 btn.addEventListener('click', () => {
