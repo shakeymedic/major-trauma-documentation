@@ -7,77 +7,139 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* --- CORE STYLES --- */
         body { font-family: 'Inter', sans-serif; }
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 4px; }
         html { scroll-behavior: smooth; }
         
-        input, textarea, select { border-color: #94a3b8; outline: none; }
-        input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+        input, textarea, select { border-color: #94a3b8; outline: none; transition: all 0.2s; }
+        input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
 
-        /* Rich Text Output Styles */
-        .rich-output {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            color: #334155;
+        /* --- BUTTONS --- */
+        .std-btn { 
+            transition: all 0.1s; 
+            border: 1px solid #cbd5e1; 
+            background-color: #f8fafc; 
+            color: #334155; 
+            border-radius: 0.5rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .std-btn:hover { background-color: #e2e8f0; }
+        .std-btn:active { transform: translateY(1px); }
+
+        .btn-primary { 
+            background-color: #2563eb; 
+            color: white; 
+            border: 1px solid #1d4ed8; 
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+            font-weight: 800;
+        }
+        .btn-primary:hover { background-color: #1d4ed8; }
+
+        .drug-btn {
+            background-color: white;
+            border: 2px solid #e2e8f0;
+            color: #475569;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.1s;
+        }
+        .drug-btn:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
+        .drug-btn:active { transform: scale(0.95); }
+
+        /* --- CARDS & SECTIONS (Trauma App Style) --- */
+        .section-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06); /* Shadow-lg */
+            border: 2px solid #e5e7eb; /* border-2 border-slate-200 */
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 4px solid; /* Dynamic color border-b-4 */
+            display: flex;
+            align-items: center;
+        }
+
+        .sub-card {
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
             border-radius: 0.5rem;
             padding: 1rem;
-            min-height: 24rem;
-            overflow-y: auto;
-            white-space: pre-wrap; 
+            margin-top: 1rem;
+        }
+        
+        /* Match Trauma App Header Styling */
+        .section-card-blue .section-title { border-bottom-color: #dbeafe; } /* blue-100 */
+        .section-card-orange .section-title { border-bottom-color: #ffedd5; } /* orange-100 */
+        .section-card-green .section-title { border-bottom-color: #dcfce7; } /* green-100 */
+        .section-card-purple .section-title { border-bottom-color: #f3e8ff; } /* purple-100 */
+        .section-card-slate .section-title { border-bottom-color: #e2e8f0; } /* slate-200 */
+        
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 0.25rem;
+        }
+
+        input[type="text"], input[type="number"], input[type="time"], select {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            border: 1px solid #94a3b8;
+            font-weight: 500;
+        }
+
+        /* EPR Log Styling */
+        .rich-output {
+            font-family: 'Georgia', 'serif';
+            line-height: 1.4;
+            color: #334155;
+            min-height: 500px;
+            white-space: pre-wrap;
         }
         .rich-output strong { font-weight: 800; color: #0f172a; }
-        .rich-output u { text-decoration: underline; }
 
-        /* Buttons */
-        .std-btn { transition: all 0.1s; border-color: #cbd5e1; background-color: #f8fafc; color: #334155; }
-        .std-btn:hover { background-color: #e2e8f0; }
-        .std-btn.active { background-color: #2563eb; color: white; border-color: #1d4ed8; font-weight: 800; }
-
-        .lr-btn { transition: all 0.1s; }
-        .lr-btn.active { background-color: #0284c7; color: white; font-weight: bold; border-color: #0284c7; }
-
-        .injury-btn { transition: all 0.1s; background-color: white; border-color: #cbd5e1; color: #475569; }
-        .injury-btn:hover { background-color: #fef2f2; }
-        .injury-btn.active { background-color: #dc2626; color: white; border-color: #b91c1c; font-weight: bold; }
-
-        .ph-btn { transition: all 0.1s; background-color: #f8fafc; border-color: #cbd5e1; color: #334155; }
-        .ph-btn:hover { background-color: #ecfdf5; }
-        .ph-btn.active { background-color: #059669; color: white; border-color: #047857; font-weight: 800; }
-
-        .access-btn { transition: all 0.1s; background-color: white; border-color: #fecaca; color: #b91c1c; position: relative; }
-        .access-btn:hover { background-color: #fef2f2; }
-        .access-btn.active { background-color: #dc2626; color: white; border-color: #991b1b; font-weight: 800; }
-        
-        .disp-btn { transition: all 0.1s; background-color: white; border-color: #c7d2fe; color: #4338ca; }
-        .disp-btn:hover { background-color: #eef2ff; }
-        .disp-btn.active { background-color: #4f46e5; color: white; border-color: #3730a3; font-weight: 800; }
-
-        .toggle-radio:checked + div { background-color: #2563eb; color: white; border-color: #2563eb; }
-        
-        /* Time Button */
-        .time-btn {
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            background: #e2e8f0;
-            color: #475569;
-            border: 1px solid #cbd5e1;
-            cursor: pointer;
-            margin-left: 4px;
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-            transition: all 0.2s;
+        /* --- PRINT --- */
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .section-card { 
+                box-shadow: none !important; 
+                border: 1px solid #ccc !important;
+                break-inside: avoid;
+                margin-bottom: 1rem;
+                padding: 0.5rem;
+            }
+            header { display: none; }
+            .print-header { display: block !important; }
         }
-        .time-btn:hover { background: #cbd5e1; }
-        .time-btn.recorded { background: #dcfce7; color: #166534; border-color: #86efac; font-weight: bold; }
 
+        /* Modal */
+        #custom-modal-backdrop {
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 antialiased pb-10">
