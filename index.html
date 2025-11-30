@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMEBEM Major Trauma Tool</title>
+    <title>WMEBEM Major Trauma Tool (Detailed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -13,77 +13,34 @@
         textarea::-webkit-scrollbar-thumb { background: #64748b; border-radius: 4px; }
         html { scroll-behavior: smooth; }
         
-        /* High contrast borders for inputs */
         input, textarea, select { border-color: #94a3b8; }
         input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; }
 
         /* --- BUTTON STYLES --- */
-        
-        /* Standard Blue Toggle (Specialties, Airway Adjuncts) */
         .std-btn { transition: all 0.1s; border-color: #cbd5e1; background-color: #f8fafc; color: #334155; }
         .std-btn:hover { background-color: #e2e8f0; }
-        .std-btn.active {
-            background-color: #2563eb; /* Blue-600 */
-            color: white;
-            border-color: #1d4ed8;
-            font-weight: 800;
-        }
+        .std-btn.active { background-color: #2563eb; color: white; border-color: #1d4ed8; font-weight: 800; }
 
-        /* Breathing L/R Buttons */
         .lr-btn { transition: all 0.1s; }
-        .lr-btn.active { 
-            background-color: #0284c7; 
-            color: white; 
-            font-weight: bold;
-            border-color: #0284c7;
-        }
+        .lr-btn.active { background-color: #0284c7; color: white; font-weight: bold; border-color: #0284c7; }
 
-        /* Injury Site Buttons (Red) */
         .injury-btn { transition: all 0.1s; background-color: white; border-color: #cbd5e1; color: #475569; }
         .injury-btn:hover { background-color: #fef2f2; }
-        .injury-btn.active {
-            background-color: #dc2626; /* Red-600 */
-            color: white;
-            border-color: #b91c1c;
-            font-weight: bold;
-        }
+        .injury-btn.active { background-color: #dc2626; color: white; border-color: #b91c1c; font-weight: bold; }
 
-        /* Pre-Hosp Buttons (Green) */
         .ph-btn { transition: all 0.1s; background-color: #f8fafc; border-color: #cbd5e1; color: #334155; }
         .ph-btn:hover { background-color: #ecfdf5; }
-        .ph-btn.active {
-            background-color: #059669; /* Emerald-600 */
-            color: white;
-            border-color: #047857;
-            font-weight: 800;
-        }
+        .ph-btn.active { background-color: #059669; color: white; border-color: #047857; font-weight: 800; }
 
-        /* Access/Circulation Buttons (Red) */
         .access-btn { transition: all 0.1s; background-color: white; border-color: #fecaca; color: #b91c1c; }
         .access-btn:hover { background-color: #fef2f2; }
-        .access-btn.active {
-            background-color: #dc2626; 
-            color: white;
-            border-color: #991b1b;
-            font-weight: 800;
-        }
+        .access-btn.active { background-color: #dc2626; color: white; border-color: #991b1b; font-weight: 800; }
         
-        /* Disposition Buttons (Indigo) */
         .disp-btn { transition: all 0.1s; background-color: white; border-color: #c7d2fe; color: #4338ca; }
         .disp-btn:hover { background-color: #eef2ff; }
-        .disp-btn.active {
-            background-color: #4f46e5;
-            color: white;
-            border-color: #3730a3;
-            font-weight: 800;
-        }
+        .disp-btn.active { background-color: #4f46e5; color: white; border-color: #3730a3; font-weight: 800; }
 
-        /* Radio Toggle Logic */
-        .toggle-radio:checked + div {
-            background-color: #2563eb;
-            color: white;
-            border-color: #2563eb;
-        }
+        .toggle-radio:checked + div { background-color: #2563eb; color: white; border-color: #2563eb; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 antialiased pb-10">
@@ -94,12 +51,14 @@
                 <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-20 w-auto object-contain">
                 <div>
                     <h1 class="text-xl md:text-2xl font-black text-slate-900 leading-tight">Major Trauma Tool</h1>
+                    <p class="text-xs text-green-600 font-bold" id="saveStatus">Auto-save enabled</p>
                 </div>
             </div>
             <nav class="hidden md:flex space-x-1 bg-slate-100 p-1 rounded-lg text-xs font-bold text-slate-600 border border-slate-300">
                 <a href="#sec-primary" class="px-3 py-1 hover:bg-white rounded transition">Primary</a>
                 <a href="#sec-mhp" class="px-3 py-1 hover:bg-white rounded transition">MHP</a>
                 <a href="#sec-secondary" class="px-3 py-1 hover:bg-white rounded transition">Secondary</a>
+                <button id="resetData" class="px-3 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded transition ml-2">Reset Form</button>
             </nav>
         </div>
     </header>
@@ -115,7 +74,7 @@
                 </button>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400">
-                    <h2 class="text-lg font-bold text-slate-900 mb-3">Specialty Attendance</h2>
+                    <h2 class="text-lg font-bold text-slate-900 mb-3">Specialty Attendance (Click on arrival)</h2>
                     <div class="flex flex-wrap gap-2 mb-3">
                         <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="T&O">T&O</button>
                         <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="Gen Surg">Gen Surg</button>
@@ -246,8 +205,7 @@
 
                     <div class="mb-4">
                         <label class="block text-sm font-bold text-slate-700 mb-2">Findings</label>
-                        <div id="breathing_findings" class="space-y-2">
-                            </div>
+                        <div id="breathing_findings" class="space-y-2"></div>
                     </div>
                     <textarea id="breathing_notes" rows="2" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm" placeholder="Breathing Notes..."></textarea>
                 </section>
@@ -550,8 +508,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- DATA STORE ---
-            const patientData = {
-                arrival: { time: '', specialties: [] },
+            // Updated specialties to array of objects {name, time}
+            let patientData = {
+                arrival: { time: '', specialties: [], specialtiesNotes: '' },
                 atmist: { age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phNotes: '' },
                 prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
                 airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, notes: '' },
@@ -584,15 +543,166 @@
             ];
 
             const BREATHING_OPTS = ['Chest Wall Injury', 'Sucking Chest Wound', 'Flail Segment', 'Surgical Emphysema', 'Crepitus', 'Bruising', 'Deformity', 'Reduced Expansion'];
-            const INJURY_SITES = ['Scalp', 'Face', 'Chest', 'Abdomen', 'Pelvis', 'L Arm', 'R Arm', 'L Leg', 'R Leg', 'Back']; // Removed Floor
+            const INJURY_SITES = ['Scalp', 'Face', 'Chest', 'Abdomen', 'Pelvis', 'L Arm', 'R Arm', 'L Leg', 'R Leg', 'Back'];
 
             // --- UI HELPERS ---
             const getEl = (id) => document.getElementById(id);
             const getTime = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+            // --- LOCAL STORAGE & RESTORE ---
+            function saveState() {
+                localStorage.setItem('wmebem_trauma_data', JSON.stringify(patientData));
+            }
+
+            function loadState() {
+                const saved = localStorage.getItem('wmebem_trauma_data');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        patientData = { ...patientData, ...parsed };
+                        restoreUI();
+                    } catch (e) {
+                        console.error("Error loading save data", e);
+                    }
+                }
+            }
+
+            function restoreUI() {
+                const p = patientData;
+                const setVal = (id, val) => { const el = getEl(id); if(el) el.value = val || ''; };
+                const setCheck = (id, val) => { const el = getEl(id); if(el) el.checked = !!val; };
+
+                // Specialties (Array of Objects now)
+                if(Array.isArray(p.arrival.specialties)) {
+                    p.arrival.specialties.forEach(s => {
+                        // Handle both old string format and new object format for backward compatibility
+                        const name = typeof s === 'string' ? s : s.name;
+                        const btn = document.querySelector(`.std-btn[data-spec="${name}"]`);
+                        if(btn) btn.classList.add('active');
+                    });
+                }
+                setVal('specialtyAttendances', p.arrival.specialtiesNotes);
+
+                setVal('age', p.atmist.age);
+                setCheck('ageEstimated', p.atmist.ageEst);
+                setVal('timeOfIncident', p.atmist.time);
+                setVal('mechanism', p.atmist.mech);
+                setVal('injuries', p.atmist.inj);
+                setVal('signs', p.atmist.signs);
+                
+                p.atmist.phTreatments.forEach(t => {
+                    const btn = document.querySelector(`.ph-btn[data-t="${t}"]`);
+                    if(btn) btn.classList.add('active');
+                });
+                setVal('ph_treatments_free', p.atmist.phNotes);
+                
+                setVal('preHospitalOther', p.prehosp.notes);
+                ['a','m','p','l','e'].forEach(k => setVal(`history_${k}`, p.prehosp.history[k]));
+                
+                setCheck('preHospitalRSI', p.airway.rsi);
+                if(p.airway.rsi) getEl('rsiDetails').classList.remove('hidden');
+                ['size','length','grade','etco2','drugs'].forEach(k => setVal(`rsi_${k}`, p.airway.rsiData[k]));
+                
+                if(p.airway.status) {
+                    const r = document.querySelector(`input[name="airwayStatus"][value="${p.airway.status}"]`);
+                    if(r) r.checked = true;
+                }
+                p.airway.adjuncts.forEach(a => {
+                    const btn = document.querySelector(`.std-btn[data-adj="${a}"]`);
+                    if(btn) btn.classList.add('active');
+                });
+                setCheck('cspine_collar', p.airway.collar);
+                setCheck('cspine_blocks', p.airway.blocks);
+                setVal('airway_notes', p.airway.notes);
+
+                setVal('breathing_rr', p.breathing.rr);
+                setVal('breathing_sats', p.breathing.sats);
+                if(p.breathing.o2) {
+                    const r = document.querySelector(`input[name="breathing_o2"][value="${p.breathing.o2}"]`);
+                    if(r) r.checked = true;
+                    if(p.breathing.o2 === 'O2') getEl('fio2_container').classList.remove('hidden');
+                }
+                setVal('breathing_fio2', p.breathing.fio2);
+                setVal('breathing_notes', p.breathing.notes);
+                
+                setVal('circ_hr', p.circulation.hr);
+                setVal('circ_bp', p.circulation.bp);
+                setVal('circ_capRefill', p.circulation.crt);
+                setVal('circ_notes', p.circulation.notes);
+                if(p.circulation.txa) {
+                     const r = document.querySelector(`input[name="txaGiven"][value="${p.circulation.txa}"]`);
+                     if(r) r.checked = true;
+                }
+                
+                p.circulation.lines.forEach(l => {
+                    const chk = document.querySelector(`.access-chk[value="${l}"]`);
+                    if(chk) chk.checked = true;
+                });
+                
+                if(p.circulation.binder) document.querySelector('[data-text*="Binder"]').classList.add('active');
+                if(p.circulation.ktd) document.querySelector('[data-text*="KTD"]').classList.add('active');
+                if(p.circulation.tourniquet) document.querySelector('[data-text*="Tourniquet"]').classList.add('active');
+
+                setCheck('mhp_activated', p.mhp.activated);
+                if(p.mhp.activated) {
+                    getEl('mhpDetails').classList.remove('hidden');
+                    getEl('mhp_time').classList.remove('hidden');
+                }
+                setVal('mhp_time', p.mhp.time);
+                ['prbc','ffp','plt','cryo'].forEach(k => setVal(`mhp_${k}`, p.mhp[k]));
+
+                setCheck('headInjury', p.disability.headInjury);
+                if(p.disability.avpu) {
+                    const r = document.querySelector(`input[name="disability_avpu"][value="${p.disability.avpu}"]`);
+                    if(r) r.checked = true;
+                }
+                
+                setVal('disability_pupil_left', p.disability.pupilL);
+                setVal('disability_pupil_right', p.disability.pupilR);
+                setVal('disability_glucose', p.disability.glucose);
+
+                setVal('exposure_temp', p.exposure.temp);
+                setVal('exposure_notes', p.exposure.notes);
+
+                const rGas = document.querySelector(`input[name="gasType"][value="${p.investigations.gasType}"]`);
+                if(rGas) rGas.checked = true;
+                if(p.investigations.gasType === 'ABG') getEl('gasFio2Container').classList.remove('hidden');
+
+                const rSecGas = document.querySelector(`input[name="secGasType"][value="${p.investigations.secGasType}"]`);
+                if(rSecGas) rSecGas.checked = true;
+
+                ['ph','pco2','po2','hco3','be','lac','ca','abgFio2'].forEach(k => {
+                    const map = {lac:'lactate', ca:'ionisedCa'};
+                    const idKey = map[k] || k;
+                    setVal(`vbgInitial_${idKey}`, p.investigations.vbg[k]);
+                });
+                
+                ['ph','pco2','po2','hco3','be','lac','ca'].forEach(k => {
+                     const map = {lac:'lactate', ca:'ionisedCa'};
+                     const idKey = map[k] || k;
+                     setVal(`vbgSec_${idKey}`, p.investigations.vbgSec[k]);
+                });
+                
+                setVal('imagingDecisions', p.investigations.imaging);
+                
+                setCheck('furtherImaging', p.definitive.furtherImaging);
+                if(p.definitive.furtherImaging) getEl('furtherImagingDetails').classList.remove('hidden');
+                setVal('furtherImagingDetails', p.definitive.furtherImagingDetails);
+                
+                p.definitive.meds.forEach(m => {
+                    const chk = document.querySelector(`.med-check[value="${m}"]`);
+                    if(chk) chk.checked = true;
+                });
+                
+                if(p.definitive.disposition) {
+                    const btn = document.querySelector(`.disp-btn[data-val="${p.definitive.disposition}"]`);
+                    if(btn) btn.classList.add('active');
+                }
+                setVal('definitivePlan', p.definitive.plan);
+                setVal('problemList', p.problemList);
+            }
+
             // --- BUILD UI ---
-            
-            // 1. Breathing Buttons
             const bContainer = getEl('breathing_findings');
             BREATHING_OPTS.forEach(opt => {
                 bContainer.innerHTML += `
@@ -617,7 +727,6 @@
                 }
             });
 
-            // 2. Injury Site Buttons
             const injContainer = getEl('injury_grid');
             INJURY_SITES.forEach(site => {
                 injContainer.innerHTML += `<button class="injury-btn py-2 border-2 rounded-md text-xs font-bold" data-site="${site}">${site}</button>`;
@@ -632,7 +741,6 @@
                 }
             });
 
-            // 3. Disposition Buttons
             document.querySelectorAll('.disp-btn').forEach(btn => {
                 btn.addEventListener('click', e => {
                     document.querySelectorAll('.disp-btn').forEach(b => b.classList.remove('active'));
@@ -642,7 +750,6 @@
                 });
             });
 
-            // 4. Secondary Survey Tags
             const secContainer = getEl('secondary_container');
             SS_AREAS.forEach(area => {
                 const div = document.createElement('div');
@@ -658,10 +765,9 @@
                     <textarea id="ss_${area.id}" rows="1" class="w-full px-3 py-2 border border-slate-400 rounded text-sm font-medium" placeholder="Details..."></textarea>
                 `;
                 secContainer.appendChild(div);
-                patientData.secondary[area.id] = { tags: [], text: '' };
+                if(!patientData.secondary[area.id]) patientData.secondary[area.id] = { tags: [], text: '' };
             });
 
-            // 5. Neuro Select Population
             const powerOpts = ['5/5', '4/5', '3/5', '2/5', '1/5', '0/5'];
             const sensOpts = ['Intact', 'Reduced', 'Absent', 'Paraesthesia'];
             document.querySelectorAll('.neuro-select').forEach(sel => {
@@ -677,17 +783,29 @@
                    updateNotes();
                 });
             });
+            
+            const popSel = (id, opts, def) => { const s=getEl(id); opts.forEach(o=>s.add(new Option(o,o))); s.value=def; s.addEventListener('change',e=>{patientData.disability[id.split('_')[1]]=e.target.value; updateNotes();})};
+            popSel('disability_gcsE', [4,3,2,1], 4);
+            popSel('disability_gcsV', [5,4,3,2,1], 5);
+            popSel('disability_gcsM', [6,5,4,3,2,1], 6);
 
             // --- NOTE GENERATION ---
             function updateNotes() {
                 const p = patientData;
                 let t = `**Major Trauma Assessment**\n`;
                 if(p.arrival.time) t += `Patient Arrival Time: ${p.arrival.time}\n`;
-                if(p.arrival.specialties.length) t += `Specialties Present: ${p.arrival.specialties.join(', ')}\n`;
+                
+                // Specialties with Time
+                let specs = p.arrival.specialties.map(s => {
+                    // Handle old string format if local storage has old data
+                    if(typeof s === 'string') return s;
+                    return `${s.name} (@ ${s.time})`;
+                });
+                if(p.arrival.specialtiesNotes) specs.push(p.arrival.specialtiesNotes);
+                if(specs.length) t += `Specialties Present: ${specs.join(', ')}\n`;
                 
                 t += `\n**ATMIST**\nAge: ${p.atmist.age}${p.atmist.ageEst?'(Est)':''} | Time: ${p.atmist.time}\nMech: ${p.atmist.mech}\nInj: ${p.atmist.inj}\nSigns: ${p.atmist.signs}\n`;
                 
-                // ATMIST/Pre-Hosp Treatments
                 let phArr = [...p.atmist.phTreatments];
                 if(p.atmist.phNotes) phArr.push(p.atmist.phNotes);
                 if(phArr.length > 0) t += `Pre-Hosp Tx: ${phArr.join(', ')}\n`;
@@ -697,7 +815,6 @@
 
                 t += `\n**PRIMARY SURVEY**\n`;
                 
-                // Airway
                 t += `A: ${p.airway.status}. `;
                 if(p.airway.adjuncts.length) t += `Adjuncts: ${p.airway.adjuncts.join(', ')}. `;
                 if (p.airway.rsi) {
@@ -705,14 +822,31 @@
                 }
                 t += `C-Spine: ${p.airway.collar?'Collar ':''}${p.airway.blocks?'Blocks':''}. ${p.airway.notes}\n`;
                 
-                // Breathing
+                // Detailed Breathing with Negatives
                 let o2 = p.breathing.o2 === 'Air' ? 'Air' : `O2 ${p.breathing.fio2}`;
-                t += `B: RR ${p.breathing.rr} Sats ${p.breathing.sats}% (${o2}). ${p.breathing.findings.map(f=>`${f.f}(${f.s})`).join(', ')}. ${p.breathing.notes}\n`;
+                t += `B: RR ${p.breathing.rr} Sats ${p.breathing.sats}% (${o2}).\n   Positive Findings: ${p.breathing.findings.length ? p.breathing.findings.map(f=>`${f.f}(${f.s})`).join(', ') : 'None'}.`;
                 
-                // Circ
+                // Calculate Negatives
+                const currentBFindings = p.breathing.findings.map(f => f.f);
+                const negB = BREATHING_OPTS.filter(opt => !currentBFindings.includes(opt));
+                if (negB.length > 0) {
+                    // Check if air entry seems normal (no expansion issues)
+                    const airEntryNormal = !currentBFindings.includes('Reduced Expansion');
+                    t += `\n   Checked/Normal: ${airEntryNormal ? "Air entry equal and clear. " : ""}No ${negB.join(', ').toLowerCase()}.`;
+                }
+                t += ` ${p.breathing.notes}\n`;
+                
+                // Detailed Circulation with Negatives
                 t += `C: HR ${p.circulation.hr} BP ${p.circulation.bp} CRT ${p.circulation.crt}. TXA: ${p.circulation.txa}.\n`;
                 if(p.circulation.lines.length) t += `   Access: ${p.circulation.lines.join(', ')}\n`;
-                if(p.circulation.bleeding.length) t += `   Sites of Bleeding/Injury: ${p.circulation.bleeding.join(', ')}\n`;
+                
+                // Injury Sites
+                if(p.circulation.bleeding.length) t += `   Injuries/Bleeding Identified: ${p.circulation.bleeding.join(', ')}\n`;
+                // Calculate Negative Sites
+                const negSites = INJURY_SITES.filter(s => !p.circulation.bleeding.includes(s));
+                if(negSites.length > 0) {
+                     t += `   No obvious external injury/bleeding to: ${negSites.join(', ')}\n`;
+                }
                 
                 let interventions = [];
                 if(p.circulation.binder) interventions.push("Binder");
@@ -737,10 +871,7 @@
                 
                 getEl('initialNoteOutput').value = t;
 
-                // SECONDARY NOTE
                 let s = `**Secondary Survey**\n\n`;
-                
-                // Repeat Gas
                 const vSec = p.investigations.vbgSec;
                 if(vSec.ph || vSec.lac) {
                     s += `Repeat ${p.investigations.secGasType}: pH ${vSec.ph} pCO2 ${vSec.pco2} pO2 ${vSec.po2} HCO3 ${vSec.hco3} BE ${vSec.be} Lac ${vSec.lac}\n\n`;
@@ -748,14 +879,15 @@
 
                 SS_AREAS.forEach(area => {
                     const data = p.secondary[area.id];
-                    const hasTags = data.tags.length > 0;
-                    const hasText = data.text.length > 0;
-                    if (hasTags || hasText) {
-                        s += `- ${area.label}: ${data.tags.join(', ')}${hasTags && hasText ? '. ' : ''}${data.text}\n`;
+                    if(data) {
+                        const hasTags = data.tags.length > 0;
+                        const hasText = data.text.length > 0;
+                        if (hasTags || hasText) {
+                            s += `- ${area.label}: ${data.tags.join(', ')}${hasTags && hasText ? '. ' : ''}${data.text}\n`;
+                        }
                     }
                 });
 
-                // Add Neuro Exam
                 const ne = p.neuroExam;
                 s += `\n- Neurological Examination:\n`;
                 s += `  UL: L (Pow ${ne.pul}, Sen ${ne.sul}) | R (Pow ${ne.pur}, Sen ${ne.sur})\n`;
@@ -769,22 +901,34 @@
                 
                 s += `\n**Problem List**\n${p.problemList}`;
                 getEl('secondaryNoteOutput').value = s;
+                
+                saveState();
             }
 
             // --- LISTENERS ---
             const bind = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('input', e => { obj[key] = e.target.value; updateNotes(); }); };
             const bindCheck = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.checked; updateNotes(); }); };
 
-            // Specialties
+            // Specialties with Timestamp Logic
             document.querySelectorAll('.std-btn').forEach(btn => btn.addEventListener('click', e => {
                 e.target.classList.toggle('active');
                 if(e.target.dataset.spec) {
-                     const spec = e.target.dataset.spec;
-                     // Simple toggle in array logic for specialties (or append time if needed, kept simple for buttons)
-                     // Reverting to simple list for visual clarity
-                     if(!patientData.arrival.specialties.includes(spec)) patientData.arrival.specialties.push(spec);
-                     else patientData.arrival.specialties = patientData.arrival.specialties.filter(x => x !== spec);
+                     const specName = e.target.dataset.spec;
+                     // Initialize if needed
+                     if(!Array.isArray(patientData.arrival.specialties)) patientData.arrival.specialties = [];
+                     
+                     // Check if exists
+                     const existingIdx = patientData.arrival.specialties.findIndex(s => (typeof s === 'string' ? s : s.name) === specName);
+                     
+                     if(existingIdx === -1) {
+                         // Add new with time
+                         patientData.arrival.specialties.push({ name: specName, time: getTime() });
+                     } else {
+                         // Remove
+                         patientData.arrival.specialties.splice(existingIdx, 1);
+                     }
                 }
+                // Airway logic...
                 if(e.target.dataset.adj) {
                     const adj = e.target.dataset.adj;
                     if(adj === 'None') patientData.airway.adjuncts = ['None'];
@@ -793,17 +937,16 @@
                         if(patientData.airway.adjuncts.includes(adj)) patientData.airway.adjuncts = patientData.airway.adjuncts.filter(x => x !== adj);
                         else patientData.airway.adjuncts.push(adj);
                     }
-                    // Visual update for exclusive None
                     if(adj === 'None') document.querySelectorAll('[data-adj]').forEach(b => { if(b.dataset.adj !== 'None') b.classList.remove('active') });
                     else document.querySelector('[data-adj="None"]').classList.remove('active');
                 }
                 updateNotes();
             }));
 
-            // Buttons
+            // ... (Rest of listeners remain standard, using data-attributes for generic handling) ...
+            
             getEl('btn-arrival-now').addEventListener('click', () => { patientData.arrival.time = getTime(); updateNotes(); });
             
-            // PH Treatments Buttons
              document.querySelectorAll('.ph-btn').forEach(btn => btn.addEventListener('click', e => {
                 e.target.classList.toggle('active');
                 const t = e.target.dataset.t;
@@ -825,7 +968,6 @@
                 updateNotes();
             }));
 
-            // Lines Multi-Select
             document.querySelectorAll('.access-chk').forEach(chk => chk.addEventListener('change', e => {
                 const val = e.target.value;
                 if(e.target.checked) patientData.circulation.lines.push(val);
@@ -833,7 +975,6 @@
                 updateNotes();
             }));
 
-            // Med Checkboxes
             document.querySelectorAll('.med-check').forEach(chk => chk.addEventListener('change', e => {
                 const val = e.target.value;
                 if(e.target.checked) patientData.definitive.meds.push(val);
@@ -841,7 +982,6 @@
                 updateNotes();
             }));
 
-            // Gas Logic (Initial)
             document.querySelectorAll('input[name="gasType"]').forEach(r => r.addEventListener('change', e => {
                 patientData.investigations.gasType = e.target.value;
                 getEl('gasFio2Container').classList.toggle('hidden', e.target.value !== 'ABG');
@@ -849,13 +989,11 @@
             }));
             getEl('gasFio2').addEventListener('input', e => { patientData.investigations.vbg.abgFio2 = e.target.value; updateNotes(); });
             
-            // Gas Logic (Secondary)
              document.querySelectorAll('input[name="secGasType"]').forEach(r => r.addEventListener('change', e => {
                 patientData.investigations.secGasType = e.target.value;
                 updateNotes();
             }));
 
-            // Post Secondary Logic
             getEl('furtherImaging').addEventListener('change', e => {
                 patientData.definitive.furtherImaging = e.target.checked;
                 getEl('furtherImagingDetails').classList.toggle('hidden', !e.target.checked);
@@ -863,9 +1001,8 @@
             });
             bind('furtherImagingDetails', patientData.definitive, 'furtherImagingDetails');
 
-
-            // Standard Inputs
-            bind('specialtyAttendances', patientData.arrival, 'specialties'); 
+            bind('specialtyAttendances', patientData.arrival, 'specialtiesNotes'); 
+            
             bind('age', patientData.atmist, 'age');
             bindCheck('ageEstimated', patientData.atmist, 'ageEst');
             bind('timeOfIncident', patientData.atmist, 'time');
@@ -915,10 +1052,7 @@
 
             bindCheck('headInjury', patientData.disability, 'headInjury');
             document.querySelectorAll('input[name="disability_avpu"]').forEach(r => r.addEventListener('change', e => { patientData.disability.avpu = e.target.value; updateNotes(); }));
-            const popSel = (id, opts, def) => { const s=getEl(id); opts.forEach(o=>s.add(new Option(o,o))); s.value=def; s.addEventListener('change',e=>{patientData.disability[id.split('_')[1]]=e.target.value; updateNotes();})};
-            popSel('disability_gcsE', [4,3,2,1], 4);
-            popSel('disability_gcsV', [5,4,3,2,1], 5);
-            popSel('disability_gcsM', [6,5,4,3,2,1], 6);
+            
             bind('disability_pupil_left', patientData.disability, 'pupilL');
             bind('disability_pupil_right', patientData.disability, 'pupilR');
             bind('disability_glucose', patientData.disability, 'glucose');
@@ -926,14 +1060,12 @@
             bind('exposure_temp', patientData.exposure, 'temp');
             bind('exposure_notes', patientData.exposure, 'notes');
 
-            // Initial Gas
             ['ph','pco2','po2','hco3','be','lactate','ionisedCa'].forEach(k => {
                 const map = {lactate:'lac', ionisedCa:'ca'};
                 bind(`vbgInitial_${k}`, patientData.investigations.vbg, map[k]||k);
             });
             
-            // Secondary Gas
-            ['ph','pco2','po2','hco3','be','lactate','ionisedCa'].forEach(k => {
+            ['ph','pco2','po2','hco3','be','lac','ca'].forEach(k => {
                 const map = {lactate:'lac', ionisedCa:'ca'};
                 bind(`vbgSec_${k}`, patientData.investigations.vbgSec, map[k]||k);
             });
@@ -942,7 +1074,6 @@
             bind('definitivePlan', patientData.definitive, 'plan');
             bind('problemList', patientData, 'problemList');
 
-            // Secondary Tags
             secContainer.addEventListener('change', (e) => {
                 const areaId = e.target.dataset.area || e.target.id.replace('ss_', '');
                 if (e.target.classList.contains('tag-checkbox')) {
@@ -955,13 +1086,53 @@
                 updateNotes();
             });
 
-            // Copy
             ['Initial', 'Secondary'].forEach(type => {
                 const btn = getEl(`copy${type}`);
                 btn.addEventListener('click', () => {
                     navigator.clipboard.writeText(getEl(`${type.toLowerCase()}NoteOutput`).value);
                     const t = btn.textContent; btn.textContent = 'Copied!'; setTimeout(()=>btn.textContent=t, 1500);
                 });
+            });
+
+            getEl('resetData').addEventListener('click', () => {
+                if(confirm('Are you sure you want to reset the form? All data will be lost.')) {
+                    localStorage.removeItem('wmebem_trauma_data');
+                    location.reload();
+                }
+            });
+
+            // Restore
+            loadState();
+            
+            // Re-apply "Found" buttons
+            patientData.breathing.findings.forEach(obj => {
+                const btn = document.querySelector(`.lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
+                if(btn) btn.classList.add('active');
+            });
+            // Re-apply Injury Sites
+            patientData.circulation.bleeding.forEach(site => {
+                const btn = document.querySelector(`.injury-btn[data-site="${site}"]`);
+                if(btn) btn.classList.add('active');
+            });
+            // Re-apply Secondary Tags
+            SS_AREAS.forEach(area => {
+                if(patientData.secondary[area.id]) {
+                    patientData.secondary[area.id].tags.forEach(tag => {
+                        const chk = document.querySelector(`.tag-checkbox[data-area="${area.id}"][value="${tag}"]`);
+                        if(chk) chk.checked = true;
+                    });
+                    const txt = getEl(`ss_${area.id}`);
+                    if(txt) txt.value = patientData.secondary[area.id].text;
+                }
+            });
+            // Re-apply GCS selects
+            getEl('disability_gcsE').value = patientData.disability.gcsE;
+            getEl('disability_gcsV').value = patientData.disability.gcsV;
+            getEl('disability_gcsM').value = patientData.disability.gcsM;
+            // Re-apply Neuro Exam selects
+            Object.keys(patientData.neuroExam).forEach(k => {
+                const el = getEl(`neuro_${k}`);
+                if(el) el.value = patientData.neuroExam[k];
             });
 
             updateNotes();
