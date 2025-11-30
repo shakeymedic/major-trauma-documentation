@@ -13,17 +13,23 @@
         textarea::-webkit-scrollbar-thumb { background: #64748b; border-radius: 4px; }
         html { scroll-behavior: smooth; }
         
-        .toggle-radio:checked + div {
-            background-color: #2563eb;
-            color: white;
-            border-color: #2563eb;
-        }
-        
         /* High contrast borders for inputs */
         input, textarea, select { border-color: #94a3b8; }
         input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; }
 
-        /* Breathing L/R Button Styles */
+        /* --- BUTTON STYLES --- */
+        
+        /* Standard Blue Toggle (Specialties, Airway Adjuncts) */
+        .std-btn { transition: all 0.1s; border-color: #cbd5e1; background-color: #f8fafc; color: #334155; }
+        .std-btn:hover { background-color: #e2e8f0; }
+        .std-btn.active {
+            background-color: #2563eb; /* Blue-600 */
+            color: white;
+            border-color: #1d4ed8;
+            font-weight: 800;
+        }
+
+        /* Breathing L/R Buttons */
         .lr-btn { transition: all 0.1s; }
         .lr-btn.active { 
             background-color: #0284c7; 
@@ -32,28 +38,51 @@
             border-color: #0284c7;
         }
 
-        /* Injury Site Buttons */
-        .injury-btn { transition: all 0.1s; }
+        /* Injury Site Buttons (Red) */
+        .injury-btn { transition: all 0.1s; background-color: white; border-color: #cbd5e1; color: #475569; }
+        .injury-btn:hover { background-color: #fef2f2; }
         .injury-btn.active {
-            background-color: #dc2626;
+            background-color: #dc2626; /* Red-600 */
             color: white;
             border-color: #b91c1c;
             font-weight: bold;
         }
 
-        /* Pre-Hosp Buttons */
-        .ph-btn { transition: all 0.1s; }
+        /* Pre-Hosp Buttons (Green) */
+        .ph-btn { transition: all 0.1s; background-color: #f8fafc; border-color: #cbd5e1; color: #334155; }
+        .ph-btn:hover { background-color: #ecfdf5; }
         .ph-btn.active {
-            background-color: #059669;
+            background-color: #059669; /* Emerald-600 */
             color: white;
             border-color: #047857;
+            font-weight: 800;
+        }
+
+        /* Access/Circulation Buttons (Red) */
+        .access-btn { transition: all 0.1s; background-color: white; border-color: #fecaca; color: #b91c1c; }
+        .access-btn:hover { background-color: #fef2f2; }
+        .access-btn.active {
+            background-color: #dc2626; 
+            color: white;
+            border-color: #991b1b;
+            font-weight: 800;
         }
         
-        /* Disposition Buttons */
+        /* Disposition Buttons (Indigo) */
+        .disp-btn { transition: all 0.1s; background-color: white; border-color: #c7d2fe; color: #4338ca; }
+        .disp-btn:hover { background-color: #eef2ff; }
         .disp-btn.active {
             background-color: #4f46e5;
             color: white;
-            border-color: #4338ca;
+            border-color: #3730a3;
+            font-weight: 800;
+        }
+
+        /* Radio Toggle Logic */
+        .toggle-radio:checked + div {
+            background-color: #2563eb;
+            color: white;
+            border-color: #2563eb;
         }
     </style>
 </head>
@@ -88,10 +117,10 @@
                 <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400">
                     <h2 class="text-lg font-bold text-slate-900 mb-3">Specialty Attendance</h2>
                     <div class="flex flex-wrap gap-2 mb-3">
-                        <button type="button" class="specialty-btn px-4 py-2 bg-slate-50 text-blue-800 border-2 border-slate-300 rounded-lg text-xs font-bold hover:bg-blue-50 active:scale-95 transition" data-spec="T&O">T&O</button>
-                        <button type="button" class="specialty-btn px-4 py-2 bg-slate-50 text-blue-800 border-2 border-slate-300 rounded-lg text-xs font-bold hover:bg-blue-50 active:scale-95 transition" data-spec="Gen Surg">Gen Surg</button>
-                        <button type="button" class="specialty-btn px-4 py-2 bg-slate-50 text-blue-800 border-2 border-slate-300 rounded-lg text-xs font-bold hover:bg-blue-50 active:scale-95 transition" data-spec="ICU/Anaesthetics">ICU/Anaes</button>
-                        <button type="button" class="specialty-btn px-4 py-2 bg-slate-50 text-blue-800 border-2 border-slate-300 rounded-lg text-xs font-bold hover:bg-blue-50 active:scale-95 transition" data-spec="ED Consultant">ED Cons</button>
+                        <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="T&O">T&O</button>
+                        <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="Gen Surg">Gen Surg</button>
+                        <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="ICU/Anaesthetics">ICU/Anaes</button>
+                        <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="ED Consultant">ED Cons</button>
                     </div>
                     <textarea id="specialtyAttendances" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-400 rounded-md text-sm font-medium" placeholder="Other specialties or notes..."></textarea>
                 </section>
@@ -122,14 +151,32 @@
                     <div class="pt-4 border-t border-slate-200">
                         <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Pre-Hospital Treatments</label>
                         <div class="flex flex-wrap gap-2 mb-2" id="ph_treatments_btns">
-                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="IV Access">IV Access</button>
-                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="Oxygen">Oxygen</button>
-                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="Analgesia">Analgesia</button>
-                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="TXA">TXA</button>
-                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="Splinting">Splinting</button>
-                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="Fluids">Fluids</button>
+                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="IV Access">IV Access</button>
+                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Oxygen">Oxygen</button>
+                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Analgesia">Analgesia</button>
+                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="TXA">TXA</button>
+                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Splinting">Splinting</button>
+                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Fluids">Fluids</button>
+                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Blood">Blood</button>
                         </div>
-                        <input type="text" id="ph_treatments_free" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Other treatments / details...">
+                        <input type="text" id="ph_treatments_free" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium mb-3" placeholder="Other treatments / details...">
+
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <label class="flex items-center space-x-3 cursor-pointer">
+                                <input type="checkbox" id="preHospitalRSI" class="w-5 h-5 text-red-600 rounded border-gray-400 focus:ring-red-600">
+                                <span class="font-bold text-red-900 text-sm">Pre-Hospital RSI Performed</span>
+                            </label>
+                            
+                            <div id="rsiDetails" class="hidden mt-3 pt-3 border-t border-red-200 space-y-3">
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div><label class="block text-xs font-bold text-red-800 uppercase">Tube Size</label><input type="text" id="rsi_size" class="w-full px-2 py-1 border border-red-300 rounded text-sm"></div>
+                                    <div><label class="block text-xs font-bold text-red-800 uppercase">@ Teeth</label><input type="text" id="rsi_length" class="w-full px-2 py-1 border border-red-300 rounded text-sm"></div>
+                                    <div><label class="block text-xs font-bold text-red-800 uppercase">Grade</label><select id="rsi_grade" class="w-full px-2 py-1 border border-red-300 rounded text-sm bg-white"><option></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+                                    <div><label class="block text-xs font-bold text-red-800 uppercase">ETCO2</label><input type="text" id="rsi_etco2" class="w-full px-2 py-1 border border-red-300 rounded text-sm"></div>
+                                </div>
+                                <div><label class="block text-xs font-bold text-red-800 uppercase">Drugs</label><input type="text" id="rsi_drugs" class="w-full px-2 py-1 border border-red-300 rounded text-sm" placeholder="e.g. Ketamine / Rocuronium"></div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -151,25 +198,22 @@
                     <h3 class="text-2xl font-black text-blue-800 mb-4">A - Airway</h3>
                     
                     <div class="mb-4 space-y-3">
-                         <label class="flex items-center space-x-3 p-3 bg-red-50 border-2 border-red-200 rounded-lg w-full cursor-pointer hover:bg-red-100 transition">
-                            <input type="checkbox" id="preHospitalRSI" class="w-5 h-5 text-red-600 rounded border-gray-400 focus:ring-red-600">
-                            <span class="font-bold text-red-900">Pre-Hospital RSI Performed</span>
-                        </label>
-                        
-                        <div id="rsiDetails" class="hidden pl-4 border-l-4 border-red-300 space-y-3 py-2 bg-red-50 rounded-r-lg">
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                <div><label class="block text-xs font-bold text-red-800 uppercase">Tube Size</label><input type="text" id="rsi_size" class="w-full px-2 py-1 border border-red-300 rounded text-sm"></div>
-                                <div><label class="block text-xs font-bold text-red-800 uppercase">@ Teeth (cm)</label><input type="text" id="rsi_length" class="w-full px-2 py-1 border border-red-300 rounded text-sm"></div>
-                                <div><label class="block text-xs font-bold text-red-800 uppercase">Grade</label><select id="rsi_grade" class="w-full px-2 py-1 border border-red-300 rounded text-sm bg-white"><option></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
-                                <div><label class="block text-xs font-bold text-red-800 uppercase">ETCO2 (kPa)</label><input type="text" id="rsi_etco2" class="w-full px-2 py-1 border border-red-300 rounded text-sm"></div>
-                            </div>
-                            <div><label class="block text-xs font-bold text-red-800 uppercase">Drugs (Induction/Paralysis)</label><input type="text" id="rsi_drugs" class="w-full px-2 py-1 border border-red-300 rounded text-sm" placeholder="e.g. Ketamine / Rocuronium"></div>
-                        </div>
-
                         <div class="flex rounded-lg shadow-sm bg-slate-100 p-1 border border-slate-300">
                              <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Patent" checked class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition">Patent</div></label>
                              <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Compromised" class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition">Compromised</div></label>
                              <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="At Risk" class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition">At Risk</div></label>
+                        </div>
+
+                        <div>
+                            <span class="text-xs font-black text-slate-500 uppercase mb-1 block">Adjuncts</span>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" class="std-btn px-3 py-2 border-2 rounded text-xs font-bold" data-adj="None">None</button>
+                                <button type="button" class="std-btn px-3 py-2 border-2 rounded text-xs font-bold" data-adj="OPA">OPA</button>
+                                <button type="button" class="std-btn px-3 py-2 border-2 rounded text-xs font-bold" data-adj="NPA">NPA</button>
+                                <button type="button" class="std-btn px-3 py-2 border-2 rounded text-xs font-bold" data-adj="iGel">iGel</button>
+                                <button type="button" class="std-btn px-3 py-2 border-2 rounded text-xs font-bold" data-adj="ETT">ETT</button>
+                                <button type="button" class="std-btn px-3 py-2 border-2 rounded text-xs font-bold" data-adj="FONA">FONA</button>
+                            </div>
                         </div>
                     </div>
                     
@@ -220,12 +264,15 @@
                     </div>
 
                     <section id="sec-mhp" class="bg-red-100 p-4 rounded-lg border-2 border-red-500 mb-6">
-                        <div class="flex justify-between items-center mb-2">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-2 gap-2">
                             <h2 class="text-lg font-black text-red-900">Major Haemorrhage Protocol</h2>
-                             <label class="cursor-pointer flex items-center bg-white px-4 py-2 border-2 border-red-400 rounded shadow-sm hover:bg-red-50">
-                                <input type="checkbox" id="mhp_activated" class="w-6 h-6 text-red-600 rounded focus:ring-red-600">
-                                <span class="ml-2 font-black text-red-800">ACTIVATED</span>
-                            </label>
+                            <div class="flex items-center gap-2">
+                                <input type="time" id="mhp_time" class="px-2 py-1 border border-red-300 rounded text-sm font-bold text-red-900 bg-white hidden">
+                                <label class="cursor-pointer flex items-center bg-white px-4 py-2 border-2 border-red-400 rounded shadow-sm hover:bg-red-50">
+                                    <input type="checkbox" id="mhp_activated" class="w-6 h-6 text-red-600 rounded focus:ring-red-600">
+                                    <span class="ml-2 font-black text-red-800">ACTIVATED</span>
+                                </label>
+                            </div>
                         </div>
                         <div class="bg-white border-l-[6px] border-red-600 p-3 mb-3 shadow-sm text-center">
                             <p class="font-black text-red-600 text-sm">⚠️ PROMPT: GIVE TRANEXAMIC ACID & CALCIUM ⚠️</p>
@@ -261,8 +308,9 @@
                             </div>
                              <div>
                                 <span class="text-xs font-black text-slate-500 uppercase">Neck / Central</span>
-                                <div class="flex gap-2 mt-1">
-                                    <label class="flex items-center space-x-1"><input type="checkbox" class="access-chk rounded text-green-600" value="CVC (IJ/Subclav)"><span>CVC</span></label>
+                                <div class="flex flex-col gap-1 mt-1">
+                                    <label class="flex items-center space-x-1"><input type="checkbox" class="access-chk rounded text-green-600" value="CVC (IJ)"><span>IJ CVC</span></label>
+                                    <label class="flex items-center space-x-1"><input type="checkbox" class="access-chk rounded text-green-600" value="CVC (Subclav)"><span>Subclavian CVC</span></label>
                                     <label class="flex items-center space-x-1"><input type="checkbox" class="access-chk rounded text-blue-600" value="RIC (Neck)"><span>RIC</span></label>
                                 </div>
                             </div>
@@ -286,9 +334,9 @@
                     <div class="mb-4">
                         <span class="text-xs font-bold text-slate-500 uppercase">Haemorrhage Control</span>
                         <div class="flex flex-wrap gap-2 mt-1">
-                            <button type="button" class="access-btn px-4 py-2 bg-white border-2 border-red-200 text-red-700 rounded text-xs font-bold hover:bg-red-50" data-text="Pelvic Binder applied">Pelvic Binder</button>
-                            <button type="button" class="access-btn px-4 py-2 bg-white border-2 border-red-200 text-red-700 rounded text-xs font-bold hover:bg-red-50" data-text="KTD Splint applied">KTD</button>
-                            <button type="button" class="access-btn px-4 py-2 bg-white border-2 border-red-200 text-red-700 rounded text-xs font-bold hover:bg-red-50" data-text="Tourniquet applied">Tourniquet</button>
+                            <button type="button" class="access-btn px-4 py-2 border-2 rounded text-xs font-bold" data-text="Pelvic Binder applied">Pelvic Binder</button>
+                            <button type="button" class="access-btn px-4 py-2 border-2 rounded text-xs font-bold" data-text="KTD Splint applied">KTD</button>
+                            <button type="button" class="access-btn px-4 py-2 border-2 rounded text-xs font-bold" data-text="Tourniquet applied">Tourniquet</button>
                         </div>
                     </div>
 
@@ -345,7 +393,7 @@
                     
                     <div class="bg-slate-700 p-4 rounded-xl shadow-inner mb-4 text-white">
                         <div class="flex justify-between items-center mb-3">
-                            <h4 class="text-sm font-black text-slate-200 uppercase">Blood Gas Results</h4>
+                            <h4 class="text-sm font-black text-slate-200 uppercase">Blood Gas Results (Initial)</h4>
                             <div class="flex bg-slate-800 rounded p-1 border border-slate-600">
                                 <label class="cursor-pointer px-3 py-1"><input type="radio" name="gasType" value="VBG" checked class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-white peer-checked:underline">VBG</span></label>
                                 <label class="cursor-pointer px-3 py-1"><input type="radio" name="gasType" value="ABG" class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-white peer-checked:underline">ABG</span></label>
@@ -373,6 +421,26 @@
 
                 <section id="sec-secondary" class="bg-white p-5 rounded-xl shadow-sm border border-slate-400">
                     <h2 class="text-xl font-bold text-slate-800 mb-4 pb-2 border-b border-slate-300">Secondary Survey</h2>
+                    
+                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-300 mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-sm font-black text-slate-700 uppercase">Repeat Blood Gas</h4>
+                            <div class="flex bg-white rounded p-1 border border-slate-300">
+                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="secGasType" value="VBG" checked class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-blue-600 peer-checked:underline">VBG</span></label>
+                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="secGasType" value="ABG" class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-blue-600 peer-checked:underline">ABG</span></label>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                            <div><label class="block text-[10px] uppercase text-slate-500">pH</label><input type="number" id="vbgSec_ph" class="w-full px-1 py-1 text-sm bg-white border-slate-300 rounded text-slate-900 font-bold"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">pCO2</label><input type="number" id="vbgSec_pco2" class="w-full px-1 py-1 text-sm bg-white border-slate-300 rounded text-slate-900 font-bold"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">pO2</label><input type="number" id="vbgSec_po2" class="w-full px-1 py-1 text-sm bg-white border-slate-300 rounded text-slate-900 font-bold"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">HCO3</label><input type="number" id="vbgSec_hco3" class="w-full px-1 py-1 text-sm bg-white border-slate-300 rounded text-slate-900 font-bold"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">BE</label><input type="number" id="vbgSec_be" class="w-full px-1 py-1 text-sm bg-white border-slate-300 rounded text-slate-900 font-bold"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">Lac</label><input type="number" id="vbgSec_lactate" class="w-full px-1 py-1 text-sm bg-white border-slate-300 rounded text-slate-900 font-bold"></div>
+                            <div><label class="block text-[10px] uppercase text-slate-500">Ca++</label><input type="number" id="vbgSec_ionisedCa" class="w-full px-1 py-1 text-sm bg-white border-slate-300 rounded text-slate-900 font-bold"></div>
+                        </div>
+                    </div>
+
                     <div id="secondary_container" class="space-y-4"></div>
                     
                     <div class="mt-8 pt-4 border-t-2 border-slate-300">
@@ -435,12 +503,12 @@
 
                     <p class="text-xs font-black text-indigo-700 uppercase mb-2">Disposition</p>
                     <div class="flex flex-wrap gap-2 mb-4">
-                         <button class="disp-btn px-4 py-2 bg-white border border-indigo-300 text-indigo-700 font-bold text-xs rounded hover:bg-indigo-50" data-val="Theatre">Theatre</button>
-                         <button class="disp-btn px-4 py-2 bg-white border border-indigo-300 text-indigo-700 font-bold text-xs rounded hover:bg-indigo-50" data-val="ICU">ICU</button>
-                         <button class="disp-btn px-4 py-2 bg-white border border-indigo-300 text-indigo-700 font-bold text-xs rounded hover:bg-indigo-50" data-val="Ward">Ward</button>
-                         <button class="disp-btn px-4 py-2 bg-white border border-indigo-300 text-indigo-700 font-bold text-xs rounded hover:bg-indigo-50" data-val="Transfer">Transfer</button>
-                         <button class="disp-btn px-4 py-2 bg-white border border-indigo-300 text-indigo-700 font-bold text-xs rounded hover:bg-indigo-50" data-val="Discharge">Discharge</button>
-                         <button class="disp-btn px-4 py-2 bg-white border border-indigo-300 text-indigo-700 font-bold text-xs rounded hover:bg-indigo-50" data-val="Mortuary">Mortuary</button>
+                         <button class="disp-btn px-4 py-2 border rounded text-xs font-bold" data-val="Theatre">Theatre</button>
+                         <button class="disp-btn px-4 py-2 border rounded text-xs font-bold" data-val="ICU">ICU</button>
+                         <button class="disp-btn px-4 py-2 border rounded text-xs font-bold" data-val="Ward">Ward</button>
+                         <button class="disp-btn px-4 py-2 border rounded text-xs font-bold" data-val="Transfer">Transfer</button>
+                         <button class="disp-btn px-4 py-2 border rounded text-xs font-bold" data-val="Discharge">Discharge</button>
+                         <button class="disp-btn px-4 py-2 border rounded text-xs font-bold" data-val="Mortuary">Mortuary</button>
                     </div>
 
                     <textarea id="definitivePlan" rows="3" class="w-full px-3 py-2 border border-indigo-300 rounded-md text-sm bg-white font-medium" placeholder="Definitive Plan notes..."></textarea>
@@ -486,13 +554,17 @@
                 arrival: { time: '', specialties: [] },
                 atmist: { age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phNotes: '' },
                 prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
-                airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, collar: false, blocks: false, notes: '' },
+                airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, notes: '' },
                 breathing: { rr: '', sats: '', o2: 'Air', fio2: '', findings: [], notes: '' },
                 circulation: { hr: '', bp: '', crt: '', lines: [], bleeding: [], txa: 'None', binder: false, ktd: false, tourniquet: false, notes: '' },
-                mhp: { activated: false, prbc: '', ffp: '', plt: '', cryo: '' },
+                mhp: { activated: false, time: '', prbc: '', ffp: '', plt: '', cryo: '' },
                 disability: { avpu: 'Alert', headInjury: false, gcsE: 4, gcsV: 5, gcsM: 6, pupilL: '', pupilR: '', glucose: '' },
                 exposure: { temp: '', notes: '' },
-                investigations: { gasType: 'VBG', vbg: {ph:'', pco2:'', po2:'', hco3:'', be:'', lac:'', ca:'', abgFio2:''}, imaging: '' },
+                investigations: { 
+                    gasType: 'VBG', vbg: {ph:'', pco2:'', po2:'', hco3:'', be:'', lac:'', ca:'', abgFio2:''}, 
+                    secGasType: 'VBG', vbgSec: {ph:'', pco2:'', po2:'', hco3:'', be:'', lac:'', ca:''},
+                    imaging: '' 
+                },
                 secondary: {},
                 neuroExam: { pul: '5/5', sul: 'Intact', pur: '5/5', sur: 'Intact', pll: '5/5', sll: 'Intact', plr: '5/5', slr: 'Intact' },
                 definitive: { furtherImaging: false, furtherImagingDetails: '', meds: [], disposition: '', plan: '' },
@@ -512,7 +584,7 @@
             ];
 
             const BREATHING_OPTS = ['Chest Wall Injury', 'Sucking Chest Wound', 'Flail Segment', 'Surgical Emphysema', 'Crepitus', 'Bruising', 'Deformity', 'Reduced Expansion'];
-            const INJURY_SITES = ['Scalp', 'Face', 'Chest', 'Abdomen', 'Pelvis', 'L Arm', 'R Arm', 'L Leg', 'R Leg', 'Back', 'Floor'];
+            const INJURY_SITES = ['Scalp', 'Face', 'Chest', 'Abdomen', 'Pelvis', 'L Arm', 'R Arm', 'L Leg', 'R Leg', 'Back']; // Removed Floor
 
             // --- UI HELPERS ---
             const getEl = (id) => document.getElementById(id);
@@ -548,7 +620,7 @@
             // 2. Injury Site Buttons
             const injContainer = getEl('injury_grid');
             INJURY_SITES.forEach(site => {
-                injContainer.innerHTML += `<button class="injury-btn py-2 bg-white border-2 border-slate-300 rounded-md text-xs font-bold text-slate-600 hover:bg-red-50" data-site="${site}">${site}</button>`;
+                injContainer.innerHTML += `<button class="injury-btn py-2 border-2 rounded-md text-xs font-bold" data-site="${site}">${site}</button>`;
             });
             injContainer.addEventListener('click', e => {
                 if(e.target.classList.contains('injury-btn')) {
@@ -592,22 +664,16 @@
             // 5. Neuro Select Population
             const powerOpts = ['5/5', '4/5', '3/5', '2/5', '1/5', '0/5'];
             const sensOpts = ['Intact', 'Reduced', 'Absent', 'Paraesthesia'];
-            
             document.querySelectorAll('.neuro-select').forEach(sel => {
                 const isPower = sel.id.includes('neuro_p');
                 const opts = isPower ? powerOpts : sensOpts;
                 const def = isPower ? '5/5' : 'Intact';
-                const labelPrefix = isPower ? 'Power ' : 'Sens ';
-                
                 opts.forEach(o => {
-                    const txt = isPower ? `Power ${o}` : o;
-                    sel.add(new Option(txt, o));
+                    sel.add(new Option(isPower ? `Power ${o}` : o, o));
                 });
                 sel.value = def;
-                
                 sel.addEventListener('change', e => {
-                   const key = sel.id.replace('neuro_', '');
-                   patientData.neuroExam[key] = e.target.value;
+                   patientData.neuroExam[sel.id.replace('neuro_', '')] = e.target.value;
                    updateNotes();
                 });
             });
@@ -621,7 +687,7 @@
                 
                 t += `\n**ATMIST**\nAge: ${p.atmist.age}${p.atmist.ageEst?'(Est)':''} | Time: ${p.atmist.time}\nMech: ${p.atmist.mech}\nInj: ${p.atmist.inj}\nSigns: ${p.atmist.signs}\n`;
                 
-                // Add PH Treatments to ATMIST section output
+                // ATMIST/Pre-Hosp Treatments
                 let phArr = [...p.atmist.phTreatments];
                 if(p.atmist.phNotes) phArr.push(p.atmist.phNotes);
                 if(phArr.length > 0) t += `Pre-Hosp Tx: ${phArr.join(', ')}\n`;
@@ -633,6 +699,7 @@
                 
                 // Airway
                 t += `A: ${p.airway.status}. `;
+                if(p.airway.adjuncts.length) t += `Adjuncts: ${p.airway.adjuncts.join(', ')}. `;
                 if (p.airway.rsi) {
                     t += `Pre-Hosp RSI: Size ${p.airway.rsiData.size}, Length ${p.airway.rsiData.length}cm, Grade ${p.airway.rsiData.grade}, ETCO2 ${p.airway.rsiData.etco2}. Drugs: ${p.airway.rsiData.drugs}. `;
                 }
@@ -655,7 +722,7 @@
                 t += `   ${p.circulation.notes}\n`;
 
                 if(p.mhp.activated) {
-                    t += `**MHP ACTIVATED**\nGiven: PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.\n`;
+                    t += `**MHP ACTIVATED** (${p.mhp.time || 'Time Not Set'})\nGiven: PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.\n`;
                 }
 
                 let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
@@ -672,6 +739,13 @@
 
                 // SECONDARY NOTE
                 let s = `**Secondary Survey**\n\n`;
+                
+                // Repeat Gas
+                const vSec = p.investigations.vbgSec;
+                if(vSec.ph || vSec.lac) {
+                    s += `Repeat ${p.investigations.secGasType}: pH ${vSec.ph} pCO2 ${vSec.pco2} pO2 ${vSec.po2} HCO3 ${vSec.hco3} BE ${vSec.be} Lac ${vSec.lac}\n\n`;
+                }
+
                 SS_AREAS.forEach(area => {
                     const data = p.secondary[area.id];
                     const hasTags = data.tags.length > 0;
@@ -681,7 +755,7 @@
                     }
                 });
 
-                // Add Neuro Exam to Secondary Note
+                // Add Neuro Exam
                 const ne = p.neuroExam;
                 s += `\n- Neurological Examination:\n`;
                 s += `  UL: L (Pow ${ne.pul}, Sen ${ne.sul}) | R (Pow ${ne.pur}, Sen ${ne.sur})\n`;
@@ -701,15 +775,34 @@
             const bind = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('input', e => { obj[key] = e.target.value; updateNotes(); }); };
             const bindCheck = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.checked; updateNotes(); }); };
 
-            // Buttons
-            getEl('btn-arrival-now').addEventListener('click', () => { patientData.arrival.time = getTime(); updateNotes(); });
-            
-            document.querySelectorAll('.specialty-btn').forEach(btn => btn.addEventListener('click', e => {
-                const spec = e.target.dataset.spec;
-                patientData.arrival.specialties.push(`${spec} @ ${getTime()}`);
+            // Specialties
+            document.querySelectorAll('.std-btn').forEach(btn => btn.addEventListener('click', e => {
+                e.target.classList.toggle('active');
+                if(e.target.dataset.spec) {
+                     const spec = e.target.dataset.spec;
+                     // Simple toggle in array logic for specialties (or append time if needed, kept simple for buttons)
+                     // Reverting to simple list for visual clarity
+                     if(!patientData.arrival.specialties.includes(spec)) patientData.arrival.specialties.push(spec);
+                     else patientData.arrival.specialties = patientData.arrival.specialties.filter(x => x !== spec);
+                }
+                if(e.target.dataset.adj) {
+                    const adj = e.target.dataset.adj;
+                    if(adj === 'None') patientData.airway.adjuncts = ['None'];
+                    else {
+                        patientData.airway.adjuncts = patientData.airway.adjuncts.filter(x => x !== 'None');
+                        if(patientData.airway.adjuncts.includes(adj)) patientData.airway.adjuncts = patientData.airway.adjuncts.filter(x => x !== adj);
+                        else patientData.airway.adjuncts.push(adj);
+                    }
+                    // Visual update for exclusive None
+                    if(adj === 'None') document.querySelectorAll('[data-adj]').forEach(b => { if(b.dataset.adj !== 'None') b.classList.remove('active') });
+                    else document.querySelector('[data-adj="None"]').classList.remove('active');
+                }
                 updateNotes();
             }));
 
+            // Buttons
+            getEl('btn-arrival-now').addEventListener('click', () => { patientData.arrival.time = getTime(); updateNotes(); });
+            
             // PH Treatments Buttons
              document.querySelectorAll('.ph-btn').forEach(btn => btn.addEventListener('click', e => {
                 e.target.classList.toggle('active');
@@ -724,7 +817,7 @@
             bind('ph_treatments_free', patientData.atmist, 'phNotes');
 
             document.querySelectorAll('.access-btn').forEach(btn => btn.addEventListener('click', e => {
-                e.target.classList.toggle('bg-red-100');
+                e.target.classList.toggle('active');
                 const txt = e.target.dataset.text;
                 if(txt.includes('Binder')) patientData.circulation.binder = !patientData.circulation.binder;
                 if(txt.includes('KTD')) patientData.circulation.ktd = !patientData.circulation.ktd;
@@ -748,13 +841,19 @@
                 updateNotes();
             }));
 
-            // Gas Logic
+            // Gas Logic (Initial)
             document.querySelectorAll('input[name="gasType"]').forEach(r => r.addEventListener('change', e => {
                 patientData.investigations.gasType = e.target.value;
                 getEl('gasFio2Container').classList.toggle('hidden', e.target.value !== 'ABG');
                 updateNotes();
             }));
             getEl('gasFio2').addEventListener('input', e => { patientData.investigations.vbg.abgFio2 = e.target.value; updateNotes(); });
+            
+            // Gas Logic (Secondary)
+             document.querySelectorAll('input[name="secGasType"]').forEach(r => r.addEventListener('change', e => {
+                patientData.investigations.secGasType = e.target.value;
+                updateNotes();
+            }));
 
             // Post Secondary Logic
             getEl('furtherImaging').addEventListener('change', e => {
@@ -802,7 +901,16 @@
             document.querySelectorAll('input[name="txaGiven"]').forEach(r => r.addEventListener('change', e => { patientData.circulation.txa = e.target.value; updateNotes(); }));
 
             bindCheck('mhp_activated', patientData.mhp, 'activated');
-            getEl('mhp_activated').addEventListener('change', e => getEl('mhpDetails').classList.toggle('hidden', !e.target.checked));
+            getEl('mhp_activated').addEventListener('change', e => {
+                 getEl('mhpDetails').classList.toggle('hidden', !e.target.checked);
+                 getEl('mhp_time').classList.toggle('hidden', !e.target.checked);
+                 if(e.target.checked && !patientData.mhp.time) {
+                     patientData.mhp.time = getTime();
+                     getEl('mhp_time').value = patientData.mhp.time;
+                 }
+                 updateNotes();
+            });
+            bind('mhp_time', patientData.mhp, 'time');
             ['prbc','ffp','plt','cryo'].forEach(k => bind(`mhp_${k}`, patientData.mhp, k));
 
             bindCheck('headInjury', patientData.disability, 'headInjury');
@@ -818,10 +926,18 @@
             bind('exposure_temp', patientData.exposure, 'temp');
             bind('exposure_notes', patientData.exposure, 'notes');
 
+            // Initial Gas
             ['ph','pco2','po2','hco3','be','lactate','ionisedCa'].forEach(k => {
                 const map = {lactate:'lac', ionisedCa:'ca'};
                 bind(`vbgInitial_${k}`, patientData.investigations.vbg, map[k]||k);
             });
+            
+            // Secondary Gas
+            ['ph','pco2','po2','hco3','be','lactate','ionisedCa'].forEach(k => {
+                const map = {lactate:'lac', ionisedCa:'ca'};
+                bind(`vbgSec_${k}`, patientData.investigations.vbgSec, map[k]||k);
+            });
+
             bind('imagingDecisions', patientData.investigations, 'imaging');
             bind('definitivePlan', patientData.definitive, 'plan');
             bind('problemList', patientData, 'problemList');
