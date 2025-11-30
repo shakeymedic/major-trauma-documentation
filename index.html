@@ -23,7 +23,7 @@
         input, textarea, select { border-color: #94a3b8; }
         input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; }
 
-        /* Breathing L/R Button Styles - BIGGER */
+        /* Breathing L/R Button Styles */
         .lr-btn { transition: all 0.1s; }
         .lr-btn.active { 
             background-color: #0284c7; 
@@ -40,6 +40,14 @@
             border-color: #b91c1c;
             font-weight: bold;
         }
+
+        /* Pre-Hosp Buttons */
+        .ph-btn { transition: all 0.1s; }
+        .ph-btn.active {
+            background-color: #059669;
+            color: white;
+            border-color: #047857;
+        }
         
         /* Disposition Buttons */
         .disp-btn.active {
@@ -49,12 +57,12 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-900 antialiased pb-20">
+<body class="bg-slate-100 text-slate-900 antialiased pb-10">
 
     <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-300">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-10 w-auto object-contain">
+            <div class="flex items-center gap-4">
+                <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-20 w-auto object-contain">
                 <div>
                     <h1 class="text-xl md:text-2xl font-black text-slate-900 leading-tight">Major Trauma Tool</h1>
                 </div>
@@ -105,16 +113,29 @@
                             <input type="time" id="timeOfIncident" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-bold">
                         </div>
                     </div>
-                    <div class="space-y-3">
+                    <div class="space-y-3 mb-4">
                         <input type="text" id="mechanism" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Mechanism">
                         <input type="text" id="injuries" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Injuries Suspected">
                         <input type="text" id="signs" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Signs (Vitals)">
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-200">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Pre-Hospital Treatments</label>
+                        <div class="flex flex-wrap gap-2 mb-2" id="ph_treatments_btns">
+                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="IV Access">IV Access</button>
+                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="Oxygen">Oxygen</button>
+                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="Analgesia">Analgesia</button>
+                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="TXA">TXA</button>
+                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="Splinting">Splinting</button>
+                            <button type="button" class="ph-btn px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-green-50" data-t="Fluids">Fluids</button>
+                        </div>
+                        <input type="text" id="ph_treatments_free" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Other treatments / details...">
                     </div>
                 </section>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400">
                     <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center"><span class="w-1.5 h-6 bg-slate-400 mr-2 rounded-full"></span>Pre-Hospital / AMPLE</h2>
-                    <textarea id="preHospitalOther" rows="2" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm mb-4 font-medium" placeholder="Pre-hospital interventions & notes..."></textarea>
+                    <textarea id="preHospitalOther" rows="2" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm mb-4 font-medium" placeholder="Additional Pre-hospital notes..."></textarea>
                     <div class="grid grid-cols-1 gap-2 pt-2 border-t border-slate-200">
                         <div class="flex items-center gap-2"><span class="w-6 font-black text-slate-400 text-center">A</span><input type="text" id="history_a" class="flex-1 px-3 py-1.5 border border-slate-400 rounded text-sm font-medium" placeholder="Allergies"></div>
                         <div class="flex items-center gap-2"><span class="w-6 font-black text-slate-400 text-center">M</span><input type="text" id="history_m" class="flex-1 px-3 py-1.5 border border-slate-400 rounded text-sm font-medium" placeholder="Medications"></div>
@@ -353,6 +374,42 @@
                 <section id="sec-secondary" class="bg-white p-5 rounded-xl shadow-sm border border-slate-400">
                     <h2 class="text-xl font-bold text-slate-800 mb-4 pb-2 border-b border-slate-300">Secondary Survey</h2>
                     <div id="secondary_container" class="space-y-4"></div>
+                    
+                    <div class="mt-8 pt-4 border-t-2 border-slate-300">
+                        <h3 class="text-base font-black text-slate-800 uppercase mb-4">Detailed Neurological Examination</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-50 p-3 rounded border border-slate-300">
+                                <span class="block text-xs font-black text-slate-500 uppercase mb-2 border-b border-slate-200 pb-1">Upper Limbs</span>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="space-y-1">
+                                        <span class="text-[10px] font-bold text-slate-600 text-center block uppercase">Left</span>
+                                        <select id="neuro_pul" class="neuro-select w-full text-xs font-bold border-slate-300 rounded"></select>
+                                        <select id="neuro_sul" class="neuro-select w-full text-xs font-medium border-slate-300 rounded"></select>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <span class="text-[10px] font-bold text-slate-600 text-center block uppercase">Right</span>
+                                        <select id="neuro_pur" class="neuro-select w-full text-xs font-bold border-slate-300 rounded"></select>
+                                        <select id="neuro_sur" class="neuro-select w-full text-xs font-medium border-slate-300 rounded"></select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-300">
+                                <span class="block text-xs font-black text-slate-500 uppercase mb-2 border-b border-slate-200 pb-1">Lower Limbs</span>
+                                 <div class="grid grid-cols-2 gap-3">
+                                    <div class="space-y-1">
+                                        <span class="text-[10px] font-bold text-slate-600 text-center block uppercase">Left</span>
+                                        <select id="neuro_pll" class="neuro-select w-full text-xs font-bold border-slate-300 rounded"></select>
+                                        <select id="neuro_sll" class="neuro-select w-full text-xs font-medium border-slate-300 rounded"></select>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <span class="text-[10px] font-bold text-slate-600 text-center block uppercase">Right</span>
+                                        <select id="neuro_plr" class="neuro-select w-full text-xs font-bold border-slate-300 rounded"></select>
+                                        <select id="neuro_slr" class="neuro-select w-full text-xs font-medium border-slate-300 rounded"></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 <section class="bg-indigo-50 p-5 rounded-xl shadow-sm border border-indigo-200">
@@ -393,6 +450,11 @@
                     <h2 class="text-lg font-bold mb-3">Problem List / Impression</h2>
                     <textarea id="problemList" rows="5" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm text-white placeholder-slate-400"></textarea>
                 </section>
+
+                <footer class="mt-8 py-8 text-center border-t border-slate-300">
+                    <p class="text-xs text-slate-500 font-bold mb-1">&copy; West Midlands Evidence Based Emergency Medicine Ltd.</p>
+                    <p class="text-xs text-slate-400">Author: Dr Jake Turner</p>
+                </footer>
             </div>
 
             <div class="lg:col-span-5 xl:col-span-4 relative">
@@ -422,7 +484,7 @@
             // --- DATA STORE ---
             const patientData = {
                 arrival: { time: '', specialties: [] },
-                atmist: { age: '', ageEst: false, time: '', mech: '', inj: '', signs: '' },
+                atmist: { age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phNotes: '' },
                 prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
                 airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, collar: false, blocks: false, notes: '' },
                 breathing: { rr: '', sats: '', o2: 'Air', fio2: '', findings: [], notes: '' },
@@ -432,6 +494,7 @@
                 exposure: { temp: '', notes: '' },
                 investigations: { gasType: 'VBG', vbg: {ph:'', pco2:'', po2:'', hco3:'', be:'', lac:'', ca:'', abgFio2:''}, imaging: '' },
                 secondary: {},
+                neuroExam: { pul: '5/5', sul: 'Intact', pur: '5/5', sur: 'Intact', pll: '5/5', sll: 'Intact', plr: '5/5', slr: 'Intact' },
                 definitive: { furtherImaging: false, furtherImagingDetails: '', meds: [], disposition: '', plan: '' },
                 problemList: ''
             };
@@ -526,6 +589,29 @@
                 patientData.secondary[area.id] = { tags: [], text: '' };
             });
 
+            // 5. Neuro Select Population
+            const powerOpts = ['5/5', '4/5', '3/5', '2/5', '1/5', '0/5'];
+            const sensOpts = ['Intact', 'Reduced', 'Absent', 'Paraesthesia'];
+            
+            document.querySelectorAll('.neuro-select').forEach(sel => {
+                const isPower = sel.id.includes('neuro_p');
+                const opts = isPower ? powerOpts : sensOpts;
+                const def = isPower ? '5/5' : 'Intact';
+                const labelPrefix = isPower ? 'Power ' : 'Sens ';
+                
+                opts.forEach(o => {
+                    const txt = isPower ? `Power ${o}` : o;
+                    sel.add(new Option(txt, o));
+                });
+                sel.value = def;
+                
+                sel.addEventListener('change', e => {
+                   const key = sel.id.replace('neuro_', '');
+                   patientData.neuroExam[key] = e.target.value;
+                   updateNotes();
+                });
+            });
+
             // --- NOTE GENERATION ---
             function updateNotes() {
                 const p = patientData;
@@ -535,7 +621,12 @@
                 
                 t += `\n**ATMIST**\nAge: ${p.atmist.age}${p.atmist.ageEst?'(Est)':''} | Time: ${p.atmist.time}\nMech: ${p.atmist.mech}\nInj: ${p.atmist.inj}\nSigns: ${p.atmist.signs}\n`;
                 
-                if(p.prehosp.notes) t+= `Pre-Hospital: ${p.prehosp.notes}\n`;
+                // Add PH Treatments to ATMIST section output
+                let phArr = [...p.atmist.phTreatments];
+                if(p.atmist.phNotes) phArr.push(p.atmist.phNotes);
+                if(phArr.length > 0) t += `Pre-Hosp Tx: ${phArr.join(', ')}\n`;
+
+                if(p.prehosp.notes) t+= `Pre-Hospital Notes: ${p.prehosp.notes}\n`;
                 t += `AMPLE: A:${p.prehosp.history.a} M:${p.prehosp.history.m} P:${p.prehosp.history.p} L:${p.prehosp.history.l} E:${p.prehosp.history.e}\n`;
 
                 t += `\n**PRIMARY SURVEY**\n`;
@@ -589,6 +680,12 @@
                         s += `- ${area.label}: ${data.tags.join(', ')}${hasTags && hasText ? '. ' : ''}${data.text}\n`;
                     }
                 });
+
+                // Add Neuro Exam to Secondary Note
+                const ne = p.neuroExam;
+                s += `\n- Neurological Examination:\n`;
+                s += `  UL: L (Pow ${ne.pul}, Sen ${ne.sul}) | R (Pow ${ne.pur}, Sen ${ne.sur})\n`;
+                s += `  LL: L (Pow ${ne.pll}, Sen ${ne.sll}) | R (Pow ${ne.plr}, Sen ${ne.slr})\n`;
                 
                 s += `\n**Definitive Care Plan**\n`;
                 if(p.definitive.furtherImaging) s+= `- Further Imaging Required: ${p.definitive.furtherImagingDetails}\n`;
@@ -612,6 +709,19 @@
                 patientData.arrival.specialties.push(`${spec} @ ${getTime()}`);
                 updateNotes();
             }));
+
+            // PH Treatments Buttons
+             document.querySelectorAll('.ph-btn').forEach(btn => btn.addEventListener('click', e => {
+                e.target.classList.toggle('active');
+                const t = e.target.dataset.t;
+                if(patientData.atmist.phTreatments.includes(t)) {
+                    patientData.atmist.phTreatments = patientData.atmist.phTreatments.filter(x => x !== t);
+                } else {
+                    patientData.atmist.phTreatments.push(t);
+                }
+                updateNotes();
+            }));
+            bind('ph_treatments_free', patientData.atmist, 'phNotes');
 
             document.querySelectorAll('.access-btn').forEach(btn => btn.addEventListener('click', e => {
                 e.target.classList.toggle('bg-red-100');
