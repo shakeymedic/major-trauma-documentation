@@ -12,8 +12,16 @@
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 4px; }
+        
+        /* Smooth scrolling */
         html { scroll-behavior: smooth; }
         
+        /* --- FIX FOR STICKY HEADER SCROLLING --- */
+        /* This applies a top margin only when scrolling to an element with an ID starting with "sec-" */
+        [id^="sec-"] {
+            scroll-margin-top: 140px; 
+        }
+
         input, textarea, select { border-color: #94a3b8; outline: none; }
         input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
 
