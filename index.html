@@ -13,16 +13,11 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 4px; }
         
-        /* Smooth scrolling */
+        /* Smooth scrolling with offset for sticky header */
         html { scroll-behavior: smooth; }
-        
-        /* --- FIX FOR STICKY HEADER SCROLLING --- */
-        /* This applies a top margin only when scrolling to an element with an ID starting with "sec-" */
-        [id^="sec-"] {
-            scroll-margin-top: 140px; 
-        }
+        [id^="sec-"] { scroll-margin-top: 160px; } /* Increased margin to clear the larger header */
 
-        input, textarea, select { border-color: #94a3b8; outline: none; }
+        input, textarea, select { border-color: #94a3b8; outline: none; transition: all 0.2s; }
         input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
 
         /* Rich Text Output Styles */
@@ -65,8 +60,6 @@
         .disp-btn { transition: all 0.1s; background-color: white; border-color: #c7d2fe; color: #4338ca; }
         .disp-btn:hover { background-color: #eef2ff; }
         .disp-btn.active { background-color: #4f46e5; color: white; border-color: #3730a3; font-weight: 800; }
-
-        .toggle-radio:checked + div { background-color: #2563eb; color: white; border-color: #2563eb; }
         
         /* Time Button */
         .time-btn {
@@ -86,48 +79,76 @@
         .time-btn:hover { background: #cbd5e1; }
         .time-btn.recorded { background: #dcfce7; color: #166534; border-color: #86efac; font-weight: bold; }
 
+        /* Nav Link Styles */
+        .nav-link {
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.375rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            transition: all 0.1s;
+            border: 1px solid transparent;
+            color: #475569;
+        }
+        .nav-link:hover { background-color: #e2e8f0; color: #0f172a; }
+        
+        /* Specific Color Navs */
+        .nav-link.nav-a { color: #1d4ed8; background: #eff6ff; border-color: #dbeafe; } .nav-link.nav-a:hover { background: #2563eb; color: white; }
+        .nav-link.nav-b { color: #0369a1; background: #f0f9ff; border-color: #e0f2fe; } .nav-link.nav-b:hover { background: #0ea5e9; color: white; }
+        .nav-link.nav-c { color: #b91c1c; background: #fef2f2; border-color: #fee2e2; } .nav-link.nav-c:hover { background: #dc2626; color: white; }
+        .nav-link.nav-d { color: #a16207; background: #fefce8; border-color: #fef9c3; } .nav-link.nav-d:hover { background: #eab308; color: white; }
+        .nav-link.nav-e { color: #15803d; background: #f0fdf4; border-color: #dcfce7; } .nav-link.nav-e:hover { background: #16a34a; color: white; }
+        .nav-link.nav-sec { color: #4338ca; background: #eef2ff; border-color: #e0e7ff; } .nav-link.nav-sec:hover { background: #4f46e5; color: white; }
+
+        /* Chip Style for Specialties */
+        .spec-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: #e2e8f0;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+        .spec-chip span.time { font-family: monospace; color: #64748b; font-size: 0.7rem; margin-left: 2px; }
+        .spec-chip button { margin-left: 4px; color: #94a3b8; padding: 2px; border-radius: 50%; }
+        .spec-chip button:hover { background: #cbd5e1; color: #ef4444; }
+
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 antialiased pb-10">
 
-    <nav class="fixed right-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2 hidden xl:flex">
-        <div class="bg-white/90 backdrop-blur border border-slate-300 p-2 rounded-xl shadow-xl flex flex-col gap-1.5 items-center">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Nav</span>
-            
-            <a href="#sec-arrival" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 font-black text-[10px] hover:bg-blue-600 hover:text-white hover:scale-105 transition shadow-sm border border-slate-200" title="Arrival">ARR</a>
-            <a href="#sec-atmist" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 font-black text-[10px] hover:bg-blue-600 hover:text-white hover:scale-105 transition shadow-sm border border-slate-200" title="ATMIST">ATM</a>
-            
-            <div class="w-6 h-px bg-slate-200 my-0.5"></div>
-            
-            <a href="#sec-airway" class="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 text-blue-700 font-black text-sm hover:bg-blue-600 hover:text-white hover:scale-105 transition shadow-sm border border-blue-100" title="Airway">A</a>
-            <a href="#sec-breathing" class="w-10 h-10 flex items-center justify-center rounded-lg bg-sky-50 text-sky-700 font-black text-sm hover:bg-sky-500 hover:text-white hover:scale-105 transition shadow-sm border border-sky-100" title="Breathing">B</a>
-            <a href="#sec-circulation" class="w-10 h-10 flex items-center justify-center rounded-lg bg-red-50 text-red-700 font-black text-sm hover:bg-red-600 hover:text-white hover:scale-105 transition shadow-sm border border-red-100" title="Circulation">C</a>
-            <a href="#sec-disability" class="w-10 h-10 flex items-center justify-center rounded-lg bg-yellow-50 text-yellow-700 font-black text-sm hover:bg-yellow-500 hover:text-white hover:scale-105 transition shadow-sm border border-yellow-100" title="Disability">D</a>
-            <a href="#sec-exposure" class="w-10 h-10 flex items-center justify-center rounded-lg bg-green-50 text-green-700 font-black text-sm hover:bg-green-600 hover:text-white hover:scale-105 transition shadow-sm border border-green-100" title="Exposure">E</a>
-            
-            <div class="w-6 h-px bg-slate-200 my-0.5"></div>
-            
-            <a href="#sec-secondary" class="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 font-black text-[10px] hover:bg-indigo-600 hover:text-white hover:scale-105 transition shadow-sm border border-slate-200" title="Secondary Survey">SEC</a>
-            <a href="#sec-plan" class="w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 font-black text-[10px] hover:bg-indigo-600 hover:text-white hover:scale-105 transition shadow-sm border border-indigo-100" title="Plan">PLAN</a>
-        </div>
-    </nav>
-
     <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-300">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-16 md:h-20 w-auto object-contain">
-                <div>
-                    <h1 class="text-xl md:text-2xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded border ml-2">v2.1 Rich Text</span></h1>
-                    <p class="text-xs text-green-600 font-bold flex items-center gap-1" id="saveStatus">
-                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Auto-save enabled
-                    </p>
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center gap-3">
+                    <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-12 md:h-14 w-auto object-contain">
+                    <div>
+                        <h1 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border align-middle ml-1">v2.2</span></h1>
+                        <p class="text-[10px] text-green-600 font-bold flex items-center gap-1" id="saveStatus">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Auto-save
+                        </p>
+                    </div>
                 </div>
             </div>
-            <nav class="hidden lg:flex space-x-1 bg-slate-100 p-1 rounded-lg text-xs font-bold text-slate-600 border border-slate-300">
-                <a href="#sec-primary" class="px-3 py-1 hover:bg-white rounded transition">Primary</a>
-                <a href="#sec-mhp" class="px-3 py-1 hover:bg-white rounded transition">MHP</a>
-                <a href="#sec-secondary" class="px-3 py-1 hover:bg-white rounded transition">Secondary</a>
-                <button id="resetData" class="px-3 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded transition ml-2 border border-red-200">Reset</button>
+
+            <nav class="flex flex-wrap items-center gap-1.5 md:gap-2 pb-1">
+                <a href="#sec-arrival" class="nav-link bg-slate-50 border-slate-200">Arr</a>
+                <a href="#sec-atmist" class="nav-link bg-slate-50 border-slate-200">Atm</a>
+                <span class="w-px h-4 bg-slate-300 mx-0.5"></span>
+                <a href="#sec-airway" class="nav-link nav-a">A</a>
+                <a href="#sec-breathing" class="nav-link nav-b">B</a>
+                <a href="#sec-circulation" class="nav-link nav-c">C</a>
+                <a href="#sec-disability" class="nav-link nav-d">D</a>
+                <a href="#sec-exposure" class="nav-link nav-e">E</a>
+                <span class="w-px h-4 bg-slate-300 mx-0.5"></span>
+                <a href="#sec-mhp" class="nav-link nav-c">MHP</a>
+                <a href="#sec-secondary" class="nav-link nav-sec">Sec</a>
+                <a href="#sec-plan" class="nav-link nav-sec">Plan</a>
+                <div class="flex-1"></div> <button id="resetData" class="px-2 py-1 text-[10px] font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded transition">RESET</button>
             </nav>
         </div>
     </header>
@@ -143,7 +164,8 @@
                 </button>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400" id="sec-arrival">
-                    <h2 class="text-lg font-bold text-slate-900 mb-3">Specialty Attendance (Click on arrival)</h2>
+                    <h2 class="text-lg font-bold text-slate-900 mb-3">Specialty Attendance</h2>
+                    
                     <div class="flex flex-wrap gap-2 mb-3">
                         <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="T&O">T&O</button>
                         <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="Gen Surg">Gen Surg</button>
@@ -152,7 +174,15 @@
                         <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="Plastics">Plastics</button>
                         <button type="button" class="std-btn px-4 py-2 border-2 rounded-lg text-xs font-bold active:scale-95" data-spec="Vascular">Vascular</button>
                     </div>
-                    <textarea id="specialtyAttendances" rows="1" class="w-full px-3 py-2 bg-slate-50 border border-slate-400 rounded-md text-sm font-medium" placeholder="Other specialties or notes..."></textarea>
+
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="customSpecInput" class="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm font-medium focus:ring-2 focus:ring-blue-500" placeholder="Type Name / Specialty and press Enter...">
+                        <button type="button" id="btnAddSpec" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-md hover:bg-blue-700 shadow-sm transition">ADD + TIME</button>
+                    </div>
+
+                    <div id="activeSpecialtiesList" class="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg min-h-[3rem]">
+                        <span class="text-xs text-slate-400 italic self-center">No specialties recorded yet.</span>
+                    </div>
                 </section>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400" id="sec-atmist">
@@ -432,7 +462,7 @@
                     <textarea id="exposure_notes" rows="2" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Exposure notes..."></textarea>
                 </section>
 
-                <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400">
+                <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400" id="sec-plan">
                     <h2 class="text-lg font-bold text-slate-900 mb-4">Investigations & Plan</h2>
                     
                     <div class="bg-slate-700 p-4 rounded-xl shadow-inner mb-4 text-white">
@@ -463,7 +493,7 @@
                     </div>
                 </section>
 
-                <section id="sec-secondary" class="bg-white p-5 rounded-xl shadow-sm border border-slate-400">
+                <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400" id="sec-secondary">
                     <h2 class="text-xl font-bold text-slate-800 mb-4 pb-2 border-b border-slate-300">Secondary Survey</h2>
                     
                     <div class="bg-slate-100 p-4 rounded-xl border border-slate-300 mb-6">
@@ -524,7 +554,7 @@
                     </div>
                 </section>
 
-                <section class="bg-indigo-50 p-5 rounded-xl shadow-sm border border-indigo-200" id="sec-plan">
+                <section class="bg-indigo-50 p-5 rounded-xl shadow-sm border border-indigo-200">
                     <h2 class="text-xl font-bold text-indigo-900 mb-4">Post-Secondary & Plan</h2>
                     
                     <div class="mb-5 bg-white p-4 rounded-lg border border-indigo-200">
@@ -593,8 +623,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- DATA STORE ---
+            // Specialties is now an array of objects: { name: "T&O", time: "10:00", isPreset: true/false }
             let patientData = {
-                arrival: { time: '', specialties: [], specialtiesNotes: '' },
+                arrival: { time: '', specialties: [] }, // Removed specialtiesNotes
                 atmist: { age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phNotes: '' },
                 prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
                 airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, notes: '' },
@@ -643,7 +674,10 @@
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
+                        // Merge to handle structure updates
                         patientData = { ...patientData, ...parsed };
+                        // Ensure specialties is array (fix for old data structure)
+                        if (!Array.isArray(patientData.arrival.specialties)) patientData.arrival.specialties = [];
                         restoreUI();
                     } catch (e) { console.error("Error loading save data", e); }
                 }
@@ -654,15 +688,8 @@
                 const setVal = (id, val) => { const el = getEl(id); if(el) el.value = val || ''; };
                 const setCheck = (id, val) => { const el = getEl(id); if(el) el.checked = !!val; };
 
-                // Specialties
-                if(Array.isArray(p.arrival.specialties)) {
-                    p.arrival.specialties.forEach(s => {
-                        const name = typeof s === 'string' ? s : s.name;
-                        const btn = document.querySelector(`.std-btn[data-spec="${name}"]`);
-                        if(btn) btn.classList.add('active');
-                    });
-                }
-                setVal('specialtyAttendances', p.arrival.specialtiesNotes);
+                // Specialties Restore
+                renderSpecialties(); // This handles button states too
 
                 setVal('age', p.atmist.age);
                 setCheck('ageEstimated', p.atmist.ageEst);
@@ -804,6 +831,67 @@
                 }
             }
 
+            // --- SPECIALTY MANAGEMENT ---
+            function renderSpecialties() {
+                const container = getEl('activeSpecialtiesList');
+                container.innerHTML = '';
+                
+                // Clear all active classes on preset buttons first
+                document.querySelectorAll('[data-spec]').forEach(b => b.classList.remove('active'));
+
+                if (patientData.arrival.specialties.length === 0) {
+                    container.innerHTML = '<span class="text-xs text-slate-400 italic self-center">No specialties recorded yet.</span>';
+                    return;
+                }
+
+                patientData.arrival.specialties.forEach((spec, index) => {
+                    // Update Preset Button State
+                    if (spec.isPreset) {
+                        const btn = document.querySelector(`[data-spec="${spec.name}"]`);
+                        if(btn) btn.classList.add('active');
+                    }
+
+                    // Create Chip
+                    const div = document.createElement('div');
+                    div.className = 'spec-chip';
+                    div.innerHTML = `${spec.name}<span class="time">@ ${spec.time}</span>`;
+                    
+                    const remBtn = document.createElement('button');
+                    remBtn.innerHTML = '&times;';
+                    remBtn.onclick = () => removeSpecialty(index);
+                    div.appendChild(remBtn);
+                    
+                    container.appendChild(div);
+                });
+            }
+
+            function addSpecialty(name, isPreset = false) {
+                if(!name) return;
+                // Avoid duplicates for presets (optional) - logic: remove old, add new time? Or just ignore?
+                // Current logic: If preset exists, remove it (toggle off). If not, add it.
+                if (isPreset) {
+                    const existsIdx = patientData.arrival.specialties.findIndex(s => s.name === name && s.isPreset);
+                    if (existsIdx > -1) {
+                        removeSpecialty(existsIdx);
+                        return;
+                    }
+                }
+                
+                patientData.arrival.specialties.push({
+                    name: name,
+                    time: getTime(),
+                    isPreset: isPreset
+                });
+                renderSpecialties();
+                updateNotes();
+            }
+
+            function removeSpecialty(index) {
+                patientData.arrival.specialties.splice(index, 1);
+                renderSpecialties();
+                updateNotes();
+            }
+
             // --- BUILD UI COMPONENTS ---
             // Breathing Findings
             const bContainer = getEl('breathing_findings');
@@ -886,10 +974,7 @@
                 let h = `<strong>Major Trauma Assessment</strong><br>`;
                 if(p.arrival.time) h += `Patient Arrival Time: <strong>${p.arrival.time}</strong><br>`;
                 
-                let specs = p.arrival.specialties.map(s => {
-                    return typeof s === 'string' ? s : `${s.name} (@ ${s.time})`;
-                });
-                if(p.arrival.specialtiesNotes) specs.push(p.arrival.specialtiesNotes);
+                let specs = p.arrival.specialties.map(s => `${s.name} (@ ${s.time})`);
                 if(specs.length) h += `Specialties Present: ${specs.join(', ')}<br>`;
                 
                 h += `<br><strong>ATMIST</strong><br>`;
@@ -1038,20 +1123,33 @@
             getEl('copySecondary').addEventListener('click', () => copyRichText('secondaryNoteOutput'));
 
             // --- LISTENERS & BINDING ---
+            // Use 'input' event for immediate text updates to avoid information loss
             const bind = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('input', e => { obj[key] = e.target.value; updateNotes(); }); };
             const bindCheck = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.checked; updateNotes(); }); };
+
+            // Specialty Custom Input
+            const specInput = getEl('customSpecInput');
+            const specBtn = getEl('btnAddSpec');
+            const handleAddSpec = () => {
+                const val = specInput.value.trim();
+                if(val) {
+                    addSpecialty(val, false);
+                    specInput.value = '';
+                }
+            };
+            specBtn.addEventListener('click', handleAddSpec);
+            specInput.addEventListener('keypress', e => { if(e.key === 'Enter') handleAddSpec(); });
 
             // Logic Listeners
             document.querySelectorAll('input[name="airwayStatus"]').forEach(r => r.addEventListener('change', e => { 
                 patientData.airway.status = e.target.value; 
-                // Logic: If Patent, maybe we assume no major compromise? Leaving flexible for user override.
                 updateNotes(); 
             }));
             
             document.querySelectorAll('input[name="breathing_o2"]').forEach(r => r.addEventListener('change', e => { 
                 patientData.breathing.o2 = e.target.value; 
                 getEl('fio2_container').classList.toggle('hidden', e.target.value === 'Air');
-                if(e.target.value === 'Air') patientData.breathing.fio2 = ''; // Logic: Clear FiO2 if Air
+                if(e.target.value === 'Air') patientData.breathing.fio2 = ''; 
                 updateNotes(); 
             }));
 
@@ -1067,9 +1165,7 @@
                         patientData.circulation[prop] = true;
                         patientData.circulation[`${prop}Time`] = getTime();
                     } else {
-                        // Logic: Does clicking time update time or toggle off? 
-                        // Let's make it update time if already on, or nothing. 
-                        // To toggle off, user clicks the main button.
+                        // Refresh time if already active
                         patientData.circulation[`${prop}Time`] = getTime();
                     }
                     toggleAccessBtn(type, true);
@@ -1079,17 +1175,14 @@
                 updateNotes();
             }));
 
-            // Button Listeners
+            // Button Listeners (Preset Specialties & Adjuncts)
             document.querySelectorAll('.std-btn').forEach(btn => btn.addEventListener('click', e => {
-                e.target.classList.toggle('active');
                 if(e.target.dataset.spec) {
                      const specName = e.target.dataset.spec;
-                     if(!Array.isArray(patientData.arrival.specialties)) patientData.arrival.specialties = [];
-                     const existingIdx = patientData.arrival.specialties.findIndex(s => (typeof s === 'string' ? s : s.name) === specName);
-                     if(existingIdx === -1) patientData.arrival.specialties.push({ name: specName, time: getTime() });
-                     else patientData.arrival.specialties.splice(existingIdx, 1);
+                     addSpecialty(specName, true);
                 }
                 if(e.target.dataset.adj) {
+                    e.target.classList.toggle('active');
                     const adj = e.target.dataset.adj;
                     if(adj === 'None') patientData.airway.adjuncts = ['None'];
                     else {
@@ -1099,8 +1192,8 @@
                     }
                     if(adj === 'None') document.querySelectorAll('[data-adj]').forEach(b => { if(b.dataset.adj !== 'None') b.classList.remove('active') });
                     else document.querySelector('[data-adj="None"]').classList.remove('active');
+                    updateNotes();
                 }
-                updateNotes();
             }));
 
             // Breathing Findings Listener
@@ -1161,7 +1254,7 @@
             }));
             
             // Standard Inputs
-            bind('specialtyAttendances', patientData.arrival, 'specialtiesNotes');
+            // Removed bind('specialtyAttendances'...) as it's replaced by list
             bind('age', patientData.atmist, 'age');
             bindCheck('ageEstimated', patientData.atmist, 'ageEst');
             bind('timeOfIncident', patientData.atmist, 'time');
@@ -1216,6 +1309,8 @@
 
             bindCheck('headInjury', patientData.disability, 'headInjury');
             document.querySelectorAll('input[name="disability_avpu"]').forEach(r => r.addEventListener('change', e => { patientData.disability.avpu = e.target.value; updateNotes(); }));
+            
+            // Re-verified Pupil Bindings
             bind('disability_pupil_left', patientData.disability, 'pupilL');
             bind('disability_pupil_right', patientData.disability, 'pupilR');
             bind('disability_glucose', patientData.disability, 'glucose');
@@ -1261,17 +1356,26 @@
             bind('problemList', patientData, 'problemList');
 
             // Secondary Survey Tags
-            secContainer.addEventListener('change', (e) => {
+            secContainer.addEventListener('input', (e) => { // Changed from 'change' to 'input' for textareas
                 const areaId = e.target.dataset.area || e.target.id.replace('ss_', '');
                 if (e.target.classList.contains('tag-checkbox')) {
-                    const tag = e.target.value;
-                    if (e.target.checked) patientData.secondary[areaId].tags.push(tag);
-                    else patientData.secondary[areaId].tags = patientData.secondary[areaId].tags.filter(t => t !== tag);
+                     // Checkboxes use 'change' which bubbles, but let's handle it here
                 } else if (e.target.tagName === 'TEXTAREA') {
                     patientData.secondary[areaId].text = e.target.value;
                 }
                 updateNotes();
             });
+            // Separate listener for checkboxes since they don't fire 'input' consistently
+            secContainer.addEventListener('change', (e) => {
+                 const areaId = e.target.dataset.area;
+                 if (e.target.classList.contains('tag-checkbox') && areaId) {
+                    const tag = e.target.value;
+                    if (e.target.checked) patientData.secondary[areaId].tags.push(tag);
+                    else patientData.secondary[areaId].tags = patientData.secondary[areaId].tags.filter(t => t !== tag);
+                    updateNotes();
+                 }
+            });
+
 
             getEl('resetData').addEventListener('click', () => {
                 if(confirm('Reset form? All data will be lost.')) {
