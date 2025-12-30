@@ -127,7 +127,7 @@
                 <div class="flex items-center gap-3">
                     <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-12 md:h-14 w-auto object-contain">
                     <div>
-                        <h1 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border align-middle ml-1">v2.2</span></h1>
+                        <h1 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border align-middle ml-1">v2.3</span></h1>
                         <p class="text-[10px] text-green-600 font-bold flex items-center gap-1" id="saveStatus">
                             <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Auto-save
                         </p>
@@ -136,6 +136,7 @@
             </div>
 
             <nav class="flex flex-wrap items-center gap-1.5 md:gap-2 pb-1">
+                <a href="#sec-zero" class="nav-link bg-slate-800 text-slate-100 border-slate-600 hover:bg-slate-700 hover:text-white">Zero</a>
                 <a href="#sec-arrival" class="nav-link bg-slate-50 border-slate-200">Arr</a>
                 <a href="#sec-atmist" class="nav-link bg-slate-50 border-slate-200">Atm</a>
                 <span class="w-px h-4 bg-slate-300 mx-0.5"></span>
@@ -157,6 +158,34 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <div class="lg:col-span-7 xl:col-span-8 flex flex-col space-y-6">
+
+                <details id="sec-zero" class="bg-slate-800 text-slate-200 p-4 rounded-xl shadow-sm border border-slate-600 group open:ring-2 open:ring-blue-500">
+                    <summary class="font-black text-lg uppercase cursor-pointer flex items-center gap-2 list-none select-none">
+                        <span class="transform group-open:rotate-90 transition inline-block">▶</span> 
+                        Zero Point Survey (Pre-Arrival)
+                    </summary>
+                    <div class="mt-4 space-y-4 text-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-slate-700 p-3 rounded border border-slate-600">
+                                <h4 class="font-bold text-blue-300 mb-2 uppercase">S - Self (I'M SAFE)</h4>
+                                <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_self" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Physical/Cognitive Ready?</span></label>
+                                <p class="text-[10px] text-slate-400">Illness, Meds, Stress, Alcohol, Fatigue, Eating</p>
+                            </div>
+                            <div class="bg-slate-700 p-3 rounded border border-slate-600">
+                                <h4 class="font-bold text-blue-300 mb-2 uppercase">T - Team</h4>
+                                <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_leader" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Leader Identified?</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_roles" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Roles Allocated?</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_brief" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Briefing Complete?</span></label>
+                            </div>
+                            <div class="bg-slate-700 p-3 rounded border border-slate-600">
+                                <h4 class="font-bold text-blue-300 mb-2 uppercase">E - Environment</h4>
+                                <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_env" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Space / Equipment Ready?</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_ppe" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>PPE Donned?</span></label>
+                            </div>
+                        </div>
+                        <textarea id="zps_notes" rows="2" class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded text-sm text-white placeholder-slate-400" placeholder="Pre-arrival notes / Mental Model..."></textarea>
+                    </div>
+                </details>
 
                 <button id="btn-arrival-now" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black text-lg rounded-xl shadow-md border-2 border-blue-800 transition transform active:scale-[0.99] flex items-center justify-center gap-2 group">
                     <svg class="w-6 h-6 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -428,6 +457,14 @@
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border-2 border-slate-300 border-l-[8px] border-l-yellow-400" id="sec-disability">
                     <h3 class="text-2xl font-black text-yellow-700 mb-4">D - Disability</h3>
+
+                    <div class="bg-red-100 border-l-4 border-red-600 p-4 mb-5 rounded shadow-sm flex items-start gap-3">
+                        <div class="text-2xl">💊</div>
+                        <div>
+                            <h4 class="text-red-800 font-black text-sm uppercase">Pain Management Check</h4>
+                            <p class="text-red-700 text-sm font-bold">Has Analgesia been given? If the patient is in pain, consider IV Morphine, Ketamine, or Fentanyl now.</p>
+                        </div>
+                    </div>
                     
                     <div class="mb-4">
                         <label class="flex items-center space-x-2 p-3 bg-yellow-50 border-2 border-yellow-200 rounded-lg w-full mb-4 cursor-pointer hover:bg-yellow-100">
@@ -493,6 +530,27 @@
                     </div>
                 </section>
 
+                <section class="bg-yellow-50 p-5 rounded-xl shadow-sm border-2 border-yellow-400 mb-6">
+                    <h2 class="text-lg font-black text-yellow-900 mb-3 flex items-center gap-2">
+                        🛑 Consultant / Tier 4 Review (Primary Survey)
+                    </h2>
+                    <p class="text-sm text-yellow-800 mb-3 font-medium">Please discuss findings and plan with a senior decision maker.</p>
+                    <div class="flex flex-col md:flex-row gap-3 items-end">
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-yellow-800 uppercase mb-1">Discussed With</label>
+                            <input type="text" id="cp_primary_name" class="w-full px-3 py-2 border border-yellow-300 rounded text-sm bg-white" placeholder="Name / Grade">
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-yellow-800 uppercase mb-1">Plan Agreed</label>
+                             <div class="flex gap-2">
+                                <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-2 border border-yellow-300 rounded"><input type="radio" name="cp_primary_agreed" value="Yes" class="text-yellow-600 focus:ring-yellow-500"><span>Yes</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-2 border border-yellow-300 rounded"><input type="radio" name="cp_primary_agreed" value="Modified" class="text-yellow-600 focus:ring-yellow-500"><span>Modified</span></label>
+                             </div>
+                        </div>
+                        <button type="button" class="time-btn bg-yellow-200 border-yellow-300 text-yellow-900 hover:bg-yellow-300 px-4 py-2.5 rounded h-[42px] font-bold" data-checkpoint="primary">🕒 Time Signed</button>
+                    </div>
+                </section>
+
                 <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400" id="sec-secondary">
                     <h2 class="text-xl font-bold text-slate-800 mb-4 pb-2 border-b border-slate-300">Secondary Survey</h2>
                     
@@ -551,6 +609,27 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <section class="bg-yellow-50 p-5 rounded-xl shadow-sm border-2 border-yellow-400 mb-6">
+                    <h2 class="text-lg font-black text-yellow-900 mb-3 flex items-center gap-2">
+                        🛑 Consultant / Tier 4 Review (Secondary Survey)
+                    </h2>
+                    <p class="text-sm text-yellow-800 mb-3 font-medium">Secondary survey complete. Discuss definitive plan.</p>
+                    <div class="flex flex-col md:flex-row gap-3 items-end">
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-yellow-800 uppercase mb-1">Discussed With</label>
+                            <input type="text" id="cp_secondary_name" class="w-full px-3 py-2 border border-yellow-300 rounded text-sm bg-white" placeholder="Name / Grade">
+                        </div>
+                        <div class="flex-1 w-full">
+                            <label class="block text-xs font-bold text-yellow-800 uppercase mb-1">Plan Agreed</label>
+                             <div class="flex gap-2">
+                                <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-2 border border-yellow-300 rounded"><input type="radio" name="cp_secondary_agreed" value="Yes" class="text-yellow-600 focus:ring-yellow-500"><span>Yes</span></label>
+                                <label class="flex items-center space-x-2 cursor-pointer bg-white px-3 py-2 border border-yellow-300 rounded"><input type="radio" name="cp_secondary_agreed" value="Modified" class="text-yellow-600 focus:ring-yellow-500"><span>Modified</span></label>
+                             </div>
+                        </div>
+                        <button type="button" class="time-btn bg-yellow-200 border-yellow-300 text-yellow-900 hover:bg-yellow-300 px-4 py-2.5 rounded h-[42px] font-bold" data-checkpoint="secondary">🕒 Time Signed</button>
                     </div>
                 </section>
 
@@ -625,6 +704,7 @@
             // --- DATA STORE ---
             // Specialties is now an array of objects: { name: "T&O", time: "10:00", isPreset: true/false }
             let patientData = {
+                zero: { self: false, leader: false, roles: false, brief: false, env: false, ppe: false, notes: '' },
                 arrival: { time: '', specialties: [] }, // Removed specialtiesNotes
                 atmist: { age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phNotes: '' },
                 prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
@@ -640,6 +720,10 @@
                     imaging: '' 
                 },
                 secondary: {},
+                checkpoints: {
+                    primary: { name: '', agreed: '', time: '' },
+                    secondary: { name: '', agreed: '', time: '' }
+                },
                 neuroExam: { pul: '5/5', sul: 'Intact', pur: '5/5', sur: 'Intact', pll: '5/5', sll: 'Intact', plr: '5/5', slr: 'Intact' },
                 definitive: { furtherImaging: false, furtherImagingDetails: '', meds: [], disposition: '', plan: '' },
                 problemList: ''
@@ -676,6 +760,9 @@
                         const parsed = JSON.parse(saved);
                         // Merge to handle structure updates
                         patientData = { ...patientData, ...parsed };
+                        // Ensure defaults for new fields
+                        if(!patientData.zero) patientData.zero = { self: false, leader: false, roles: false, brief: false, env: false, ppe: false, notes: '' };
+                        if(!patientData.checkpoints) patientData.checkpoints = { primary: { name: '', agreed: '', time: '' }, secondary: { name: '', agreed: '', time: '' } };
                         // Ensure specialties is array (fix for old data structure)
                         if (!Array.isArray(patientData.arrival.specialties)) patientData.arrival.specialties = [];
                         restoreUI();
@@ -687,6 +774,15 @@
                 const p = patientData;
                 const setVal = (id, val) => { const el = getEl(id); if(el) el.value = val || ''; };
                 const setCheck = (id, val) => { const el = getEl(id); if(el) el.checked = !!val; };
+
+                // Zero Point Restore
+                setCheck('zps_self', p.zero.self);
+                setCheck('zps_leader', p.zero.leader);
+                setCheck('zps_roles', p.zero.roles);
+                setCheck('zps_brief', p.zero.brief);
+                setCheck('zps_env', p.zero.env);
+                setCheck('zps_ppe', p.zero.ppe);
+                setVal('zps_notes', p.zero.notes);
 
                 // Specialties Restore
                 renderSpecialties(); // This handles button states too
@@ -795,6 +891,19 @@
                 });
                 
                 setVal('imagingDecisions', p.investigations.imaging);
+                
+                // Restore Checkpoint 1
+                setVal('cp_primary_name', p.checkpoints.primary.name);
+                if(p.checkpoints.primary.agreed) {
+                    const r = document.querySelector(`input[name="cp_primary_agreed"][value="${p.checkpoints.primary.agreed}"]`);
+                    if(r) r.checked = true;
+                }
+                if(p.checkpoints.primary.time) {
+                    const btn = document.querySelector('button[data-checkpoint="primary"]');
+                    btn.classList.add('recorded');
+                    btn.innerText = p.checkpoints.primary.time;
+                }
+
                 setCheck('furtherImaging', p.definitive.furtherImaging);
                 if(p.definitive.furtherImaging) getEl('furtherImagingDetails').classList.remove('hidden');
                 setVal('furtherImagingDetails', p.definitive.furtherImagingDetails);
@@ -807,6 +916,19 @@
                     const btn = document.querySelector(`.disp-btn[data-val="${p.definitive.disposition}"]`);
                     if(btn) btn.classList.add('active');
                 }
+                
+                // Restore Checkpoint 2
+                setVal('cp_secondary_name', p.checkpoints.secondary.name);
+                if(p.checkpoints.secondary.agreed) {
+                    const r = document.querySelector(`input[name="cp_secondary_agreed"][value="${p.checkpoints.secondary.agreed}"]`);
+                    if(r) r.checked = true;
+                }
+                if(p.checkpoints.secondary.time) {
+                    const btn = document.querySelector('button[data-checkpoint="secondary"]');
+                    btn.classList.add('recorded');
+                    btn.innerText = p.checkpoints.secondary.time;
+                }
+
                 setVal('definitivePlan', p.definitive.plan);
                 setVal('problemList', p.problemList);
             }
@@ -972,6 +1094,12 @@
 
                 // --- HTML BUILDER ---
                 let h = `<strong>Major Trauma Assessment</strong><br>`;
+
+                // Zero Point Note
+                if (p.zero.self || p.zero.leader || p.zero.notes) {
+                     h += `Zero Point Survey (Preparation) Completed.<br>`;
+                }
+
                 if(p.arrival.time) h += `Patient Arrival Time: <strong>${p.arrival.time}</strong><br>`;
                 
                 let specs = p.arrival.specialties.map(s => `${s.name} (@ ${s.time})`);
@@ -1053,6 +1181,11 @@
                 if(p.investigations.gasType === 'ABG' && v.abgFio2) h+= ` (FiO2: ${v.abgFio2}%)`;
                 h += `<br>Plan/Imaging: ${p.investigations.imaging}<br>`;
                 
+                // Checkpoint 1 Note
+                if (p.checkpoints.primary.name || p.checkpoints.primary.agreed) {
+                    h += `<br><strong>Consultant/Reg Review (Primary):</strong> Discussed with ${p.checkpoints.primary.name}. Plan Agreed: ${p.checkpoints.primary.agreed}. Signed: ${p.checkpoints.primary.time}<br>`;
+                }
+
                 getEl('initialNoteOutput').innerHTML = h;
 
                 // --- SECONDARY SURVEY HTML ---
@@ -1078,6 +1211,11 @@
                 s += `Upper Limbs: L (Pow ${ne.pul}, Sen ${ne.sul}) | R (Pow ${ne.pur}, Sen ${ne.sur})<br>`;
                 s += `Lower Limbs: L (Pow ${ne.pll}, Sen ${ne.sll}) | R (Pow ${ne.plr}, Sen ${ne.slr})<br>`;
                 
+                // Checkpoint 2 Note
+                if (p.checkpoints.secondary.name || p.checkpoints.secondary.agreed) {
+                    s += `<br><strong>Consultant/Reg Review (Secondary):</strong> Discussed with ${p.checkpoints.secondary.name}. Plan Agreed: ${p.checkpoints.secondary.agreed}. Signed: ${p.checkpoints.secondary.time}<br>`;
+                }
+
                 s += `<br><strong>Definitive Care Plan</strong><br>`;
                 if(p.definitive.furtherImaging) s+= `- Further Imaging Required: ${p.definitive.furtherImagingDetails}<br>`;
                 if(p.definitive.meds.length) s += `- Time Critical Meds Prescribed: ${p.definitive.meds.join(', ')}<br>`;
@@ -1156,6 +1294,18 @@
             // Time Buttons Listener
             document.querySelectorAll('.time-btn').forEach(btn => btn.addEventListener('click', e => {
                 const type = e.target.dataset.for;
+                const checkpoint = e.target.dataset.checkpoint;
+
+                if (checkpoint) {
+                    // Handle consultant sign-off buttons
+                    const time = getTime();
+                    patientData.checkpoints[checkpoint].time = time;
+                    e.target.innerText = time;
+                    e.target.classList.add('recorded');
+                    updateNotes();
+                    return;
+                }
+
                 if(type === 'Binder' || type === 'KTD' || type === 'Tourniquet') {
                     // It's a toggle logic coupled with the access-btn
                     const prop = type.toLowerCase();
@@ -1254,7 +1404,16 @@
             }));
             
             // Standard Inputs
-            // Removed bind('specialtyAttendances'...) as it's replaced by list
+            // Zero Point
+            bindCheck('zps_self', patientData.zero, 'self');
+            bindCheck('zps_leader', patientData.zero, 'leader');
+            bindCheck('zps_roles', patientData.zero, 'roles');
+            bindCheck('zps_brief', patientData.zero, 'brief');
+            bindCheck('zps_env', patientData.zero, 'env');
+            bindCheck('zps_ppe', patientData.zero, 'ppe');
+            bind('zps_notes', patientData.zero, 'notes');
+
+            // ATMIST / Arrival
             bind('age', patientData.atmist, 'age');
             bindCheck('ageEstimated', patientData.atmist, 'ageEst');
             bind('timeOfIncident', patientData.atmist, 'time');
@@ -1333,6 +1492,14 @@
             });
 
             bind('imagingDecisions', patientData.investigations, 'imaging');
+            
+            // Checkpoints logic
+            bind('cp_primary_name', patientData.checkpoints.primary, 'name');
+            document.querySelectorAll('input[name="cp_primary_agreed"]').forEach(r => r.addEventListener('change', e => { patientData.checkpoints.primary.agreed = e.target.value; updateNotes(); }));
+            
+            bind('cp_secondary_name', patientData.checkpoints.secondary, 'name');
+            document.querySelectorAll('input[name="cp_secondary_agreed"]').forEach(r => r.addEventListener('change', e => { patientData.checkpoints.secondary.agreed = e.target.value; updateNotes(); }));
+
             bind('furtherImagingDetails', patientData.definitive, 'furtherImagingDetails');
             getEl('furtherImaging').addEventListener('change', e => {
                 patientData.definitive.furtherImaging = e.target.checked;
