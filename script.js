@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- DATA STORE ---
-    // Specialties is now an array of objects: { name: "T&O", time: "10:00", isPreset: true/false }
     let patientData = {
         zero: { self: false, leader: false, roles: false, brief: false, env: false, ppe: false, notes: '' },
-        arrival: { time: '', specialties: [] }, // Removed specialtiesNotes
+        arrival: { time: '', specialties: [] },
         atmist: { age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phNotes: '' },
         prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
         airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, notes: '' },
@@ -17,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
             secGasType: 'VBG', vbgSec: {ph:'', pco2:'', po2:'', hco3:'', be:'', lac:'', ca:''},
             imaging: '' 
         },
-        secondary: {},
+        secondary: { visualAcuity: { left: '', right: '' } }, // Added VA
         checkpoints: {
             primary: { name: '', agreed: '', time: '' },
             secondary: { name: '', agreed: '', time: '' }
@@ -27,22 +26,63 @@ document.addEventListener('DOMContentLoaded', () => {
         problemList: ''
     };
 
+    // Added 'Hands' and defined 'normal' findings for everything
     const SS_AREAS = [
-        { id: 'head', label: 'Head', tags: ['Normocephalic', 'Laceration', 'Haematoma', 'Bony Tenderness'] },
-        { id: 'face', label: 'Face', tags: ['Symmetrical', 'Laceration', 'Bony Tenderness', 'Le Fort instability'] },
-        { id: 'eyes', label: 'Eyes', tags: ['PERLA', 'EOMI', 'Racoon Eyes', 'Subconj. Haem'] },
-        { id: 'neck', label: 'Neck', tags: ['Trachea Central', 'Non-tender', 'Deformity', 'Steps'] },
-        { id: 'chest', label: 'Chest', tags: ['Expansion Eq.', 'Non-tender', 'Crepitus', 'Bruising'] },
-        { id: 'abdo', label: 'Abdomen', tags: ['Soft', 'Non-tender', 'Distended', 'Seatbelt Sign', 'Guarding'] },
-        { id: 'pelvis', label: 'Pelvis', tags: ['Stable', 'Non-tender', 'Unstable', 'Bruising'] },
-        { id: 'back', label: 'Back', tags: ['No steps', 'Non-tender', 'Step deformity', 'Bruising'] },
-        { id: 'limbs', label: 'Limbs', tags: ['Move 4 limbs', 'Neuro Intact', 'Deformity', 'Fracture Suspected'] }
+        { 
+            id: 'head', label: 'Head', 
+            normal: 'Normocephalic, atraumatic. No boggy masses.',
+            tags: ['Laceration', 'Haematoma', 'Bony Tenderness', 'Depressed #', 'Base of Skull Signs'] 
+        },
+        { 
+            id: 'face', label: 'Face', 
+            normal: 'No bony tenderness, deformity or asymmetry.',
+            tags: ['Laceration', 'Bony Tenderness', 'Le Fort instability', 'Nasal Deformity', 'Septal Haematoma'] 
+        },
+        { 
+            id: 'eyes', label: 'Eyes', 
+            normal: 'PERLA. Extra-ocular movements intact. No injury.',
+            tags: ['Racoon Eyes', 'Subconj. Haem', 'Hyphema', 'Global Rupture Suspected', 'Entrapment'] 
+        },
+        { 
+            id: 'neck', label: 'Neck', 
+            normal: 'Trachea central. No step deformity or tenderness. Soft tissues normal.',
+            tags: ['C-Spine Tenderness', 'Step Deformity', 'Tracheal Deviation', 'Subcut Emphysema', 'Hematoma'] 
+        },
+        { 
+            id: 'chest', label: 'Chest', 
+            normal: 'Chest expansion equal. Resonant. Vesicular breath sounds. No tenderness.',
+            tags: ['Crepitus', 'Bruising', 'Rib Tenderness', 'Reduced Expansion', 'Surgical Emphysema'] 
+        },
+        { 
+            id: 'abdo', label: 'Abdomen', 
+            normal: 'Soft, non-tender, non-distended. No guarding.',
+            tags: ['Distended', 'Seatbelt Sign', 'Guarding', 'Rigidity', 'Tenderness', 'Evisceration'] 
+        },
+        { 
+            id: 'pelvis', label: 'Pelvis', 
+            normal: 'Stable. No tenderness on palpation.',
+            tags: ['Unstable', 'Tenderness', 'Bruising', 'Blood at Meatus'] 
+        },
+        { 
+            id: 'back', label: 'Back', 
+            normal: 'No spinal tenderness. No steps. No bruising.',
+            tags: ['Step deformity', 'Spinal Tenderness', 'Paraspinal Tenderness', 'Bruising'] 
+        },
+        { 
+            id: 'limbs', label: 'Limbs', 
+            normal: 'No gross deformity. Soft compartments. Neurovascularly intact.',
+            tags: ['Deformity', 'Open Fracture', 'Compartment Tightness', 'Neuro Deficit', 'Vascular Deficit'] 
+        },
+        {
+            id: 'hands', label: 'Hands',
+            normal: 'Full range of movement. Neurovascularly intact. No tendon injury.',
+            tags: ['Laceration', 'Tendon Injury Suspected', 'Nerve Deficit', 'Swelling', 'Amputation']
+        }
     ];
 
     const BREATHING_OPTS = ['Chest Wall Injury', 'Sucking Chest Wound', 'Flail Segment', 'Surgical Emphysema', 'Crepitus', 'Bruising', 'Deformity', 'Reduced Expansion'];
     const INJURY_SITES = ['Scalp', 'Face', 'Chest', 'Abdomen', 'Pelvis', 'L Arm', 'R Arm', 'L Leg', 'R Leg', 'Back'];
 
-    // --- UI HELPERS ---
     const getEl = (id) => document.getElementById(id);
     const getTime = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
@@ -56,13 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                // Merge to handle structure updates
                 patientData = { ...patientData, ...parsed };
-                // Ensure defaults for new fields
-                if(!patientData.zero) patientData.zero = { self: false, leader: false, roles: false, brief: false, env: false, ppe: false, notes: '' };
-                if(!patientData.checkpoints) patientData.checkpoints = { primary: { name: '', agreed: '', time: '' }, secondary: { name: '', agreed: '', time: '' } };
-                // Ensure specialties is array (fix for old data structure)
-                if (!Array.isArray(patientData.arrival.specialties)) patientData.arrival.specialties = [];
+                // Deep merge safeguards for new fields
+                if(!patientData.secondary) patientData.secondary = { visualAcuity: {left:'', right:''} };
+                if(!patientData.secondary.visualAcuity) patientData.secondary.visualAcuity = {left:'', right:''};
                 restoreUI();
             } catch (e) { console.error("Error loading save data", e); }
         }
@@ -73,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const setVal = (id, val) => { const el = getEl(id); if(el) el.value = val || ''; };
         const setCheck = (id, val) => { const el = getEl(id); if(el) el.checked = !!val; };
 
-        // Zero Point Restore
+        // Zero
         setCheck('zps_self', p.zero.self);
         setCheck('zps_leader', p.zero.leader);
         setCheck('zps_roles', p.zero.roles);
@@ -82,28 +119,30 @@ document.addEventListener('DOMContentLoaded', () => {
         setCheck('zps_ppe', p.zero.ppe);
         setVal('zps_notes', p.zero.notes);
 
-        // Specialties Restore
-        renderSpecialties(); // This handles button states too
+        // Specialties
+        renderSpecialties();
 
+        // ATMIST
         setVal('age', p.atmist.age);
         setCheck('ageEstimated', p.atmist.ageEst);
         setVal('timeOfIncident', p.atmist.time);
         setVal('mechanism', p.atmist.mech);
         setVal('injuries', p.atmist.inj);
         setVal('signs', p.atmist.signs);
-        
         p.atmist.phTreatments.forEach(t => {
             const btn = document.querySelector(`.ph-btn[data-t="${t}"]`);
             if(btn) btn.classList.add('active');
         });
         setVal('ph_treatments_free', p.atmist.phNotes);
+        
+        // Pre-hosp
         setVal('preHospitalOther', p.prehosp.notes);
         ['a','m','p','l','e'].forEach(k => setVal(`history_${k}`, p.prehosp.history[k]));
         
+        // Airway
         setCheck('preHospitalRSI', p.airway.rsi);
         if(p.airway.rsi) getEl('rsiDetails').classList.remove('hidden');
         ['size','length','grade','etco2','drugs'].forEach(k => setVal(`rsi_${k}`, p.airway.rsiData[k]));
-        
         if(p.airway.status) {
             const r = document.querySelector(`input[name="airwayStatus"][value="${p.airway.status}"]`);
             if(r) r.checked = true;
@@ -116,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setCheck('cspine_blocks', p.airway.blocks);
         setVal('airway_notes', p.airway.notes);
 
+        // Breathing
         setVal('breathing_rr', p.breathing.rr);
         setVal('breathing_sats', p.breathing.sats);
         if(p.breathing.o2) {
@@ -126,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setVal('breathing_fio2', p.breathing.fio2);
         setVal('breathing_notes', p.breathing.notes);
         
+        // Circulation
         setVal('circ_hr', p.circulation.hr);
         setVal('circ_bp', p.circulation.bp);
         setVal('circ_capRefill', p.circulation.crt);
@@ -138,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const chk = document.querySelector(`.access-chk[value="${l}"]`);
             if(chk) chk.checked = true;
         });
-        
         if(p.circulation.binder) toggleAccessBtn('Binder', true);
         if(p.circulation.ktd) toggleAccessBtn('KTD', true);
         if(p.circulation.tourniquet) toggleAccessBtn('Tourniquet', true);
@@ -160,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setVal('mhp_time', p.mhp.time);
         ['prbc','ffp','plt','cryo'].forEach(k => setVal(`mhp_${k}`, p.mhp[k]));
 
+        // Disability
         setCheck('headInjury', p.disability.headInjury);
         if(p.disability.avpu) {
             const r = document.querySelector(`input[name="disability_avpu"][value="${p.disability.avpu}"]`);
@@ -169,13 +210,14 @@ document.addEventListener('DOMContentLoaded', () => {
         setVal('disability_pupil_right', p.disability.pupilR);
         setVal('disability_glucose', p.disability.glucose);
 
+        // Exposure
         setVal('exposure_temp', p.exposure.temp);
         setVal('exposure_notes', p.exposure.notes);
 
+        // Investigations
         const rGas = document.querySelector(`input[name="gasType"][value="${p.investigations.gasType}"]`);
         if(rGas) rGas.checked = true;
         if(p.investigations.gasType === 'ABG') getEl('gasFio2Container').classList.remove('hidden');
-
         const rSecGas = document.querySelector(`input[name="secGasType"][value="${p.investigations.secGasType}"]`);
         if(rSecGas) rSecGas.checked = true;
 
@@ -187,10 +229,13 @@ document.addEventListener('DOMContentLoaded', () => {
              const map = {lac:'lactate', ca:'ionisedCa'};
              setVal(`vbgSec_${map[k]||k}`, p.investigations.vbgSec[k]);
         });
-        
         setVal('imagingDecisions', p.investigations.imaging);
         
-        // Restore Checkpoint 1
+        // Secondary Survey Extras
+        setVal('va_left', p.secondary.visualAcuity.left);
+        setVal('va_right', p.secondary.visualAcuity.right);
+
+        // Checkpoints
         setVal('cp_primary_name', p.checkpoints.primary.name);
         if(p.checkpoints.primary.agreed) {
             const r = document.querySelector(`input[name="cp_primary_agreed"][value="${p.checkpoints.primary.agreed}"]`);
@@ -201,21 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('recorded');
             btn.innerText = p.checkpoints.primary.time;
         }
-
-        setCheck('furtherImaging', p.definitive.furtherImaging);
-        if(p.definitive.furtherImaging) getEl('furtherImagingDetails').classList.remove('hidden');
-        setVal('furtherImagingDetails', p.definitive.furtherImagingDetails);
-        
-        p.definitive.meds.forEach(m => {
-            const chk = document.querySelector(`.med-check[value="${m}"]`);
-            if(chk) chk.checked = true;
-        });
-        if(p.definitive.disposition) {
-            const btn = document.querySelector(`.disp-btn[data-val="${p.definitive.disposition}"]`);
-            if(btn) btn.classList.add('active');
-        }
-        
-        // Restore Checkpoint 2
         setVal('cp_secondary_name', p.checkpoints.secondary.name);
         if(p.checkpoints.secondary.agreed) {
             const r = document.querySelector(`input[name="cp_secondary_agreed"][value="${p.checkpoints.secondary.agreed}"]`);
@@ -227,6 +257,18 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.innerText = p.checkpoints.secondary.time;
         }
 
+        // Definitive
+        setCheck('furtherImaging', p.definitive.furtherImaging);
+        if(p.definitive.furtherImaging) getEl('furtherImagingDetails').classList.remove('hidden');
+        setVal('furtherImagingDetails', p.definitive.furtherImagingDetails);
+        p.definitive.meds.forEach(m => {
+            const chk = document.querySelector(`.med-check[value="${m}"]`);
+            if(chk) chk.checked = true;
+        });
+        if(p.definitive.disposition) {
+            const btn = document.querySelector(`.disp-btn[data-val="${p.definitive.disposition}"]`);
+            if(btn) btn.classList.add('active');
+        }
         setVal('definitivePlan', p.definitive.plan);
         setVal('problemList', p.problemList);
     }
@@ -255,8 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSpecialties() {
         const container = getEl('activeSpecialtiesList');
         container.innerHTML = '';
-        
-        // Clear all active classes on preset buttons first
         document.querySelectorAll('[data-spec]').forEach(b => b.classList.remove('active'));
 
         if (patientData.arrival.specialties.length === 0) {
@@ -265,30 +305,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         patientData.arrival.specialties.forEach((spec, index) => {
-            // Update Preset Button State
             if (spec.isPreset) {
                 const btn = document.querySelector(`[data-spec="${spec.name}"]`);
                 if(btn) btn.classList.add('active');
             }
-
-            // Create Chip
             const div = document.createElement('div');
             div.className = 'spec-chip';
             div.innerHTML = `${spec.name}<span class="time">@ ${spec.time}</span>`;
-            
             const remBtn = document.createElement('button');
             remBtn.innerHTML = '&times;';
             remBtn.onclick = () => removeSpecialty(index);
             div.appendChild(remBtn);
-            
             container.appendChild(div);
         });
     }
 
     function addSpecialty(name, isPreset = false) {
         if(!name) return;
-        // Avoid duplicates for presets (optional) - logic: remove old, add new time? Or just ignore?
-        // Current logic: If preset exists, remove it (toggle off). If not, add it.
         if (isPreset) {
             const existsIdx = patientData.arrival.specialties.findIndex(s => s.name === name && s.isPreset);
             if (existsIdx > -1) {
@@ -296,12 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
         }
-        
-        patientData.arrival.specialties.push({
-            name: name,
-            time: getTime(),
-            isPreset: isPreset
-        });
+        patientData.arrival.specialties.push({ name: name, time: getTime(), isPreset: isPreset });
         renderSpecialties();
         updateNotes();
     }
@@ -313,7 +341,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- BUILD UI COMPONENTS ---
-    // Breathing Findings
     const bContainer = getEl('breathing_findings');
     BREATHING_OPTS.forEach(opt => {
         bContainer.innerHTML += `
@@ -326,13 +353,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
     });
 
-    // Injury Sites
     const injContainer = getEl('injury_grid');
     INJURY_SITES.forEach(site => {
         injContainer.innerHTML += `<button class="injury-btn py-2 border-2 rounded-md text-xs font-bold" data-site="${site}">${site}</button>`;
     });
 
-    // Secondary Survey Areas
     const secContainer = getEl('secondary_container');
     SS_AREAS.forEach(area => {
         const div = document.createElement('div');
@@ -342,12 +367,12 @@ document.addEventListener('DOMContentLoaded', () => {
             tagsHtml += `<label class="cursor-pointer"><input type="checkbox" class="tag-checkbox hidden" data-area="${area.id}" value="${tag}"><span class="px-2 py-1 text-xs border-2 border-slate-300 rounded hover:bg-slate-50 transition select-none font-bold text-slate-600">${tag}</span></label>`;
         });
         tagsHtml += `</div>`;
-        div.innerHTML = `<label class="block text-xs font-black text-slate-600 uppercase mb-1">${area.label}</label>${tagsHtml}<textarea id="ss_${area.id}" rows="1" class="w-full px-3 py-2 border border-slate-400 rounded text-sm font-medium" placeholder="Details..."></textarea>`;
+        
+        div.innerHTML = `<label class="block text-xs font-black text-slate-600 uppercase mb-1">${area.label}</label>${tagsHtml}<textarea id="ss_${area.id}" rows="1" class="w-full px-3 py-2 border border-slate-400 rounded text-sm font-medium" placeholder="Additional details for ${area.label}..."></textarea>`;
         secContainer.appendChild(div);
         if(!patientData.secondary[area.id]) patientData.secondary[area.id] = { tags: [], text: '' };
     });
 
-    // Neuro Selects
     const powerOpts = ['5/5', '4/5', '3/5', '2/5', '1/5', '0/5'];
     const sensOpts = ['Intact', 'Reduced', 'Absent', 'Paraesthesia'];
     document.querySelectorAll('.neuro-select').forEach(sel => {
@@ -369,7 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateNotes() {
         const p = patientData;
         
-        // --- CALCULATIONS ---
+        // --- MAP Calculation ---
         let calcHtml = "";
         const bp = p.circulation.bp || "";
         const hr = parseInt(p.circulation.hr);
@@ -380,9 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(!isNaN(sys) && !isNaN(dia)) {
                 const map = Math.round((sys + (2*dia))/3);
                 let siStr = "";
-                if(!isNaN(hr) && sys > 0) {
-                    siStr = ` | SI: ${(hr/sys).toFixed(2)}`;
-                }
+                if(!isNaN(hr) && sys > 0) siStr = ` | SI: ${(hr/sys).toFixed(2)}`;
                 const calcDisplay = getEl('calc_results');
                 calcDisplay.innerHTML = `MAP: ${map} mmHg${siStr}`;
                 calcDisplay.classList.remove('hidden');
@@ -390,14 +413,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- HTML BUILDER ---
+        // --- PRIMARY SURVEY HTML ---
         let h = `<strong>Major Trauma Assessment</strong><br>`;
 
-        // Zero Point Note
-        if (p.zero.self || p.zero.leader || p.zero.notes) {
-             h += `Zero Point Survey (Preparation) Completed.<br>`;
-        }
-
+        if (p.zero.self || p.zero.leader || p.zero.notes) h += `Zero Point Survey (Preparation) Completed.<br>`;
         if(p.arrival.time) h += `Patient Arrival Time: <strong>${p.arrival.time}</strong><br>`;
         
         let specs = p.arrival.specialties.map(s => `${s.name} (@ ${s.time})`);
@@ -415,24 +434,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         h += `<br><strong>PRIMARY SURVEY</strong><br>`;
         
-        // Airway
+        // A
         h += `<strong>A - Airway:</strong> ${p.airway.status}`;
         if(p.airway.status === 'Patent' && p.airway.adjuncts.length > 0) h += " (Maintained with adjuncts)";
         h += ". ";
         if(p.airway.adjuncts.length) h += `Adjuncts: ${p.airway.adjuncts.join(', ')}. `;
-        if (p.airway.rsi) {
-            h += `<strong>Pre-Hosp RSI:</strong> Size ${p.airway.rsiData.size}, Length ${p.airway.rsiData.length}cm, Grade ${p.airway.rsiData.grade}, ETCO2 ${p.airway.rsiData.etco2}. Drugs: ${p.airway.rsiData.drugs}. `;
-        }
+        if (p.airway.rsi) h += `<strong>Pre-Hosp RSI:</strong> Size ${p.airway.rsiData.size}, Length ${p.airway.rsiData.length}cm, Grade ${p.airway.rsiData.grade}, ETCO2 ${p.airway.rsiData.etco2}. Drugs: ${p.airway.rsiData.drugs}. `;
         if(p.airway.collar || p.airway.blocks) h += `C-Spine: ${p.airway.collar?'Collar ':''}${p.airway.blocks?'Blocks':''}. `;
         if(p.airway.notes) h += ` ${p.airway.notes}`;
         h += "<br>";
         
-        // Breathing
+        // B
         let o2 = p.breathing.o2 === 'Air' ? 'Air' : `Oxygen ${p.breathing.fio2}`;
         h += `<strong>B - Breathing:</strong> RR ${p.breathing.rr} | Sats ${p.breathing.sats}% (${o2}).<br>`;
-        if(p.breathing.findings.length) {
-            h += `&nbsp;&nbsp;&nbsp;Findings: ${p.breathing.findings.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
-        }
+        if(p.breathing.findings.length) h += `&nbsp;&nbsp;&nbsp;Findings: ${p.breathing.findings.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
         const currentBFindings = p.breathing.findings.map(f => f.f);
         const negB = BREATHING_OPTS.filter(opt => !currentBFindings.includes(opt));
         if (negB.length > 0) {
@@ -442,15 +457,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.breathing.notes) h += `${p.breathing.notes}`;
         h += "<br>";
         
-        // Circulation
+        // C
         h += `<strong>C - Circulation:</strong> HR ${p.circulation.hr} | BP ${p.circulation.bp}${calcHtml} | CRT ${p.circulation.crt}s.<br>`;
         if(p.circulation.txa && p.circulation.txa !== 'None') h += `&nbsp;&nbsp;&nbsp;<strong>TXA Given:</strong> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime})` : ''}.<br>`;
-        
         if(p.circulation.lines.length) h += `&nbsp;&nbsp;&nbsp;Access: ${p.circulation.lines.join(', ')}.<br>`;
-        
         if(p.circulation.bleeding.length) h += `&nbsp;&nbsp;&nbsp;<strong>Bleeding Sites:</strong> ${p.circulation.bleeding.join(', ')}.<br>`;
-        const negSites = INJURY_SITES.filter(s => !p.circulation.bleeding.includes(s));
-        if(negSites.length > 0) h += `&nbsp;&nbsp;&nbsp;<em>No obvious external bleeding:</em> ${negSites.join(', ')}.<br>`;
         
         let interventions = [];
         if(p.circulation.binder) interventions.push(`Pelvic Binder ${p.circulation.binderTime ? `(@ ${p.circulation.binderTime})` : ''}`);
@@ -463,27 +474,25 @@ document.addEventListener('DOMContentLoaded', () => {
             h += `&nbsp;&nbsp;&nbsp;<strong>⚠️ MHP ACTIVATED</strong> (${p.mhp.time || 'Time Not Set'})<br>&nbsp;&nbsp;&nbsp;Given: PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.<br>`;
         }
 
-        // Disability
+        // D
         let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
         h += `<strong>D - Disability:</strong> AVPU ${p.disability.avpu} | GCS ${gcsTot} (E${p.disability.gcsE} V${p.disability.gcsV} M${p.disability.gcsM}).<br>`;
         h += `&nbsp;&nbsp;&nbsp;Pupils: L ${p.disability.pupilL || '-'} | R ${p.disability.pupilR || '-'}. Blood Glucose: ${p.disability.glucose} mmol/L.<br>`;
         if(p.disability.headInjury) h += `&nbsp;&nbsp;&nbsp;<strong>⚠️ Head Injury Suspected</strong><br>`;
         
-        // Exposure
+        // E
         h += `<strong>E - Exposure:</strong> Temp ${p.exposure.temp}°C. ${p.exposure.notes}<br>`;
         
-        // Inv
+        // Investigations
         const v = p.investigations.vbg;
         h += `<br><strong>Investigations:</strong><br>`;
         h += `${p.investigations.gasType}: pH ${v.ph} | pCO2 ${v.pco2} | pO2 ${v.po2} | HCO3 ${v.hco3} | BE ${v.be} | Lac ${v.lac} | Ca ${v.ca}`;
         if(p.investigations.gasType === 'ABG' && v.abgFio2) h+= ` (FiO2: ${v.abgFio2}%)`;
         h += `<br>Plan/Imaging: ${p.investigations.imaging}<br>`;
         
-        // Checkpoint 1 Note
         if (p.checkpoints.primary.name || p.checkpoints.primary.agreed) {
             h += `<br><strong>Consultant/Reg Review (Primary):</strong> Discussed with ${p.checkpoints.primary.name}. Plan Agreed: ${p.checkpoints.primary.agreed}. Signed: ${p.checkpoints.primary.time}<br>`;
         }
-
         getEl('initialNoteOutput').innerHTML = h;
 
         // --- SECONDARY SURVEY HTML ---
@@ -492,15 +501,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if(vSec.ph || vSec.lac) {
             s += `<strong>Repeat ${p.investigations.secGasType}:</strong> pH ${vSec.ph} | pCO2 ${vSec.pco2} | pO2 ${vSec.po2} | HCO3 ${vSec.hco3} | BE ${vSec.be} | Lac ${vSec.lac}<br><br>`;
         }
+        
+        if(p.secondary.visualAcuity.left || p.secondary.visualAcuity.right) {
+            s += `<strong>Visual Acuity:</strong> Left: ${p.secondary.visualAcuity.left || 'Not tested'}, Right: ${p.secondary.visualAcuity.right || 'Not tested'}.<br><br>`;
+        }
 
+        // Loop through areas and apply "Normal vs Pathology" Logic
         SS_AREAS.forEach(area => {
             const data = p.secondary[area.id];
             if(data) {
                 const hasTags = data.tags.length > 0;
                 const hasText = data.text.length > 0;
-                if (hasTags || hasText) {
-                    s += `<strong>${area.label}:</strong> ${data.tags.join(', ')}${hasTags && hasText ? '. ' : ''}${data.text}<br>`;
+                
+                s += `<strong>${area.label}:</strong> `;
+                
+                if (!hasTags && !hasText) {
+                    // Default to normal if defined
+                    s += area.normal ? `${area.normal}` : `No abnormalities detected.`;
+                } else {
+                    // Show pathology
+                    if (hasTags) s += `${data.tags.join(', ')}. `;
+                    if (hasText) s += `${data.text}`;
                 }
+                s += `<br>`;
             }
         });
 
@@ -509,7 +532,6 @@ document.addEventListener('DOMContentLoaded', () => {
         s += `Upper Limbs: L (Pow ${ne.pul}, Sen ${ne.sul}) | R (Pow ${ne.pur}, Sen ${ne.sur})<br>`;
         s += `Lower Limbs: L (Pow ${ne.pll}, Sen ${ne.sll}) | R (Pow ${ne.plr}, Sen ${ne.slr})<br>`;
         
-        // Checkpoint 2 Note
         if (p.checkpoints.secondary.name || p.checkpoints.secondary.agreed) {
             s += `<br><strong>Consultant/Reg Review (Secondary):</strong> Discussed with ${p.checkpoints.secondary.name}. Plan Agreed: ${p.checkpoints.secondary.agreed}. Signed: ${p.checkpoints.secondary.time}<br>`;
         }
@@ -533,12 +555,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const htmlBlob = new Blob([el.innerHTML], { type: 'text/html' });
             const textBlob = new Blob([el.innerText], { type: 'text/plain' });
             await navigator.clipboard.write([
-                new ClipboardItem({ 
-                    'text/html': htmlBlob, 
-                    'text/plain': textBlob 
-                })
+                new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })
             ]);
-            // Visual feedback
             const btn = id.includes('Initial') ? getEl('copyInitial') : getEl('copySecondary');
             const orig = btn.innerText;
             btn.innerText = '✅ Copied!';
@@ -549,39 +567,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 btn.classList.remove('bg-green-600', 'hover:bg-green-700');
             }, 2000);
-        } catch (err) {
-            console.error("Copy failed", err);
-            alert("Copy failed. Please manually select and copy.");
-        }
+        } catch (err) { console.error("Copy failed", err); alert("Copy failed."); }
     }
 
     getEl('copyInitial').addEventListener('click', () => copyRichText('initialNoteOutput'));
     getEl('copySecondary').addEventListener('click', () => copyRichText('secondaryNoteOutput'));
 
-    // --- LISTENERS & BINDING ---
-    // Use 'input' event for immediate text updates to avoid information loss
+    // --- LISTENERS ---
     const bind = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('input', e => { obj[key] = e.target.value; updateNotes(); }); };
     const bindCheck = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.checked; updateNotes(); }); };
 
     // Specialty Custom Input
     const specInput = getEl('customSpecInput');
     const specBtn = getEl('btnAddSpec');
-    const handleAddSpec = () => {
-        const val = specInput.value.trim();
-        if(val) {
-            addSpecialty(val, false);
-            specInput.value = '';
-        }
-    };
+    const handleAddSpec = () => { const val = specInput.value.trim(); if(val) { addSpecialty(val, false); specInput.value = ''; }};
     specBtn.addEventListener('click', handleAddSpec);
     specInput.addEventListener('keypress', e => { if(e.key === 'Enter') handleAddSpec(); });
 
-    // Logic Listeners
-    document.querySelectorAll('input[name="airwayStatus"]').forEach(r => r.addEventListener('change', e => { 
-        patientData.airway.status = e.target.value; 
-        updateNotes(); 
-    }));
-    
+    document.querySelectorAll('input[name="airwayStatus"]').forEach(r => r.addEventListener('change', e => { patientData.airway.status = e.target.value; updateNotes(); }));
     document.querySelectorAll('input[name="breathing_o2"]').forEach(r => r.addEventListener('change', e => { 
         patientData.breathing.o2 = e.target.value; 
         getEl('fio2_container').classList.toggle('hidden', e.target.value === 'Air');
@@ -589,13 +592,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNotes(); 
     }));
 
-    // Time Buttons Listener
     document.querySelectorAll('.time-btn').forEach(btn => btn.addEventListener('click', e => {
         const type = e.target.dataset.for;
         const checkpoint = e.target.dataset.checkpoint;
-
         if (checkpoint) {
-            // Handle consultant sign-off buttons
             const time = getTime();
             patientData.checkpoints[checkpoint].time = time;
             e.target.innerText = time;
@@ -603,19 +603,11 @@ document.addEventListener('DOMContentLoaded', () => {
             updateNotes();
             return;
         }
-
         if(type === 'Binder' || type === 'KTD' || type === 'Tourniquet') {
-            // It's a toggle logic coupled with the access-btn
             const prop = type.toLowerCase();
             const current = patientData.circulation[prop];
-            if(!current) {
-                // Activate
-                patientData.circulation[prop] = true;
-                patientData.circulation[`${prop}Time`] = getTime();
-            } else {
-                // Refresh time if already active
-                patientData.circulation[`${prop}Time`] = getTime();
-            }
+            if(!current) { patientData.circulation[prop] = true; patientData.circulation[`${prop}Time`] = getTime(); } 
+            else { patientData.circulation[`${prop}Time`] = getTime(); }
             toggleAccessBtn(type, true);
         } else if (e.target.id === 'btn-txa-now') {
             patientData.circulation.txaTime = getTime();
@@ -623,12 +615,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNotes();
     }));
 
-    // Button Listeners (Preset Specialties & Adjuncts)
     document.querySelectorAll('.std-btn').forEach(btn => btn.addEventListener('click', e => {
-        if(e.target.dataset.spec) {
-             const specName = e.target.dataset.spec;
-             addSpecialty(specName, true);
-        }
+        if(e.target.dataset.spec) addSpecialty(e.target.dataset.spec, true);
         if(e.target.dataset.adj) {
             e.target.classList.toggle('active');
             const adj = e.target.dataset.adj;
@@ -644,7 +632,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }));
 
-    // Breathing Findings Listener
     bContainer.addEventListener('click', e => {
         if(e.target.classList.contains('lr-btn')) {
             e.preventDefault();
@@ -657,7 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Injury Grid Listener
     injContainer.addEventListener('click', e => {
         if(e.target.classList.contains('injury-btn')) {
             e.target.classList.toggle('active');
@@ -668,7 +654,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Access Buttons (Binder etc) Listener
     document.querySelectorAll('.access-btn').forEach(btn => btn.addEventListener('click', e => {
         e.target.classList.toggle('active');
         const txt = e.target.dataset.text;
@@ -691,8 +676,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNotes();
     }));
 
-    // Other Generic Bindings
-    getEl('btn-arrival-now').addEventListener('click', () => { patientData.arrival.time = getTime(); updateNotes(); });
     document.querySelectorAll('.ph-btn').forEach(btn => btn.addEventListener('click', e => {
         e.target.classList.toggle('active');
         const t = e.target.dataset.t;
@@ -701,8 +684,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNotes();
     }));
     
-    // Standard Inputs
-    // Zero Point
     bindCheck('zps_self', patientData.zero, 'self');
     bindCheck('zps_leader', patientData.zero, 'leader');
     bindCheck('zps_roles', patientData.zero, 'roles');
@@ -711,7 +692,6 @@ document.addEventListener('DOMContentLoaded', () => {
     bindCheck('zps_ppe', patientData.zero, 'ppe');
     bind('zps_notes', patientData.zero, 'notes');
 
-    // ATMIST / Arrival
     bind('age', patientData.atmist, 'age');
     bindCheck('ageEstimated', patientData.atmist, 'ageEst');
     bind('timeOfIncident', patientData.atmist, 'time');
@@ -766,8 +746,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     bindCheck('headInjury', patientData.disability, 'headInjury');
     document.querySelectorAll('input[name="disability_avpu"]').forEach(r => r.addEventListener('change', e => { patientData.disability.avpu = e.target.value; updateNotes(); }));
-    
-    // Re-verified Pupil Bindings
     bind('disability_pupil_left', patientData.disability, 'pupilL');
     bind('disability_pupil_right', patientData.disability, 'pupilR');
     bind('disability_glucose', patientData.disability, 'glucose');
@@ -790,8 +768,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     bind('imagingDecisions', patientData.investigations, 'imaging');
+
+    // Visual Acuity Listeners
+    bind('va_left', patientData.secondary.visualAcuity, 'left');
+    bind('va_right', patientData.secondary.visualAcuity, 'right');
     
-    // Checkpoints logic
     bind('cp_primary_name', patientData.checkpoints.primary, 'name');
     document.querySelectorAll('input[name="cp_primary_agreed"]').forEach(r => r.addEventListener('change', e => { patientData.checkpoints.primary.agreed = e.target.value; updateNotes(); }));
     
@@ -820,17 +801,13 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('definitivePlan', patientData.definitive, 'plan');
     bind('problemList', patientData, 'problemList');
 
-    // Secondary Survey Tags
-    secContainer.addEventListener('input', (e) => { // Changed from 'change' to 'input' for textareas
+    secContainer.addEventListener('input', (e) => {
         const areaId = e.target.dataset.area || e.target.id.replace('ss_', '');
-        if (e.target.classList.contains('tag-checkbox')) {
-                // Checkboxes use 'change' which bubbles, but let's handle it here
-        } else if (e.target.tagName === 'TEXTAREA') {
+        if (e.target.tagName === 'TEXTAREA') {
             patientData.secondary[areaId].text = e.target.value;
+            updateNotes();
         }
-        updateNotes();
     });
-    // Separate listener for checkboxes since they don't fire 'input' consistently
     secContainer.addEventListener('change', (e) => {
             const areaId = e.target.dataset.area;
             if (e.target.classList.contains('tag-checkbox') && areaId) {
@@ -841,7 +818,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
     });
 
-
     getEl('resetData').addEventListener('click', () => {
         if(confirm('Reset form? All data will be lost.')) {
             localStorage.removeItem('wmebem_trauma_data');
@@ -849,9 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initialize
     loadState();
-    // Re-apply states that depend on loop rendering
     patientData.breathing.findings.forEach(obj => {
         const btn = document.querySelector(`.lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
         if(btn) btn.classList.add('active');
