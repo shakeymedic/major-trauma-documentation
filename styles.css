@@ -6,7 +6,7 @@ body { font-family: 'Inter', sans-serif; }
 
 /* Smooth scrolling with offset for sticky header */
 html { scroll-behavior: smooth; }
-[id^="sec-"] { scroll-margin-top: 160px; } /* Increased margin to clear the larger header */
+[id^="sec-"] { scroll-margin-top: 160px; }
 
 input, textarea, select { border-color: #94a3b8; outline: none; transition: all 0.2s; }
 input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
@@ -51,6 +51,15 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; bo
 .disp-btn { transition: all 0.1s; background-color: white; border-color: #c7d2fe; color: #4338ca; }
 .disp-btn:hover { background-color: #eef2ff; }
 .disp-btn.active { background-color: #4f46e5; color: white; border-color: #3730a3; font-weight: 800; }
+
+/* Visual Feedback for Secondary Survey Checkboxes */
+/* This highlights the span label when the hidden checkbox is checked */
+.tag-checkbox:checked + span {
+    background-color: #fee2e2; /* Red-100 */
+    color: #991b1b;           /* Red-800 */
+    border-color: #fca5a5;    /* Red-300 */
+    font-weight: 800;
+}
 
 /* Time Button */
 .time-btn {
