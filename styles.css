@@ -9,7 +9,7 @@ html { scroll-behavior: smooth; }
 [id^="sec-"] { scroll-margin-top: 160px; }
 
 input, textarea, select { border-color: #94a3b8; outline: none; transition: all 0.2s; }
-input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
 
 /* Rich Text Output Styles */
 .rich-output {
@@ -44,6 +44,10 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; bo
 .ph-btn:hover { background-color: #ecfdf5; }
 .ph-btn.active { background-color: #059669; color: white; border-color: #047857; font-weight: 800; }
 
+.drug-btn { transition: all 0.1s; background-color: #f8fafc; border-color: #cbd5e1; color: #334155; }
+.drug-btn:hover { background-color: #f3e8ff; }
+.drug-btn.active { background-color: #7e22ce; color: white; border-color: #6b21a8; font-weight: 800; }
+
 .access-btn { transition: all 0.1s; background-color: white; border-color: #fecaca; color: #b91c1c; position: relative; }
 .access-btn:hover { background-color: #fef2f2; }
 .access-btn.active { background-color: #dc2626; color: white; border-color: #991b1b; font-weight: 800; }
@@ -53,11 +57,10 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; ring: 2px; bo
 .disp-btn.active { background-color: #4f46e5; color: white; border-color: #3730a3; font-weight: 800; }
 
 /* Visual Feedback for Secondary Survey Checkboxes */
-/* This highlights the span label when the hidden checkbox is checked */
 .tag-checkbox:checked + span {
-    background-color: #fee2e2; /* Red-100 */
-    color: #991b1b;           /* Red-800 */
-    border-color: #fca5a5;    /* Red-300 */
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
     font-weight: 800;
 }
 
