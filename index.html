@@ -17,7 +17,7 @@
                 <div class="flex items-center gap-3">
                     <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-12 md:h-14 w-auto object-contain">
                     <div>
-                        <h1 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border align-middle ml-1">v2.4</span></h1>
+                        <h1 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border align-middle ml-1">v2.5</span></h1>
                         <p class="text-[10px] text-green-600 font-bold flex items-center gap-1" id="saveStatus">
                             <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Auto-save
                         </p>
@@ -35,6 +35,7 @@
                 <a href="#sec-circulation" class="nav-link nav-c">C</a>
                 <a href="#sec-disability" class="nav-link nav-d">D</a>
                 <a href="#sec-exposure" class="nav-link nav-e">E</a>
+                <a href="#sec-obs" class="nav-link bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-600 hover:text-white">Obs</a>
                 <span class="w-px h-4 bg-slate-300 mx-0.5"></span>
                 <a href="#sec-mhp" class="nav-link nav-c">MHP</a>
                 <a href="#sec-secondary" class="nav-link nav-sec">Sec</a>
@@ -57,18 +58,18 @@
                     <div class="mt-4 space-y-4 text-sm">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="bg-slate-700 p-3 rounded border border-slate-600">
-                                <h4 class="font-bold text-blue-300 mb-2 uppercase">S - Self (I'M SAFE)</h4>
+                                <h4 class="font-bold text-blue-300 mb-2 uppercase">S Self (I'M SAFE)</h4>
                                 <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_self" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Physical/Cognitive Ready?</span></label>
                                 <p class="text-[10px] text-slate-400">Illness, Meds, Stress, Alcohol, Fatigue, Eating</p>
                             </div>
                             <div class="bg-slate-700 p-3 rounded border border-slate-600">
-                                <h4 class="font-bold text-blue-300 mb-2 uppercase">T - Team</h4>
+                                <h4 class="font-bold text-blue-300 mb-2 uppercase">T Team</h4>
                                 <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_leader" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Leader Identified?</span></label>
                                 <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_roles" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Roles Allocated?</span></label>
                                 <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_brief" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Briefing Complete?</span></label>
                             </div>
                             <div class="bg-slate-700 p-3 rounded border border-slate-600">
-                                <h4 class="font-bold text-blue-300 mb-2 uppercase">E - Environment</h4>
+                                <h4 class="font-bold text-blue-300 mb-2 uppercase">E Environment</h4>
                                 <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_env" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>Space / Equipment Ready?</span></label>
                                 <label class="flex items-center space-x-2 cursor-pointer mb-1"><input type="checkbox" id="zps_ppe" class="rounded text-blue-500 bg-slate-600 border-slate-500 focus:ring-offset-slate-800"><span>PPE Donned?</span></label>
                             </div>
@@ -128,17 +129,53 @@
                     </div>
 
                     <div class="pt-4 border-t border-slate-200">
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Pre-Hospital Treatments</label>
-                        <div class="flex flex-wrap gap-2 mb-2" id="ph_treatments_btns">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Pre-Hospital Interventions</label>
+                        <div class="flex flex-wrap gap-2 mb-4" id="ph_treatments_btns">
                             <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="IV Access">IV Access</button>
                             <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Oxygen">Oxygen</button>
-                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Analgesia">Analgesia</button>
-                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="TXA">TXA</button>
                             <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Splinting">Splinting</button>
                             <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Fluids">Fluids</button>
                             <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Blood">Blood</button>
+                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Pelvic Binder">Pelvic Binder</button>
+                            <button type="button" class="ph-btn px-3 py-2 border rounded text-xs font-bold" data-t="Tourniquet">Tourniquet</button>
                         </div>
-                        <input type="text" id="ph_treatments_free" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium mb-3" placeholder="Other treatments / details...">
+                        
+                        <label class="block text-xs font-bold text-purple-700 uppercase mb-2">Pre-Hospital Medications Given</label>
+                        <div class="flex flex-wrap gap-2 mb-2" id="ph_drugs_btns">
+                            <button type="button" class="drug-btn px-3 py-2 border rounded text-xs font-bold" data-d="Morphine">Morphine</button>
+                            <button type="button" class="drug-btn px-3 py-2 border rounded text-xs font-bold" data-d="Ketamine">Ketamine</button>
+                            <button type="button" class="drug-btn px-3 py-2 border rounded text-xs font-bold" data-d="Fentanyl">Fentanyl</button>
+                            <button type="button" class="drug-btn px-3 py-2 border rounded text-xs font-bold" data-d="Paracetamol">Paracetamol</button>
+                            <button type="button" class="drug-btn px-3 py-2 border rounded text-xs font-bold" data-d="TXA">TXA</button>
+                            <button type="button" class="drug-btn px-3 py-2 border rounded text-xs font-bold" data-d="Ondansetron">Ondansetron</button>
+                            <button type="button" class="drug-btn px-3 py-2 border rounded text-xs font-bold" data-d="Midazolam">Midazolam</button>
+                            <button type="button" class="drug-btn px-3 py-2 border rounded text-xs font-bold" data-d="Hypertonic Saline">Hypertonic Saline</button>
+                            <button type="button" class="drug-btn px-3 py-2 border rounded text-xs font-bold" data-d="Antibiotics">Antibiotics</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                            <input type="text" id="ph_treatments_free" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Other treatments / details...">
+                            <input type="text" id="ph_drugs_free" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Other medications given...">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mt-4 border-t border-slate-200 pt-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Safeguarding</label>
+                                <select id="safeguarding" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium bg-white">
+                                    <option value="No Concern">No Concern</option>
+                                    <option value="Child Safeguarding Concern">Child Safeguarding Concern</option>
+                                    <option value="Vulnerable Adult Concern">Vulnerable Adult Concern</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Pregnancy Status</label>
+                                <select id="pregnancy" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium bg-white">
+                                    <option value="Not Applicable">Not Applicable</option>
+                                    <option value="Not Pregnant">Not Pregnant</option>
+                                    <option value="Pregnant">Pregnant</option>
+                                    <option value="Unknown">Unknown</option>
+                                </select>
+                            </div>
+                        </div>
 
                         <div class="bg-red-50 border border-red-200 rounded-lg p-3">
                             <div class="flex items-center justify-between">
@@ -176,13 +213,13 @@
                 <div id="sec-primary" class="pt-2"><h2 class="text-3xl font-black text-slate-900 border-b-4 border-slate-900 pb-2">Primary Survey</h2></div>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border-2 border-slate-300 border-l-[8px] border-l-blue-600" id="sec-airway">
-                    <h3 class="text-2xl font-black text-blue-800 mb-4">A - Airway</h3>
+                    <h3 class="text-2xl font-black text-blue-800 mb-4">A Airway</h3>
                     
                     <div class="mb-4 space-y-3">
                         <div class="flex rounded-lg shadow-sm bg-slate-100 p-1 border border-slate-300">
-                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Patent" checked class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition">Patent</div></label>
-                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Compromised" class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition">Compromised</div></label>
-                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="At Risk" class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition">At Risk</div></label>
+                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Patent" checked class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition text-slate-600 hover:bg-slate-200 peer-checked:bg-green-600 peer-checked:text-white">Patent</div></label>
+                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="Compromised" class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition text-slate-600 hover:bg-slate-200 peer-checked:bg-red-600 peer-checked:text-white">Compromised</div></label>
+                             <label class="cursor-pointer flex-1 text-center"><input type="radio" name="airwayStatus" value="At Risk" class="sr-only toggle-radio peer"><div class="px-2 py-2 rounded text-sm font-bold transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white">At Risk</div></label>
                         </div>
 
                         <div>
@@ -210,7 +247,7 @@
                 </section>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border-2 border-slate-300 border-l-[8px] border-l-sky-400" id="sec-breathing">
-                    <h3 class="text-2xl font-black text-sky-700 mb-4">B - Breathing</h3>
+                    <h3 class="text-2xl font-black text-sky-700 mb-4">B Breathing</h3>
                     
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-slate-50 p-4 rounded-xl border border-slate-400">
                         <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">RR (bpm)</label><input type="number" id="breathing_rr" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-sky-500"></div>
@@ -218,8 +255,8 @@
                         <div class="col-span-2">
                             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Oxygen</label>
                             <div class="flex rounded-md shadow-sm w-full bg-white">
-                                <label class="cursor-pointer flex-1"><input type="radio" name="breathing_o2" value="Air" checked class="sr-only toggle-radio peer"><div class="py-2.5 text-sm font-bold border border-slate-400 rounded-l text-center">Air</div></label>
-                                <label class="cursor-pointer flex-1"><input type="radio" name="breathing_o2" value="O2" class="sr-only toggle-radio peer"><div class="py-2.5 text-sm font-bold border-y border-r border-slate-400 rounded-r text-center">Oxygen</div></label>
+                                <label class="cursor-pointer flex-1"><input type="radio" name="breathing_o2" value="Air" checked class="sr-only toggle-radio peer"><div class="py-2.5 text-sm font-bold border border-slate-400 rounded-l text-center transition text-slate-600 hover:bg-slate-100 peer-checked:bg-sky-600 peer-checked:text-white peer-checked:border-sky-600">Air</div></label>
+                                <label class="cursor-pointer flex-1"><input type="radio" name="breathing_o2" value="O2" class="sr-only toggle-radio peer"><div class="py-2.5 text-sm font-bold border-y border-r border-slate-400 rounded-r text-center transition text-slate-600 hover:bg-slate-100 peer-checked:bg-sky-600 peer-checked:text-white peer-checked:border-sky-600">Oxygen</div></label>
                             </div>
                         </div>
                     </div>
@@ -233,7 +270,7 @@
                 </section>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border-2 border-slate-300 border-l-[8px] border-l-red-600" id="sec-circulation">
-                    <h3 class="text-2xl font-black text-red-700 mb-4">C - Circulation</h3>
+                    <h3 class="text-2xl font-black text-red-700 mb-4">C Circulation</h3>
                     
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-400 mb-4">
                         <div class="grid grid-cols-3 gap-4">
@@ -260,9 +297,10 @@
                             <p class="font-black text-red-600 text-sm">⚠️ PROMPT: GIVE TRANEXAMIC ACID & CALCIUM ⚠️</p>
                         </div>
                         <div id="mhpDetails" class="hidden space-y-3">
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                <div><label class="block text-[10px] font-bold text-red-900 uppercase mb-1">Crystalloid (ml)</label><input type="number" id="mhp_crystalloid" class="w-full px-2 py-1 border border-red-400 rounded text-center font-mono font-black" placeholder="0"></div>
                                 <div><label class="block text-[10px] font-bold text-red-900 uppercase mb-1">PRBC (Units)</label><input type="number" id="mhp_prbc" class="w-full px-2 py-1 border border-red-400 rounded text-center font-mono font-black" placeholder="0"></div>
-                                <div><label class="block text-[10px] font-bold text-red-900 uppercase mb-1">FFP</label><input type="number" id="mhp_ffp" class="w-full px-2 py-1 border border-red-400 rounded text-center font-mono font-black" placeholder="0"></div>
+                                <div><label class="block text-[10px] font-bold text-red-900 uppercase mb-1">FFP (Units)</label><input type="number" id="mhp_ffp" class="w-full px-2 py-1 border border-red-400 rounded text-center font-mono font-black" placeholder="0"></div>
                                 <div><label class="block text-[10px] font-bold text-red-900 uppercase mb-1">Platelets</label><input type="number" id="mhp_plt" class="w-full px-2 py-1 border border-red-400 rounded text-center font-mono font-black" placeholder="0"></div>
                                 <div><label class="block text-[10px] font-bold text-red-900 uppercase mb-1">Cryo</label><input type="number" id="mhp_cryo" class="w-full px-2 py-1 border border-red-400 rounded text-center font-mono font-black" placeholder="0"></div>
                             </div>
@@ -346,7 +384,7 @@
                 </section>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border-2 border-slate-300 border-l-[8px] border-l-yellow-400" id="sec-disability">
-                    <h3 class="text-2xl font-black text-yellow-700 mb-4">D - Disability</h3>
+                    <h3 class="text-2xl font-black text-yellow-700 mb-4">D Disability</h3>
 
                     <div class="bg-red-100 border-l-4 border-red-600 p-4 mb-5 rounded shadow-sm flex items-start gap-3">
                         <div class="text-2xl">💊</div>
@@ -363,10 +401,10 @@
                         </label>
                         
                         <div class="flex rounded-lg shadow-sm bg-slate-100 p-1 mb-4 border border-slate-300">
-                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Alert" checked class="sr-only toggle-radio peer"><div class="px-2 py-3 text-sm font-bold rounded transition">A</div></label>
-                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Voice" class="sr-only toggle-radio peer"><div class="px-2 py-3 text-sm font-bold rounded transition">V</div></label>
-                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Pain" class="sr-only toggle-radio peer"><div class="px-2 py-3 text-sm font-bold rounded transition">P</div></label>
-                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Unresponsive" class="sr-only toggle-radio peer"><div class="px-2 py-3 text-sm font-bold rounded transition">U</div></label>
+                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Alert" checked class="sr-only toggle-radio peer"><div class="px-2 py-3 text-sm font-bold rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-green-500 peer-checked:text-white">A</div></label>
+                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Voice" class="sr-only toggle-radio peer"><div class="px-2 py-3 text-sm font-bold rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white">V</div></label>
+                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Pain" class="sr-only toggle-radio peer"><div class="px-2 py-3 text-sm font-bold rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-orange-500 peer-checked:text-white">P</div></label>
+                            <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_avpu" value="Unresponsive" class="sr-only toggle-radio peer"><div class="px-2 py-3 text-sm font-bold rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-red-600 peer-checked:text-white">U</div></label>
                         </div>
                     </div>
 
@@ -384,9 +422,30 @@
                 </section>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border-2 border-slate-300 border-l-[8px] border-l-green-500" id="sec-exposure">
-                    <h3 class="text-2xl font-black text-green-700 mb-3">E - Exposure</h3>
+                    <h3 class="text-2xl font-black text-green-700 mb-3">E Exposure</h3>
                     <div class="w-1/3 mb-3"><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Temp (°C)</label><input type="number" id="exposure_temp" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-bold"></div>
                     <textarea id="exposure_notes" rows="2" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Exposure notes..."></textarea>
+                </section>
+
+                <section class="bg-white p-5 rounded-xl shadow-sm border-2 border-slate-300 border-l-[8px] border-l-purple-500" id="sec-obs">
+                    <h3 class="text-2xl font-black text-purple-700 mb-3">Serial Observations</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left border-collapse" id="obsTable">
+                            <thead>
+                                <tr class="bg-slate-100 border-b border-slate-300">
+                                    <th class="p-2 font-bold text-slate-600">Time</th>
+                                    <th class="p-2 font-bold text-slate-600">HR</th>
+                                    <th class="p-2 font-bold text-slate-600">BP</th>
+                                    <th class="p-2 font-bold text-slate-600">RR</th>
+                                    <th class="p-2 font-bold text-slate-600">SpO2</th>
+                                    <th class="p-2 font-bold text-slate-600">GCS</th>
+                                    <th class="p-2"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="obsBody"></tbody>
+                        </table>
+                    </div>
+                    <button type="button" id="btnAddObs" class="mt-3 px-4 py-2 bg-purple-600 text-white font-bold text-xs rounded-md hover:bg-purple-700 shadow-sm transition">ADD OBSERVATION ROW</button>
                 </section>
 
                 <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-400" id="sec-plan">
@@ -396,8 +455,8 @@
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="text-sm font-black text-slate-200 uppercase">Blood Gas Results (Initial)</h4>
                             <div class="flex bg-slate-800 rounded p-1 border border-slate-600">
-                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="gasType" value="VBG" checked class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-white peer-checked:underline">VBG</span></label>
-                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="gasType" value="ABG" class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-white peer-checked:underline">ABG</span></label>
+                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="gasType" value="VBG" checked class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-white peer-checked:underline peer-checked:bg-slate-600 rounded px-2 py-1 transition">VBG</span></label>
+                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="gasType" value="ABG" class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-white peer-checked:underline peer-checked:bg-slate-600 rounded px-2 py-1 transition">ABG</span></label>
                             </div>
                         </div>
                         <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
@@ -412,6 +471,52 @@
                         <div id="gasFio2Container" class="hidden mt-3 pt-2 border-t border-slate-600">
                              <label class="block text-[10px] uppercase text-slate-400 mb-1">ABG FiO2 (%)</label>
                              <input type="number" id="gasFio2" class="w-24 px-1 py-1 text-sm bg-slate-600 border-slate-500 rounded text-white font-bold">
+                        </div>
+                    </div>
+
+                    <div class="mt-4 mb-4 border border-slate-300 rounded-lg p-4 bg-slate-50">
+                        <h4 class="text-sm font-black text-slate-800 uppercase mb-3">eFAST Scan</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">RUQ</label>
+                                <select id="efast_ruq" class="w-full px-2 py-1 text-sm bg-white border border-slate-300 rounded">
+                                    <option value=""></option>
+                                    <option value="Negative">Negative</option>
+                                    <option value="Positive">Positive</option>
+                                    <option value="Indeterminate">Indeterminate</option>
+                                    <option value="Not Done">Not Done</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">LUQ</label>
+                                <select id="efast_luq" class="w-full px-2 py-1 text-sm bg-white border border-slate-300 rounded">
+                                    <option value=""></option>
+                                    <option value="Negative">Negative</option>
+                                    <option value="Positive">Positive</option>
+                                    <option value="Indeterminate">Indeterminate</option>
+                                    <option value="Not Done">Not Done</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Pelvis</label>
+                                <select id="efast_pelvis" class="w-full px-2 py-1 text-sm bg-white border border-slate-300 rounded">
+                                    <option value=""></option>
+                                    <option value="Negative">Negative</option>
+                                    <option value="Positive">Positive</option>
+                                    <option value="Indeterminate">Indeterminate</option>
+                                    <option value="Not Done">Not Done</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Pericardial</label>
+                                <select id="efast_pericardial" class="w-full px-2 py-1 text-sm bg-white border border-slate-300 rounded">
+                                    <option value=""></option>
+                                    <option value="Negative">Negative</option>
+                                    <option value="Positive">Positive</option>
+                                    <option value="Indeterminate">Indeterminate</option>
+                                    <option value="Not Done">Not Done</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -448,8 +553,8 @@
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="text-sm font-black text-slate-700 uppercase">Repeat Blood Gas</h4>
                             <div class="flex bg-white rounded p-1 border border-slate-300">
-                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="secGasType" value="VBG" checked class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-blue-600 peer-checked:underline">VBG</span></label>
-                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="secGasType" value="ABG" class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-blue-600 peer-checked:underline">ABG</span></label>
+                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="secGasType" value="VBG" checked class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-blue-600 peer-checked:underline peer-checked:bg-slate-100 rounded px-2 py-1 transition">VBG</span></label>
+                                <label class="cursor-pointer px-3 py-1"><input type="radio" name="secGasType" value="ABG" class="hidden peer"><span class="text-xs font-bold text-slate-400 peer-checked:text-blue-600 peer-checked:underline peer-checked:bg-slate-100 rounded px-2 py-1 transition">ABG</span></label>
                             </div>
                         </div>
                         <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
@@ -468,6 +573,32 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Left Eye</label><input type="text" id="va_left" class="w-full px-3 py-2 border border-blue-300 rounded text-sm" placeholder="e.g. 6/6 or N/A"></div>
                             <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Right Eye</label><input type="text" id="va_right" class="w-full px-3 py-2 border border-blue-300 rounded text-sm" placeholder="e.g. 6/9"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-orange-50 p-4 rounded-lg border border-orange-200 mb-6">
+                        <h4 class="text-sm font-black text-orange-900 uppercase mb-3">Log Roll & PR Exam</h4>
+                        <label class="flex items-center space-x-2 cursor-pointer mb-2"><input type="checkbox" id="logroll_done" class="w-5 h-5 text-orange-600 rounded"><span>Log Roll Performed</span></label>
+                        <input type="text" id="logroll_findings" class="w-full px-3 py-2 border border-orange-300 rounded text-sm mb-3 bg-white" placeholder="Spinal tenderness, steps, findings.">
+                        
+                        <label class="flex items-center space-x-2 cursor-pointer mb-2"><input type="checkbox" id="pr_done" class="w-5 h-5 text-orange-600 rounded"><span>PR Exam Performed</span></label>
+                        <input type="text" id="pr_findings" class="w-full px-3 py-2 border border-orange-300 rounded text-sm bg-white" placeholder="Tone, sensation, blood, prostate.">
+                    </div>
+
+                    <div class="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-300">
+                        <h4 class="text-sm font-black text-slate-800 uppercase mb-2">Visual Body Map</h4>
+                        <p class="text-xs text-slate-500 mb-2">Click to drop a pin on the injury site.</p>
+                        <div class="relative w-full max-w-sm mx-auto border border-slate-300 rounded bg-white overflow-hidden cursor-crosshair" id="bodyMapContainer">
+                            <svg viewBox="0 0 200 300" class="w-full h-auto border-b border-slate-200" id="bodyMapSvg">
+                                <circle cx="100" cy="30" r="20" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+                                <path d="M 80 50 L 120 50 L 130 140 L 70 140 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+                                <path d="M 80 50 L 50 120 L 40 120 M 120 50 L 150 120 L 160 120" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M 70 140 L 60 260 L 80 260 L 100 140 M 130 140 L 140 260 L 120 260 L 100 140" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+                            </svg>
+                            <div id="bodyMapMarkers" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <button type="button" id="btnClearMap" class="px-3 py-1 text-xs font-bold text-red-600 border border-red-200 rounded hover:bg-red-50 transition">Clear Map</button>
                         </div>
                     </div>
 
@@ -542,6 +673,11 @@
                         <input type="text" id="furtherImagingDetails" class="w-full px-3 py-2 border border-indigo-200 rounded text-sm hidden" placeholder="Details of imaging...">
                     </div>
 
+                    <label class="flex items-center space-x-2 p-3 bg-white rounded border border-indigo-200 cursor-pointer mb-5 shadow-sm">
+                        <input type="checkbox" id="tetanus" class="w-5 h-5 text-indigo-600 rounded">
+                        <span class="font-bold text-indigo-900 text-sm">Tetanus Immunisation Up-to-Date / Given</span>
+                    </label>
+
                     <p class="text-xs font-black text-indigo-700 uppercase mb-2">Time Critical Meds - PRESCRIBED?</p>
                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
                         <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-200 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Parkinsons Meds"><span>Parkinson's (Levodopa)</span></label>
@@ -549,7 +685,7 @@
                         <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-200 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Anti-Epileptics"><span>Anti-Epileptics</span></label>
                         <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-200 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Steroids"><span>Steroids</span></label>
                         <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-200 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Anticoagulants"><span>Anticoagulants</span></label>
-                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-200 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Antibiotics"><span>Antibiotics (Sepsis/Open #)</span></label>
+                        <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-200 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Antibiotics"><span>Antibiotics (Sepsis/Open Fracture)</span></label>
                          <label class="flex items-center space-x-2 p-2 bg-white rounded border border-indigo-200 cursor-pointer"><input type="checkbox" class="med-check rounded text-indigo-600" value="Analgesia"><span>Analgesia</span></label>
                     </div>
 
