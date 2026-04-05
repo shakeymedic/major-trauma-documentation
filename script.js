@@ -804,6 +804,98 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Quick Action Listeners
+    getEl('btnNormalAirway').addEventListener('click', () => {
+        patientData.airway.status = 'Patent';
+        patientData.airway.adjuncts = ['None'];
+        patientData.airway.collar = false;
+        patientData.airway.blocks = false;
+        document.querySelector('input[name="airwayStatus"][value="Patent"]').checked = true;
+        document.querySelectorAll('[data-adj]').forEach(b => b.classList.remove('active'));
+        const noneBtn = document.querySelector('[data-adj="None"]');
+        if(noneBtn) noneBtn.classList.add('active');
+        getEl('cspine_collar').checked = false;
+        getEl('cspine_blocks').checked = false;
+        updateNotes();
+    });
+
+    getEl('btnNormalBreathing').addEventListener('click', () => {
+        patientData.breathing.rr = '16';
+        patientData.breathing.sats = '98';
+        patientData.breathing.o2 = 'Air';
+        patientData.breathing.fio2 = '';
+        patientData.breathing.findings = [];
+        getEl('breathing_rr').value = '16';
+        getEl('breathing_sats').value = '98';
+        document.querySelector('input[name="breathing_o2"][value="Air"]').checked = true;
+        getEl('fio2_container').classList.add('hidden');
+        getEl('breathing_fio2').value = '';
+        document.querySelectorAll('.lr-btn').forEach(b => b.classList.remove('active'));
+        updateNotes();
+    });
+
+    getEl('btnNormalCirc').addEventListener('click', () => {
+        patientData.circulation.hr = '80';
+        patientData.circulation.bp = '120/80';
+        patientData.circulation.crt = '2';
+        patientData.circulation.txa = 'None';
+        patientData.circulation.txaTime = '';
+        patientData.circulation.bleeding = [];
+        patientData.circulation.binder = false;
+        patientData.circulation.ktd = false;
+        patientData.circulation.tourniquet = false;
+        
+        getEl('circ_hr').value = '80';
+        getEl('circ_bp').value = '120/80';
+        getEl('circ_capRefill').value = '2';
+        document.querySelector('input[name="txaGiven"][value="None"]').checked = true;
+        
+        document.querySelectorAll('.injury-btn').forEach(b => b.classList.remove('active'));
+        
+        patientData.circulation.binderTime = '';
+        patientData.circulation.ktdTime = '';
+        patientData.circulation.tourniquetTime = '';
+        toggleAccessBtn('Binder', false);
+        toggleAccessBtn('KTD', false);
+        toggleAccessBtn('Tourniquet', false);
+        updateTimeBtn('Binder', false);
+        updateTimeBtn('KTD', false);
+        updateTimeBtn('Tourniquet', false);
+        
+        const txaBtn = getEl('btn-txa-now');
+        txaBtn.classList.remove('recorded');
+        txaBtn.innerText = '🕒 Now';
+
+        updateNotes();
+    });
+
+    getEl('btnNormalDisability').addEventListener('click', () => {
+        patientData.disability.avpu = 'Alert';
+        patientData.disability.gcsE = 4;
+        patientData.disability.gcsV = 5;
+        patientData.disability.gcsM = 6;
+        patientData.disability.headInjury = false;
+        patientData.disability.pupilL = '3';
+        patientData.disability.pupilR = '3';
+        patientData.disability.glucose = '5.5';
+
+        document.querySelector('input[name="disability_avpu"][value="Alert"]').checked = true;
+        getEl('disability_gcsE').value = '4';
+        getEl('disability_gcsV').value = '5';
+        getEl('disability_gcsM').value = '6';
+        getEl('headInjury').checked = false;
+        getEl('disability_pupil_left').value = '3';
+        getEl('disability_pupil_right').value = '3';
+        getEl('disability_glucose').value = '5.5';
+        updateNotes();
+    });
+
+    getEl('btnNormalExposure').addEventListener('click', () => {
+        patientData.exposure.temp = '36.5';
+        getEl('exposure_temp').value = '36.5';
+        updateNotes();
+    });
+
     loadState();
     patientData.breathing.findings.forEach(obj => {
         const btn = document.querySelector(`.lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
