@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             efast: { ruq: '', luq: '', pelvis: '', pericardial: '' },
             imaging: '' 
         },
-        secondary: { visualAcuity: { left: '', right: '' }, bodyMapMarkers: [], logroll: { done: false, findings: '' }, pr: { done: false, findings: '' } },
+        secondary: { visualAcuity: { left: '', right: '' }, logroll: { done: false, findings: '' }, pr: { done: false, findings: '' } },
         checkpoints: {
             primary: { name: '', agreed: '', time: '' },
             secondary: { name: '', agreed: '', time: '' }
@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(!patientData.atmist.phTreatmentsFree) patientData.atmist.phTreatmentsFree = patientData.atmist.phNotes || '';
                 if(!patientData.obs) patientData.obs = [];
                 if(!patientData.investigations.efast) patientData.investigations.efast = {ruq:'', luq:'', pelvis:'', pericardial:''};
-                if(!patientData.secondary.bodyMapMarkers) patientData.secondary.bodyMapMarkers = [];
                 if(!patientData.secondary.logroll) patientData.secondary.logroll = {done: false, findings: ''};
                 if(!patientData.secondary.pr) patientData.secondary.pr = {done: false, findings: ''};
                 restoreUI();
@@ -180,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setVal('logroll_findings', p.secondary.logroll.findings);
         setCheck('pr_done', p.secondary.pr.done);
         setVal('pr_findings', p.secondary.pr.findings);
-        renderMapMarkers();
 
         setVal('cp_primary_name', p.checkpoints.primary.name);
         if(p.checkpoints.primary.agreed) { const r = document.querySelector(`input[name="cp_primary_agreed"][value="${p.checkpoints.primary.agreed}"]`); if(r) r.checked = true; }
@@ -283,41 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNotes();
     });
 
-    // --- VISUAL BODY MAP ---
-    function renderMapMarkers() {
-        const container = getEl('bodyMapMarkers');
-        container.innerHTML = '';
-        patientData.secondary.bodyMapMarkers.forEach((m, i) => {
-            const dot = document.createElement('div');
-            dot.className = 'absolute w-3 h-3 bg-red-600 rounded-full border border-white transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer shadow-sm hover:scale-125 transition';
-            dot.style.left = `${m.x}%`;
-            dot.style.top = `${m.y}%`;
-            dot.title = 'Click to remove';
-            dot.onclick = (ev) => {
-                ev.stopPropagation();
-                patientData.secondary.bodyMapMarkers.splice(i, 1);
-                renderMapMarkers();
-                updateNotes();
-            };
-            container.appendChild(dot);
-        });
-    }
-
-    getEl('bodyMapContainer').addEventListener('click', e => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 100;
-        const y = ((e.clientY - rect.top) / rect.height) * 100;
-        patientData.secondary.bodyMapMarkers.push({x, y});
-        renderMapMarkers();
-        updateNotes();
-    });
-
-    getEl('btnClearMap').addEventListener('click', () => {
-        patientData.secondary.bodyMapMarkers = [];
-        renderMapMarkers();
-        updateNotes();
-    });
-
     // --- BUILD UI COMPONENTS ---
     const bContainer = getEl('breathing_findings');
     BREATHING_OPTS.forEach(opt => {
@@ -391,15 +354,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- PRIMARY SURVEY HTML ---
-        let h = `<strong>Major Trauma Assessment</strong><br>`;
+        let h = `<b style="font-weight: bold;">Major Trauma Assessment</b><br>`;
 
         if (p.zero.self || p.zero.leader || p.zero.notes) h += `Zero Point Survey (Preparation) Completed.<br>`;
-        if(p.arrival.time) h += `Patient Arrival Time: <strong>${p.arrival.time}</strong><br>`;
+        if(p.arrival.time) h += `Patient Arrival Time: <b style="font-weight: bold;">${p.arrival.time}</b><br>`;
         
         let specs = p.arrival.specialties.map(s => `${s.name} (@ ${s.time})`);
         if(specs.length) h += `Specialties Present: ${specs.join(', ')}<br>`;
         
-        h += `<br><strong>ATMIST</strong><br>`;
+        h += `<br><b style="font-weight: bold;">ATMIST</b><br>`;
         h += `Age: ${p.atmist.age}${p.atmist.ageEst?' (Est)':''} | Time of Incident: ${p.atmist.time}<br>`;
         h += `Mechanism: ${p.atmist.mech}<br>Injuries Suspected: ${p.atmist.inj}<br>Signs: ${p.atmist.signs}<br>`;
         
@@ -411,25 +374,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.atmist.phDrugsFree) phDrugsList.push(p.atmist.phDrugsFree);
         if(phDrugsList.length > 0) h += `Pre-Hosp Medications: ${phDrugsList.join(', ')}<br>`;
 
-        if(p.atmist.safeguarding !== 'No Concern') h += `<strong>⚠️ ${p.atmist.safeguarding}</strong><br>`;
+        if(p.atmist.safeguarding !== 'No Concern') h += `<b style="font-weight: bold;">⚠️ ${p.atmist.safeguarding}</b><br>`;
         if(p.atmist.pregnancy !== 'Not Applicable') h += `Pregnancy Status: ${p.atmist.pregnancy}<br>`;
 
         if(p.prehosp.notes) h+= `Pre-Hospital Notes: ${p.prehosp.notes}<br>`;
         h += `AMPLE: A:${p.prehosp.history.a} M:${p.prehosp.history.m} P:${p.prehosp.history.p} L:${p.prehosp.history.l} E:${p.prehosp.history.e}<br>`;
 
-        h += `<br><strong>PRIMARY SURVEY</strong><br>`;
+        h += `<br><b style="font-weight: bold;">PRIMARY SURVEY</b><br>`;
         
-        h += `<strong>Airway:</strong> ${p.airway.status}`;
+        h += `<b style="font-weight: bold;">Airway:</b> ${p.airway.status}`;
         if(p.airway.status === 'Patent' && p.airway.adjuncts.length > 0) h += " (Maintained with adjuncts)";
         h += ". ";
         if(p.airway.adjuncts.length) h += `Adjuncts: ${p.airway.adjuncts.join(', ')}. `;
-        if (p.airway.rsi) h += `<strong>Pre-Hosp RSI:</strong> Size ${p.airway.rsiData.size}, Length ${p.airway.rsiData.length}cm, Grade ${p.airway.rsiData.grade}, ETCO2 ${p.airway.rsiData.etco2}. Drugs: ${p.airway.rsiData.drugs}. `;
+        if (p.airway.rsi) h += `<b style="font-weight: bold;">Pre-Hosp RSI:</b> Size ${p.airway.rsiData.size}, Length ${p.airway.rsiData.length}cm, Grade ${p.airway.rsiData.grade}, ETCO2 ${p.airway.rsiData.etco2}. Drugs: ${p.airway.rsiData.drugs}. `;
         if(p.airway.collar || p.airway.blocks) h += `C-Spine: ${p.airway.collar?'Collar ':''}${p.airway.blocks?'Blocks':''}. `;
         if(p.airway.notes) h += ` ${p.airway.notes}`;
         h += "<br>";
         
         let o2 = p.breathing.o2 === 'Air' ? 'Air' : `Oxygen ${p.breathing.fio2}`;
-        h += `<strong>Breathing:</strong> RR ${p.breathing.rr} | Sats ${p.breathing.sats}% (${o2}).<br>`;
+        h += `<b style="font-weight: bold;">Breathing:</b> RR ${p.breathing.rr} | Sats ${p.breathing.sats}% (${o2}).<br>`;
         if(p.breathing.findings.length) h += `&nbsp;&nbsp;&nbsp;Findings: ${p.breathing.findings.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
         const currentBFindings = p.breathing.findings.map(f => f.f);
         const negB = BREATHING_OPTS.filter(opt => !currentBFindings.includes(opt));
@@ -440,38 +403,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.breathing.notes) h += `${p.breathing.notes}`;
         h += "<br>";
         
-        h += `<strong>Circulation:</strong> HR ${p.circulation.hr} | BP ${p.circulation.bp}${calcHtml} | CRT ${p.circulation.crt}s.<br>`;
-        if(p.circulation.txa && p.circulation.txa !== 'None') h += `&nbsp;&nbsp;&nbsp;<strong>TXA Given:</strong> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime})` : ''}.<br>`;
+        h += `<b style="font-weight: bold;">Circulation:</b> HR ${p.circulation.hr} | BP ${p.circulation.bp}${calcHtml} | CRT ${p.circulation.crt}s.<br>`;
+        if(p.circulation.txa && p.circulation.txa !== 'None') h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">TXA Given:</b> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime})` : ''}.<br>`;
         if(p.circulation.lines.length) h += `&nbsp;&nbsp;&nbsp;Access: ${p.circulation.lines.join(', ')}.<br>`;
-        if(p.circulation.bleeding.length) h += `&nbsp;&nbsp;&nbsp;<strong>Bleeding Sites:</strong> ${p.circulation.bleeding.join(', ')}.<br>`;
+        if(p.circulation.bleeding.length) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">Bleeding Sites:</b> ${p.circulation.bleeding.join(', ')}.<br>`;
         
         let interventions = [];
         if(p.circulation.binder) interventions.push(`Pelvic Binder ${p.circulation.binderTime ? `(@ ${p.circulation.binderTime})` : ''}`);
         if(p.circulation.ktd) interventions.push(`KTD Splint ${p.circulation.ktdTime ? `(@ ${p.circulation.ktdTime})` : ''}`);
         if(p.circulation.tourniquet) interventions.push(`Tourniquet ${p.circulation.tourniquetTime ? `(@ ${p.circulation.tourniquetTime})` : ''}`);
-        if(interventions.length) h += `&nbsp;&nbsp;&nbsp;<strong>Interventions:</strong> ${interventions.join(', ')}.<br>`;
+        if(interventions.length) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">Interventions:</b> ${interventions.join(', ')}.<br>`;
         if(p.circulation.notes) h += `&nbsp;&nbsp;&nbsp;${p.circulation.notes}<br>`;
 
         if(p.mhp.activated) {
-            h += `&nbsp;&nbsp;&nbsp;<strong>⚠️ MHP ACTIVATED</strong> (${p.mhp.time || 'Time Not Set'})<br>&nbsp;&nbsp;&nbsp;Given: Crystalloid ${p.mhp.crystalloid || 0}ml, PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.<br>`;
+            h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">⚠️ MHP ACTIVATED</b> (${p.mhp.time || 'Time Not Set'})<br>&nbsp;&nbsp;&nbsp;Given: Crystalloid ${p.mhp.crystalloid || 0}ml, PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.<br>`;
         }
 
         let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
-        h += `<strong>Disability:</strong> AVPU ${p.disability.avpu} | GCS ${gcsTot} (E${p.disability.gcsE} V${p.disability.gcsV} M${p.disability.gcsM}).<br>`;
+        h += `<b style="font-weight: bold;">Disability:</b> AVPU ${p.disability.avpu} | GCS ${gcsTot} (E${p.disability.gcsE} V${p.disability.gcsV} M${p.disability.gcsM}).<br>`;
         h += `&nbsp;&nbsp;&nbsp;Pupils: L ${p.disability.pupilL || '-'} | R ${p.disability.pupilR || '-'}. Blood Glucose: ${p.disability.glucose} mmol/L.<br>`;
-        if(p.disability.headInjury) h += `&nbsp;&nbsp;&nbsp;<strong>⚠️ Head Injury Suspected</strong><br>`;
+        if(p.disability.headInjury) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">⚠️ Head Injury Suspected</b><br>`;
         
-        h += `<strong>Exposure:</strong> Temp ${p.exposure.temp}°C. ${p.exposure.notes}<br>`;
+        h += `<b style="font-weight: bold;">Exposure:</b> Temp ${p.exposure.temp}°C. ${p.exposure.notes}<br>`;
         
         if (p.obs.length > 0) {
-            h += `<br><strong>Serial Observations:</strong><br>`;
+            h += `<br><b style="font-weight: bold;">Serial Observations:</b><br>`;
             p.obs.forEach(o => {
                 h += `[${o.time}] HR ${o.hr} | BP ${o.bp} | RR ${o.rr} | SpO2 ${o.spo2}% | GCS ${o.gcs}<br>`;
             });
         }
 
         const v = p.investigations.vbg;
-        h += `<br><strong>Investigations:</strong><br>`;
+        h += `<br><b style="font-weight: bold;">Investigations:</b><br>`;
         h += `${p.investigations.gasType}: pH ${v.ph} | pCO2 ${v.pco2} | pO2 ${v.po2} | HCO3 ${v.hco3} | BE ${v.be} | Lac ${v.lac} | Ca ${v.ca}`;
         if(p.investigations.gasType === 'ABG' && v.abgFio2) h+= ` (FiO2: ${v.abgFio2}%)`;
         h += `<br>`;
@@ -486,30 +449,26 @@ document.addEventListener('DOMContentLoaded', () => {
         h += `Plan/Imaging: ${p.investigations.imaging}<br>`;
         
         if (p.checkpoints.primary.name || p.checkpoints.primary.agreed) {
-            h += `<br><strong>Consultant/Reg Review (Primary):</strong> Discussed with ${p.checkpoints.primary.name}. Plan Agreed: ${p.checkpoints.primary.agreed}. Signed: ${p.checkpoints.primary.time}<br>`;
+            h += `<br><b style="font-weight: bold;">Consultant/Reg Review (Primary):</b> Discussed with ${p.checkpoints.primary.name}. Plan Agreed: ${p.checkpoints.primary.agreed}. Signed: ${p.checkpoints.primary.time}<br>`;
         }
         getEl('initialNoteOutput').innerHTML = h;
 
         // --- SECONDARY SURVEY HTML ---
-        let s = `<strong>Secondary Survey</strong><br><br>`;
+        let s = `<b style="font-weight: bold;">Secondary Survey</b><br><br>`;
         const vSec = p.investigations.vbgSec;
         if(vSec.ph || vSec.lac) {
-            s += `<strong>Repeat ${p.investigations.secGasType}:</strong> pH ${vSec.ph} | pCO2 ${vSec.pco2} | pO2 ${vSec.po2} | HCO3 ${vSec.hco3} | BE ${vSec.be} | Lac ${vSec.lac}<br><br>`;
+            s += `<b style="font-weight: bold;">Repeat ${p.investigations.secGasType}:</b> pH ${vSec.ph} | pCO2 ${vSec.pco2} | pO2 ${vSec.po2} | HCO3 ${vSec.hco3} | BE ${vSec.be} | Lac ${vSec.lac}<br><br>`;
         }
         
         if(p.secondary.visualAcuity.left || p.secondary.visualAcuity.right) {
-            s += `<strong>Visual Acuity:</strong> Left: ${p.secondary.visualAcuity.left || 'Not tested'}, Right: ${p.secondary.visualAcuity.right || 'Not tested'}.<br><br>`;
+            s += `<b style="font-weight: bold;">Visual Acuity:</b> Left: ${p.secondary.visualAcuity.left || 'Not tested'}, Right: ${p.secondary.visualAcuity.right || 'Not tested'}.<br><br>`;
         }
 
         if(p.secondary.logroll.done || p.secondary.pr.done) {
-            s += `<strong>Log Roll & Pelvic Check:</strong><br>`;
+            s += `<b style="font-weight: bold;">Log Roll & Pelvic Check:</b><br>`;
             if(p.secondary.logroll.done) s += `Log roll performed. Findings: ${p.secondary.logroll.findings || 'No obvious step or tenderness'}.<br>`;
             if(p.secondary.pr.done) s += `PR exam performed. Findings: ${p.secondary.pr.findings || 'Normal tone, no blood'}.<br>`;
             s += `<br>`;
-        }
-
-        if(p.secondary.bodyMapMarkers && p.secondary.bodyMapMarkers.length > 0) {
-            s += `<strong>Visual Body Map:</strong> ${p.secondary.bodyMapMarkers.length} marker(s) annotated on clinical diagram.<br><br>`;
         }
 
         SS_AREAS.forEach(area => {
@@ -518,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const hasTags = data.tags.length > 0;
                 const hasText = data.text.length > 0;
                 
-                s += `<strong>${area.label}:</strong> `;
+                s += `<b style="font-weight: bold;">${area.label}:</b> `;
                 
                 if (!hasTags && !hasText) {
                     s += area.normal ? `${area.normal}` : `No abnormalities detected.`;
@@ -531,22 +490,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const ne = p.neuroExam;
-        s += `<br><strong>Neurological Examination:</strong><br>`;
+        s += `<br><b style="font-weight: bold;">Neurological Examination:</b><br>`;
         s += `Upper Limbs: L (Pow ${ne.pul}, Sen ${ne.sul}) | R (Pow ${ne.pur}, Sen ${ne.sur})<br>`;
         s += `Lower Limbs: L (Pow ${ne.pll}, Sen ${ne.sll}) | R (Pow ${ne.plr}, Sen ${ne.slr})<br>`;
         
         if (p.checkpoints.secondary.name || p.checkpoints.secondary.agreed) {
-            s += `<br><strong>Consultant/Reg Review (Secondary):</strong> Discussed with ${p.checkpoints.secondary.name}. Plan Agreed: ${p.checkpoints.secondary.agreed}. Signed: ${p.checkpoints.secondary.time}<br>`;
+            s += `<br><b style="font-weight: bold;">Consultant/Reg Review (Secondary):</b> Discussed with ${p.checkpoints.secondary.name}. Plan Agreed: ${p.checkpoints.secondary.agreed}. Signed: ${p.checkpoints.secondary.time}<br>`;
         }
 
-        s += `<br><strong>Definitive Care Plan</strong><br>`;
+        s += `<br><b style="font-weight: bold;">Definitive Care Plan</b><br>`;
         if(p.definitive.furtherImaging) s+= `Further Imaging Required: ${p.definitive.furtherImagingDetails}<br>`;
         if(p.definitive.tetanus) s+= `Tetanus immunisation up-to-date or given.<br>`;
         if(p.definitive.meds.length) s += `Time Critical Meds Prescribed: ${p.definitive.meds.join(', ')}<br>`;
-        if(p.definitive.disposition) s += `Disposition: <strong>${p.definitive.disposition}</strong><br>`;
+        if(p.definitive.disposition) s += `Disposition: <b style="font-weight: bold;">${p.definitive.disposition}</b><br>`;
         s += `${p.definitive.plan}<br>`;
         
-        s += `<br><strong>Problem List</strong><br>${p.problemList.replace(/\n/g, '<br>')}`;
+        s += `<br><b style="font-weight: bold;">Problem List</b><br>${p.problemList.replace(/\n/g, '<br>')}`;
         getEl('secondaryNoteOutput').innerHTML = s;
         
         saveState();
