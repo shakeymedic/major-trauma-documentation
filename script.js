@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let patientData = {
         zero: { self: false, leader: false, roles: false, brief: false, env: false, ppe: false, notes: '' },
         arrival: { time: '', specialties: [] },
-        atmist: { age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phTreatmentsFree: '', phDrugs: [], phDrugsFree: '', safeguarding: 'No Concern', pregnancy: 'Not Applicable' },
+        atmist: { paramedicHandover: '', age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phTreatmentsFree: '', phDrugs: [], phDrugsFree: '', safeguarding: 'No Concern', pregnancy: 'Not Applicable' },
         prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
         airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, notes: '' },
         breathing: { rr: '', sats: '', o2: 'Air', fio2: '', findings: [], notes: '' },
@@ -67,6 +67,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(!patientData.investigations.efast) patientData.investigations.efast = {ruq:'', luq:'', pelvis:'', pericardial:''};
                 if(!patientData.secondary.logroll) patientData.secondary.logroll = {done: false, findings: ''};
                 if(!patientData.secondary.pr) patientData.secondary.pr = {done: false, findings: ''};
+                if(!patientData.atmist.paramedicHandover) patientData.atmist.paramedicHandover = '';
+                
+                // Migrate old string lines to object arrays if needed
+                if (patientData.circulation.lines && patientData.circulation.lines.length > 0) {
+                    if (typeof patientData.circulation.lines[0] === 'string') {
+                        patientData.circulation.lines = patientData.circulation.lines.map(str => ({ type: str, location: 'Unknown' }));
+                    }
+                }
+                
                 restoreUI();
             } catch (e) { console.error("Error loading save data", e); }
         }
@@ -85,8 +94,16 @@ document.addEventListener('DOMContentLoaded', () => {
         setCheck('zps_ppe', p.zero.ppe);
         setVal('zps_notes', p.zero.notes);
 
+        if(p.arrival.time) {
+            const btn = getEl('btn-arrival-now');
+            btn.innerHTML = `ARRIVAL TIME SET: ${p.arrival.time}`;
+            btn.classList.add('bg-green-600', 'hover:bg-green-700');
+            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        }
+
         renderSpecialties();
 
+        setVal('paramedicHandover', p.atmist.paramedicHandover);
         setVal('age', p.atmist.age);
         setCheck('ageEstimated', p.atmist.ageEst);
         setVal('timeOfIncident', p.atmist.time);
@@ -127,7 +144,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setVal('circ_capRefill', p.circulation.crt);
         setVal('circ_notes', p.circulation.notes);
         if(p.circulation.txa) { const r = document.querySelector(`input[name="txaGiven"][value="${p.circulation.txa}"]`); if(r) r.checked = true; }
-        p.circulation.lines.forEach(l => { const chk = document.querySelector(`.access-chk[value="${l}"]`); if(chk) chk.checked = true; });
+        
+        renderLines();
+        
         if(p.circulation.binder) toggleAccessBtn('Binder', true);
         if(p.circulation.ktd) toggleAccessBtn('KTD', true);
         if(p.circulation.tourniquet) toggleAccessBtn('Tourniquet', true);
@@ -252,6 +271,55 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSpecialties();
         updateNotes();
     }
+    
+    // --- LINES & ACCESS MANAGEMENT ---
+    function renderLines() {
+        const container = getEl('linesContainer');
+        container.innerHTML = '';
+        patientData.circulation.lines.forEach((line, i) => {
+            container.innerHTML += `
+                <div class="flex gap-2">
+                    <select class="w-1/3 px-2 py-1 text-sm border border-slate-300 rounded bg-white" onchange="updateLine(${i}, 'type', this.value)">
+                        <option value="">Select Type...</option>
+                        <option value="IV" ${line.type==='IV'?'selected':''}>IV</option>
+                        <option value="Arterial Line" ${line.type==='Arterial Line'?'selected':''}>Arterial Line</option>
+                        <option value="IO" ${line.type==='IO'?'selected':''}>IO</option>
+                        <option value="CVC" ${line.type==='CVC'?'selected':''}>CVC</option>
+                        <option value="RIC" ${line.type==='RIC'?'selected':''}>RIC</option>
+                    </select>
+                    <select class="flex-1 px-2 py-1 text-sm border border-slate-300 rounded bg-white" onchange="updateLine(${i}, 'location', this.value)">
+                        <option value="">Select Location...</option>
+                        <option value="Left Arm" ${line.location==='Left Arm'?'selected':''}>Left Arm</option>
+                        <option value="Right Arm" ${line.location==='Right Arm'?'selected':''}>Right Arm</option>
+                        <option value="Left Leg" ${line.location==='Left Leg'?'selected':''}>Left Leg</option>
+                        <option value="Right Leg" ${line.location==='Right Leg'?'selected':''}>Right Leg</option>
+                        <option value="Left EJ / IJ" ${line.location==='Left EJ / IJ'?'selected':''}>Left EJ / IJ</option>
+                        <option value="Right EJ / IJ" ${line.location==='Right EJ / IJ'?'selected':''}>Right EJ / IJ</option>
+                        <option value="Subclavian" ${line.location==='Subclavian'?'selected':''}>Subclavian</option>
+                        <option value="Femoral" ${line.location==='Femoral'?'selected':''}>Femoral</option>
+                    </select>
+                    <button type="button" class="px-2 bg-red-100 text-red-600 font-bold rounded hover:bg-red-200 transition" onclick="removeLine(${i})">&times;</button>
+                </div>
+            `;
+        });
+    }
+
+    window.updateLine = function(index, field, value) {
+        patientData.circulation.lines[index][field] = value;
+        updateNotes();
+    };
+    
+    window.removeLine = function(index) {
+        patientData.circulation.lines.splice(index, 1);
+        renderLines();
+        updateNotes();
+    };
+
+    getEl('btnAddLine').addEventListener('click', () => {
+        patientData.circulation.lines.push({ type: '', location: '' });
+        renderLines();
+        updateNotes();
+    });
 
     // --- SERIAL OBSERVATIONS ---
     function renderObs() {
@@ -363,6 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(specs.length) h += `Specialties Present: ${specs.join(', ')}<br>`;
         
         h += `<br><b style="font-weight: bold;">ATMIST</b><br>`;
+        if (p.atmist.paramedicHandover) h += `Handover / History: ${p.atmist.paramedicHandover}<br>`;
         h += `Age: ${p.atmist.age}${p.atmist.ageEst?' (Est)':''} | Time of Incident: ${p.atmist.time}<br>`;
         h += `Mechanism: ${p.atmist.mech}<br>Injuries Suspected: ${p.atmist.inj}<br>Signs: ${p.atmist.signs}<br>`;
         
@@ -405,7 +474,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         h += `<b style="font-weight: bold;">Circulation:</b> HR ${p.circulation.hr} | BP ${p.circulation.bp}${calcHtml} | CRT ${p.circulation.crt}s.<br>`;
         if(p.circulation.txa && p.circulation.txa !== 'None') h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">TXA Given:</b> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime})` : ''}.<br>`;
-        if(p.circulation.lines.length) h += `&nbsp;&nbsp;&nbsp;Access: ${p.circulation.lines.join(', ')}.<br>`;
+        
+        let validLines = p.circulation.lines.filter(l => l.type || l.location).map(l => `${l.type} (${l.location})`);
+        if(validLines.length) h += `&nbsp;&nbsp;&nbsp;Access: ${validLines.join(', ')}.<br>`;
+        
         if(p.circulation.bleeding.length) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">Bleeding Sites:</b> ${p.circulation.bleeding.join(', ')}.<br>`;
         
         let interventions = [];
@@ -434,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const v = p.investigations.vbg;
-        h += `<br><b style="font-weight: bold;">Investigations:</b><br>`;
+        h += `<br><b style="font-weight: bold;">Investigations & Plan:</b><br>`;
         h += `${p.investigations.gasType}: pH ${v.ph} | pCO2 ${v.pco2} | pO2 ${v.po2} | HCO3 ${v.hco3} | BE ${v.be} | Lac ${v.lac} | Ca ${v.ca}`;
         if(p.investigations.gasType === 'ABG' && v.abgFio2) h+= ` (FiO2: ${v.abgFio2}%)`;
         h += `<br>`;
@@ -446,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.investigations.efast.pericardial) efastTxt.push(`Pericardial ${p.investigations.efast.pericardial}`);
         if(efastTxt.length > 0) h += `eFAST: ${efastTxt.join(', ')}.<br>`;
 
-        h += `Plan/Imaging: ${p.investigations.imaging}<br>`;
+        h += `<b style="font-weight: bold;">Plan/Imaging:</b> ${p.investigations.imaging}<br>`;
         
         if (p.checkpoints.primary.name || p.checkpoints.primary.agreed) {
             h += `<br><b style="font-weight: bold;">Consultant/Reg Review (Primary):</b> Discussed with ${p.checkpoints.primary.name}. Plan Agreed: ${p.checkpoints.primary.agreed}. Signed: ${p.checkpoints.primary.time}<br>`;
@@ -539,6 +611,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LISTENERS ---
     const bind = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('input', e => { obj[key] = e.target.value; updateNotes(); }); };
     const bindCheck = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.checked; updateNotes(); }); };
+
+    getEl('btn-arrival-now').addEventListener('click', () => {
+        patientData.arrival.time = getTime();
+        const btn = getEl('btn-arrival-now');
+        btn.innerHTML = `ARRIVAL TIME SET: ${patientData.arrival.time}`;
+        btn.classList.add('bg-green-600', 'hover:bg-green-700');
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        updateNotes();
+    });
 
     const specInput = getEl('customSpecInput');
     const specBtn = getEl('btnAddSpec');
@@ -662,6 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bindCheck('zps_ppe', patientData.zero, 'ppe');
     bind('zps_notes', patientData.zero, 'notes');
 
+    bind('paramedicHandover', patientData.atmist, 'paramedicHandover');
     bind('age', patientData.atmist, 'age');
     bindCheck('ageEstimated', patientData.atmist, 'ageEst');
     bind('timeOfIncident', patientData.atmist, 'time');
@@ -697,11 +779,6 @@ document.addEventListener('DOMContentLoaded', () => {
         patientData.circulation.txa = e.target.value; 
         if(e.target.value !== 'None' && !patientData.circulation.txaTime) patientData.circulation.txaTime = getTime();
         updateNotes(); 
-    }));
-    document.querySelectorAll('.access-chk').forEach(chk => chk.addEventListener('change', e => {
-        if(e.target.checked) patientData.circulation.lines.push(e.target.value);
-        else patientData.circulation.lines = patientData.circulation.lines.filter(x => x !== e.target.value);
-        updateNotes();
     }));
 
     bindCheck('mhp_activated', patientData.mhp, 'activated');
@@ -820,24 +897,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     getEl('btnNormalBreathing').addEventListener('click', () => {
-        patientData.breathing.rr = '16';
-        patientData.breathing.sats = '98';
-        patientData.breathing.o2 = 'Air';
-        patientData.breathing.fio2 = '';
         patientData.breathing.findings = [];
-        getEl('breathing_rr').value = '16';
-        getEl('breathing_sats').value = '98';
-        document.querySelector('input[name="breathing_o2"][value="Air"]').checked = true;
-        getEl('fio2_container').classList.add('hidden');
-        getEl('breathing_fio2').value = '';
         document.querySelectorAll('.lr-btn').forEach(b => b.classList.remove('active'));
         updateNotes();
     });
 
     getEl('btnNormalCirc').addEventListener('click', () => {
-        patientData.circulation.hr = '80';
-        patientData.circulation.bp = '120/80';
-        patientData.circulation.crt = '2';
         patientData.circulation.txa = 'None';
         patientData.circulation.txaTime = '';
         patientData.circulation.bleeding = [];
@@ -845,11 +910,7 @@ document.addEventListener('DOMContentLoaded', () => {
         patientData.circulation.ktd = false;
         patientData.circulation.tourniquet = false;
         
-        getEl('circ_hr').value = '80';
-        getEl('circ_bp').value = '120/80';
-        getEl('circ_capRefill').value = '2';
         document.querySelector('input[name="txaGiven"][value="None"]').checked = true;
-        
         document.querySelectorAll('.injury-btn').forEach(b => b.classList.remove('active'));
         
         patientData.circulation.binderTime = '';
@@ -870,29 +931,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     getEl('btnNormalDisability').addEventListener('click', () => {
-        patientData.disability.avpu = 'Alert';
-        patientData.disability.gcsE = 4;
-        patientData.disability.gcsV = 5;
-        patientData.disability.gcsM = 6;
         patientData.disability.headInjury = false;
         patientData.disability.pupilL = '3';
         patientData.disability.pupilR = '3';
-        patientData.disability.glucose = '5.5';
 
-        document.querySelector('input[name="disability_avpu"][value="Alert"]').checked = true;
-        getEl('disability_gcsE').value = '4';
-        getEl('disability_gcsV').value = '5';
-        getEl('disability_gcsM').value = '6';
         getEl('headInjury').checked = false;
         getEl('disability_pupil_left').value = '3';
         getEl('disability_pupil_right').value = '3';
-        getEl('disability_glucose').value = '5.5';
         updateNotes();
     });
 
     getEl('btnNormalExposure').addEventListener('click', () => {
-        patientData.exposure.temp = '36.5';
-        getEl('exposure_temp').value = '36.5';
+        patientData.exposure.notes = '';
+        getEl('exposure_notes').value = '';
         updateNotes();
     });
 
