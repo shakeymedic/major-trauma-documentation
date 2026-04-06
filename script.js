@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         breathing: { rr: '', sats: '', o2: 'Air', fio2: '', findings: [], notes: '' },
         circulation: { hr: '', bp: '', crt: '', lines: [], bleeding: [], txa: 'None', txaTime: '', binder: false, binderTime: '', ktd: false, ktdTime: '', tourniquet: false, tourniquetTime: '', notes: '' },
         mhp: { activated: false, time: '', crystalloid: '', prbc: '', ffp: '', plt: '', cryo: '' },
-        disability: { avpu: 'Alert', headInjury: false, gcsE: 4, gcsV: 5, gcsM: 6, pupilL: '', pupilR: '', glucose: '' },
+        disability: { avpu: 'Alert', headInjury: false, gcsE: 4, gcsV: 5, gcsM: 6, pupilL: '', pupilR: '', glucose: '', ma4l: false },
         exposure: { temp: '', notes: '' },
         obs: [], // Serial Observations
         investigations: { 
@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(!patientData.secondary.logroll) patientData.secondary.logroll = {done: false, findings: ''};
                 if(!patientData.secondary.pr) patientData.secondary.pr = {done: false, findings: ''};
                 if(!patientData.atmist.paramedicHandover) patientData.atmist.paramedicHandover = '';
+                if(patientData.disability.ma4l === undefined) patientData.disability.ma4l = false;
                 
                 // Migrate old string lines to object arrays if needed
                 if (patientData.circulation.lines && patientData.circulation.lines.length > 0) {
@@ -173,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setVal('disability_pupil_left', p.disability.pupilL);
         setVal('disability_pupil_right', p.disability.pupilR);
         setVal('disability_glucose', p.disability.glucose);
+        setCheck('disability_ma4l', p.disability.ma4l);
 
         setVal('exposure_temp', p.exposure.temp);
         setVal('exposure_notes', p.exposure.notes);
@@ -494,6 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
         h += `<b style="font-weight: bold;">Disability:</b> AVPU ${p.disability.avpu} | GCS ${gcsTot} (E${p.disability.gcsE} V${p.disability.gcsV} M${p.disability.gcsM}).<br>`;
         h += `&nbsp;&nbsp;&nbsp;Pupils: L ${p.disability.pupilL || '-'} | R ${p.disability.pupilR || '-'}. Blood Glucose: ${p.disability.glucose} mmol/L.<br>`;
+        if(p.disability.ma4l) h += `&nbsp;&nbsp;&nbsp;Gross Motor: Moving all 4 limbs.<br>`;
         if(p.disability.headInjury) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">⚠️ Head Injury Suspected</b><br>`;
         
         h += `<b style="font-weight: bold;">Exposure:</b> Temp ${p.exposure.temp}°C. ${p.exposure.notes}<br>`;
@@ -799,6 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('disability_pupil_left', patientData.disability, 'pupilL');
     bind('disability_pupil_right', patientData.disability, 'pupilR');
     bind('disability_glucose', patientData.disability, 'glucose');
+    bindCheck('disability_ma4l', patientData.disability, 'ma4l');
     
     bind('exposure_temp', patientData.exposure, 'temp');
     bind('exposure_notes', patientData.exposure, 'notes');
@@ -927,6 +931,9 @@ document.addEventListener('DOMContentLoaded', () => {
         txaBtn.classList.remove('recorded');
         txaBtn.innerText = '🕒 Now';
 
+        patientData.circulation.notes = "No external bleeding, abdomen SNT, pelvis symmetrical and appears stable, no long bone deformity.";
+        getEl('circ_notes').value = patientData.circulation.notes;
+
         updateNotes();
     });
 
@@ -934,10 +941,13 @@ document.addEventListener('DOMContentLoaded', () => {
         patientData.disability.headInjury = false;
         patientData.disability.pupilL = '3';
         patientData.disability.pupilR = '3';
+        patientData.disability.ma4l = true;
 
         getEl('headInjury').checked = false;
         getEl('disability_pupil_left').value = '3';
         getEl('disability_pupil_right').value = '3';
+        getEl('disability_ma4l').checked = true;
+
         updateNotes();
     });
 
