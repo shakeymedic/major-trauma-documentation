@@ -175,9 +175,17 @@ document.addEventListener('DOMContentLoaded', () => {
         setVal('disability_pupil_right', p.disability.pupilR);
         setVal('disability_glucose', p.disability.glucose);
         setCheck('disability_ma4l', p.disability.ma4l);
+        // Restore GCS dropdown values from saved data
+        const gcsEEl = getEl('disability_gcsE'); if(gcsEEl) gcsEEl.value = p.disability.gcsE;
+        const gcsVEl = getEl('disability_gcsV'); if(gcsVEl) gcsVEl.value = p.disability.gcsV;
+        const gcsMEl = getEl('disability_gcsM'); if(gcsMEl) gcsMEl.value = p.disability.gcsM;
 
         setVal('exposure_temp', p.exposure.temp);
         setVal('exposure_notes', p.exposure.notes);
+        // Restore neuro exam selects from saved data
+        ['pul','sul','pur','sur','pll','sll','plr','slr'].forEach(k => {
+            const el = getEl(`neuro_${k}`); if(el) el.value = p.neuroExam[k];
+        });
 
         renderObs();
 
@@ -337,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.rr}" onchange="updateObs(${i}, 'rr', this.value)"></td>
                 <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.spo2}" onchange="updateObs(${i}, 'spo2', this.value)"></td>
                 <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.gcs}" onchange="updateObs(${i}, 'gcs', this.value)"></td>
+                <td class="p-2"><input type="text" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" placeholder="L/R" value="${o.pupils||''}" onchange="updateObs(${i}, 'pupils', this.value)"></td>
                 <td class="p-2 text-center"><button class="text-red-500 hover:text-red-700 font-bold" onclick="removeObs(${i})">&times;</button></td>
             `;
             tbody.appendChild(tr);
@@ -346,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.updateObs = function(index, field, value) { patientData.obs[index][field] = value; updateNotes(); };
     window.removeObs = function(index) { patientData.obs.splice(index, 1); renderObs(); updateNotes(); };
     getEl('btnAddObs').addEventListener('click', () => {
-        patientData.obs.push({ time: getTime(), hr: '', bp: '', rr: '', spo2: '', gcs: '' });
+        patientData.obs.push({ time: getTime(), hr: '', bp: '', rr: '', spo2: '', gcs: '', pupils: '' });
         renderObs();
         updateNotes();
     });
@@ -504,7 +513,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (p.obs.length > 0) {
             h += `<br><b style="font-weight: bold;">Serial Observations:</b><br>`;
             p.obs.forEach(o => {
-                h += `[${o.time}] HR ${o.hr} | BP ${o.bp} | RR ${o.rr} | SpO2 ${o.spo2}% | GCS ${o.gcs}<br>`;
+                let obsLine = `[${o.time}] HR ${o.hr} | BP ${o.bp} | RR ${o.rr} | SpO2 ${o.spo2}% | GCS ${o.gcs}`;
+                if(o.pupils) obsLine += ` | Pupils ${o.pupils}`;
+                h += obsLine + `<br>`;
             });
         }
 
