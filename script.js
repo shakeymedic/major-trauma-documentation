@@ -685,17 +685,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- COPY FUNCTION ---
+    // Convert bold HTML tags to Unicode bold characters so they survive plain-text EPR paste
+    function toBoldUnicode(str) {
+        const map = {};
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((c,i) => map[c] = String.fromCodePoint(0x1D400 + i));
+        'abcdefghijklmnopqrstuvwxyz'.split('').forEach((c,i) => map[c] = String.fromCodePoint(0x1D41A + i));
+        '0123456789'.split('').forEach((c,i)           => map[c] = String.fromCodePoint(0x1D7CE + i));
+        return str.split('').map(c => map[c] || c).join('');
+    }
+
+    function htmlToPlainBold(html) {
+        return html
+            .replace(/<b[^>]*>(.*?)<\/b>/gi, (_, inner) =>
+                toBoldUnicode(inner.replace(/<[^>]+>/g, '')))
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/&nbsp;/gi, '\u00A0')
+            .replace(/<span[^>]*>(.*?)<\/span>/gi, '$1')
+            .replace(/<[^>]+>/g, '')
+            .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+    }
+
     async function copyRichText(id) {
         const el = getEl(id);
-        try {
-            const htmlBlob = new Blob([el.innerHTML], { type: 'text/html' });
-            const textBlob = new Blob([el.innerText], { type: 'text/plain' });
-            await navigator.clipboard.write([
-                new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })
-            ]);
-            const btn = id.includes('Initial') ? getEl('copyInitial') : getEl('copySecondary');
+        const btn = id.includes('Initial') ? getEl('copyInitial') : getEl('copySecondary');
+        const showSuccess = (label) => {
             const orig = btn.innerText;
-            btn.innerText = '✅ Copied!';
+            btn.innerText = label;
             btn.classList.add('bg-green-600', 'hover:bg-green-700');
             btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             setTimeout(() => {
@@ -703,22 +718,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 btn.classList.remove('bg-green-600', 'hover:bg-green-700');
             }, 2000);
+        };
+        try {
+            const htmlBlob = new Blob([el.innerHTML], { type: 'text/html' });
+            const plainText = htmlToPlainBold(el.innerHTML);
+            const textBlob = new Blob([plainText], { type: 'text/plain' });
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })
+            ]);
+            showSuccess('✅ Copied!');
         } catch (err) {
-            console.error("Clipboard API failed, trying fallback", err);
+            // Fallback: plain text with Unicode bold
             try {
-                const ta = document.createElement('textarea');
-                ta.value = el.innerText;
-                ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                const btn = id.includes('Initial') ? getEl('copyInitial') : getEl('copySecondary');
-                const orig = btn.innerText;
-                btn.innerText = '✅ Copied (plain text)';
-                btn.classList.add('bg-green-600'); btn.classList.remove('bg-blue-600');
-                setTimeout(() => { btn.innerText = orig; btn.classList.add('bg-blue-600'); btn.classList.remove('bg-green-600'); }, 2000);
-            } catch(e2) { alert('Copy failed. Please select and copy the text manually.'); }
+                const plain = htmlToPlainBold(el.innerHTML);
+                await navigator.clipboard.writeText(plain);
+                showSuccess('✅ Copied!');
+            } catch(e2) {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = htmlToPlainBold(el.innerHTML);
+                    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    showSuccess('✅ Copied!');
+                } catch(e3) { alert('Copy failed — please select and copy the text manually.'); }
+            }
         }
     }
 
