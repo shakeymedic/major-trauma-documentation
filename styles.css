@@ -134,3 +134,50 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
     width: 6rem;
 }
 .arrival-time-edit::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+/* ===== PRINT STYLESHEET ===== */
+@media print {
+  /* Hide everything except the note outputs */
+  body { background: white !important; }
+  header, .no-print, #sec-zero, #sec-atmist, #sec-prehosp, #sec-airway,
+  #sec-circulation, #sec-disability, #sec-secondary, #sec-imaging,
+  #sec-investigations, #sec-plan, #sec-neuro, #sec-checkpoints,
+  #sec-obs, #sec-mhp, button, details, .obs-section,
+  [id^="btn-"], .spec-row, nav, .print\:hidden { display: none !important; }
+
+  main { padding: 0 !important; margin: 0 !important; }
+
+  /* Show and style the note panels */
+  #notePanel {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  #initialNoteOutput,
+  #secondaryNoteOutput {
+    display: block !important;
+    font-size: 10pt !important;
+    line-height: 1.5 !important;
+    font-family: Arial, sans-serif !important;
+    color: black !important;
+    background: white !important;
+    border: none !important;
+    padding: 0 !important;
+    margin-bottom: 24pt !important;
+    page-break-inside: avoid;
+  }
+
+  /* Force page break between primary and secondary notes */
+  #secondaryNoteOutput { page-break-before: always; }
+
+  /* Print headings */
+  b { font-weight: bold !important; }
+
+  /* Hide copy buttons */
+  #copyInitial, #copySecondary { display: none !important; }
+}

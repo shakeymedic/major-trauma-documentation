@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- DATA STORE ---
-    const DATA_VERSION = '2.6';
+    const DATA_VERSION = '2.7';
     let patientData = {
         _version: DATA_VERSION,
-        patientId: '',
         zero: { self: false, leader: false, roles: false, brief: false, env: false, ppe: false, notes: '' },
         arrival: { time: '', specialties: [] },
         atmist: { paramedicHandover: '', age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phTreatmentsFree: '', phDrugs: [], phDrugsFree: '', safeguarding: 'No Concern', pregnancy: 'Not Applicable' },
@@ -50,6 +49,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const getEl = (id) => document.getElementById(id);
     const getTime = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+    function minutesBetween(t1, t2) {
+        if(!t1 || !t2) return null;
+        const [h1,m1] = t1.split(':').map(Number);
+        const [h2,m2] = t2.split(':').map(Number);
+        if(isNaN(h1)||isNaN(m1)||isNaN(h2)||isNaN(m2)) return null;
+        return (h2*60+m2) - (h1*60+m1);
+    }
+    function elapsedStr(arrival, event) {
+        const mins = minutesBetween(arrival, event);
+        if(mins === null) return '';
+        const sign = mins < 0 ? '-' : '+';
+        return ` (+${Math.abs(mins)}min)`;
+    }
+
     // --- LOCAL STORAGE & RESTORE ---
     function saveState() {
         localStorage.setItem('wmebem_trauma_data', JSON.stringify(patientData));
@@ -89,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(!patientData.checkpoints) patientData.checkpoints = { primary:{name:'', agreed:'', time:''}, secondary:{name:'', agreed:'', time:''} };
                 if(!patientData.definitive) patientData.definitive = { furtherImaging:false, furtherImagingDetails:'', tetanus:false, meds:[], disposition:'', plan:'' };
                 if(!patientData.definitive.meds) patientData.definitive.meds = [];
-                if(!patientData.patientId) patientData.patientId = '';
                 // Migrate old string lines to object arrays if needed
                 if (patientData.circulation.lines && patientData.circulation.lines.length > 0) {
                     if (typeof patientData.circulation.lines[0] === 'string') {
@@ -106,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const setVal = (id, val) => { const el = getEl(id); if(el) el.value = val || ''; };
         const setCheck = (id, val) => { const el = getEl(id); if(el) el.checked = !!val; };
 
-        setVal('patientId', p.patientId);
         setCheck('zps_self', p.zero.self);
         setCheck('zps_leader', p.zero.leader);
         setCheck('zps_roles', p.zero.roles);
@@ -203,6 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const glucoseAlert = getEl('glucose_alert');
         const gv = parseFloat(p.disability.glucose);
         if(glucoseAlert) glucoseAlert.classList.toggle('hidden', isNaN(gv) || gv > 3.5);
+        // Restore HR / BP alerts
+        const hrEl = getEl('hr_alert');
+        if(hrEl && p.circulation.hr) { const hv = parseInt(p.circulation.hr); if(hv < 40) { hrEl.textContent = '⚠️ Bradycardia'; hrEl.style.color='#dc2626'; hrEl.classList.remove('hidden'); } else if(hv > 150) { hrEl.textContent = '⚠️ Tachycardia'; hrEl.style.color='#dc2626'; hrEl.classList.remove('hidden'); } else if(hv > 100) { hrEl.textContent = '↑ Tachycardia'; hrEl.style.color='#d97706'; hrEl.classList.remove('hidden'); } }
+        const bpEl = getEl('bp_alert');
+        if(bpEl && p.circulation.bp) { const pts = p.circulation.bp.split('/'); if(pts.length === 2) { const sv = parseInt(pts[0]); if(sv < 90) { bpEl.textContent = '⚠️ Hypotension'; bpEl.style.color='#dc2626'; bpEl.classList.remove('hidden'); } else if(sv > 200) { bpEl.textContent = '⚠️ Hypertension'; bpEl.style.color='#dc2626'; bpEl.classList.remove('hidden'); } } }
 
         setVal('exposure_temp', p.exposure.temp);
         setVal('exposure_notes', p.exposure.notes);
@@ -493,8 +509,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- PRIMARY SURVEY HTML ---
         const noteTime = getTime();
         let h = `<b style="font-weight: bold;">Major Trauma Assessment</b> <span style="font-size:0.85em;color:#64748b;">(Note generated: ${noteTime})</span><br>`;
-        if(p.patientId) h += `<b style="font-weight: bold;">Patient ID:</b> ${p.patientId}<br>`;
-
         const zpsDone = [];
         if(p.zero.self) zpsDone.push('Self check');
         if(p.zero.leader) zpsDone.push('Leader identified');
@@ -554,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
         h += "<br>";
         
         h += `<b style="font-weight: bold;">Circulation:</b> HR ${p.circulation.hr} | BP ${p.circulation.bp}${calcHtml} | CRT ${p.circulation.crt}s.<br>`;
-        if(p.circulation.txa && p.circulation.txa !== 'None') h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">TXA Given:</b> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime})` : ''}.<br>`;
+        if(p.circulation.txa && p.circulation.txa !== 'None') h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">TXA Given:</b> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime}${elapsedStr(p.arrival.time, p.circulation.txaTime)})` : ''}.<br>`;
         
         let validLines = p.circulation.lines.filter(l => l.type || l.location).map(l => `${l.type} (${l.location})`);
         if(validLines.length) h += `&nbsp;&nbsp;&nbsp;Access: ${validLines.join(', ')}.<br>`;
@@ -562,14 +576,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.circulation.bleeding.length) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">Bleeding Sites:</b> ${p.circulation.bleeding.join(', ')}.<br>`;
         
         let interventions = [];
-        if(p.circulation.binder) interventions.push(`Pelvic Binder ${p.circulation.binderTime ? `(@ ${p.circulation.binderTime})` : ''}`);
-        if(p.circulation.ktd) interventions.push(`KTD Splint ${p.circulation.ktdTime ? `(@ ${p.circulation.ktdTime})` : ''}`);
-        if(p.circulation.tourniquet) interventions.push(`Tourniquet ${p.circulation.tourniquetTime ? `(@ ${p.circulation.tourniquetTime})` : ''}`);
+        if(p.circulation.binder) interventions.push(`Pelvic Binder ${p.circulation.binderTime ? `(@ ${p.circulation.binderTime}${elapsedStr(p.arrival.time, p.circulation.binderTime)})` : ''}`);
+        if(p.circulation.ktd) interventions.push(`KTD Splint ${p.circulation.ktdTime ? `(@ ${p.circulation.ktdTime}${elapsedStr(p.arrival.time, p.circulation.ktdTime)})` : ''}`);
+        if(p.circulation.tourniquet) interventions.push(`Tourniquet ${p.circulation.tourniquetTime ? `(@ ${p.circulation.tourniquetTime}${elapsedStr(p.arrival.time, p.circulation.tourniquetTime)})` : ''}`);
         if(interventions.length) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">Interventions:</b> ${interventions.join(', ')}.<br>`;
         if(p.circulation.notes) h += `&nbsp;&nbsp;&nbsp;${p.circulation.notes}<br>`;
 
         if(p.mhp.activated) {
-            h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">⚠️ MHP ACTIVATED</b> (${p.mhp.time || 'Time Not Set'})<br>&nbsp;&nbsp;&nbsp;Given: Crystalloid ${p.mhp.crystalloid || 0}ml, PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.<br>`;
+            h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">⚠️ MHP ACTIVATED</b> (${p.mhp.time || 'Time Not Set'}${elapsedStr(p.arrival.time, p.mhp.time)})<br>&nbsp;&nbsp;&nbsp;Given: Crystalloid ${p.mhp.crystalloid || 0}ml, PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.<br>`;
         }
 
         let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
@@ -607,13 +621,12 @@ document.addEventListener('DOMContentLoaded', () => {
         h += `<b style="font-weight: bold;">Plan/Imaging:</b> ${p.investigations.imaging}<br>`;
         
         if (p.checkpoints.primary.name || p.checkpoints.primary.agreed) {
-            h += `<br><b style="font-weight: bold;">Consultant/Reg Review (Primary):</b> Discussed with ${p.checkpoints.primary.name}. Plan Agreed: ${p.checkpoints.primary.agreed}. Signed: ${p.checkpoints.primary.time}<br>`;
+            h += `<br><b style="font-weight: bold;">Consultant/Reg Review (Primary):</b> Discussed with ${p.checkpoints.primary.name}. Plan Agreed: ${p.checkpoints.primary.agreed}. Signed: ${p.checkpoints.primary.time}${elapsedStr(p.arrival.time, p.checkpoints.primary.time)}<br>`;
         }
         getEl('initialNoteOutput').innerHTML = h;
 
         // --- SECONDARY SURVEY HTML ---
         let s = `<b style="font-weight: bold;">Secondary Survey</b> <span style="font-size:0.85em;color:#64748b;">(Note generated: ${noteTime})</span><br>`;
-        if(p.patientId) s += `<b style="font-weight: bold;">Patient ID:</b> ${p.patientId}<br>`;
         s += `<br>`;
         const vSec = p.investigations.vbgSec;
         if(vSec.ph || vSec.lac) {
@@ -655,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
         s += `Lower Limbs: L (Pow ${ne.pll}, Sen ${ne.sll}) | R (Pow ${ne.plr}, Sen ${ne.slr})<br>`;
         
         if (p.checkpoints.secondary.name || p.checkpoints.secondary.agreed) {
-            s += `<br><b style="font-weight: bold;">Consultant/Reg Review (Secondary):</b> Discussed with ${p.checkpoints.secondary.name}. Plan Agreed: ${p.checkpoints.secondary.agreed}. Signed: ${p.checkpoints.secondary.time}<br>`;
+            s += `<br><b style="font-weight: bold;">Consultant/Reg Review (Secondary):</b> Discussed with ${p.checkpoints.secondary.name}. Plan Agreed: ${p.checkpoints.secondary.agreed}. Signed: ${p.checkpoints.secondary.time}${elapsedStr(p.arrival.time, p.checkpoints.secondary.time)}<br>`;
         }
 
         s += `<br><b style="font-weight: bold;">Definitive Care Plan</b><br>`;
@@ -886,7 +899,28 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('breathing_notes', patientData.breathing, 'notes');
     
     bind('circ_hr', patientData.circulation, 'hr');
+    getEl('circ_hr').addEventListener('input', e => {
+        const v = parseInt(e.target.value);
+        const el = getEl('hr_alert');
+        if(!el) return;
+        if(isNaN(v) || e.target.value === '') { el.classList.add('hidden'); return; }
+        if(v < 40) { el.textContent = '⚠️ Bradycardia'; el.style.color = '#dc2626'; el.classList.remove('hidden'); }
+        else if(v > 150) { el.textContent = '⚠️ Tachycardia'; el.style.color = '#dc2626'; el.classList.remove('hidden'); }
+        else if(v > 100) { el.textContent = '↑ Tachycardia'; el.style.color = '#d97706'; el.classList.remove('hidden'); }
+        else { el.classList.add('hidden'); }
+    });
     bind('circ_bp', patientData.circulation, 'bp');
+    getEl('circ_bp').addEventListener('input', e => {
+        const parts = e.target.value.split('/');
+        const el = getEl('bp_alert');
+        if(!el) return;
+        if(parts.length !== 2) { el.classList.add('hidden'); return; }
+        const sys = parseInt(parts[0]);
+        if(isNaN(sys)) { el.classList.add('hidden'); return; }
+        if(sys < 90) { el.textContent = '⚠️ Hypotension'; el.style.color = '#dc2626'; el.classList.remove('hidden'); }
+        else if(sys > 200) { el.textContent = '⚠️ Hypertension'; el.style.color = '#dc2626'; el.classList.remove('hidden'); }
+        else { el.classList.add('hidden'); }
+    });
     bind('circ_capRefill', patientData.circulation, 'crt');
     bind('circ_notes', patientData.circulation, 'notes');
     document.querySelectorAll('input[name="txaGiven"]').forEach(r => r.addEventListener('change', e => { 
@@ -1095,7 +1129,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNotes();
     });
 
-    bind('patientId', patientData, 'patientId');
     loadState();
     updateNotes();
 });
