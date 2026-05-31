@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- DATA STORE ---
+    const DATA_VERSION = '2.6';
     let patientData = {
+        _version: DATA_VERSION,
+        patientId: '',
         zero: { self: false, leader: false, roles: false, brief: false, env: false, ppe: false, notes: '' },
         arrival: { time: '', specialties: [] },
         atmist: { paramedicHandover: '', age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phTreatmentsFree: '', phDrugs: [], phDrugsFree: '', safeguarding: 'No Concern', pregnancy: 'Not Applicable' },
@@ -52,31 +55,47 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('wmebem_trauma_data', JSON.stringify(patientData));
     }
 
+    function deepMerge(target, source) {
+        for (const key in source) {
+            if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                if (!target[key] || typeof target[key] !== 'object') target[key] = {};
+                deepMerge(target[key], source[key]);
+            } else {
+                target[key] = source[key];
+            }
+        }
+        return target;
+    }
+
     function loadState() {
         const saved = localStorage.getItem('wmebem_trauma_data');
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                patientData = { ...patientData, ...parsed };
+                patientData = deepMerge(patientData, parsed);
+                // Migration guards
                 if(!patientData.secondary) patientData.secondary = { visualAcuity: {left:'', right:''} };
                 if(!patientData.secondary.visualAcuity) patientData.secondary.visualAcuity = {left:'', right:''};
+                if(!patientData.secondary.logroll) patientData.secondary.logroll = {done: false, findings: ''};
+                if(!patientData.secondary.pr) patientData.secondary.pr = {done: false, findings: ''};
                 if(!patientData.atmist.phDrugs) patientData.atmist.phDrugs = [];
                 if(!patientData.atmist.phDrugsFree) patientData.atmist.phDrugsFree = '';
                 if(!patientData.atmist.phTreatmentsFree) patientData.atmist.phTreatmentsFree = patientData.atmist.phNotes || '';
+                if(!patientData.atmist.paramedicHandover) patientData.atmist.paramedicHandover = '';
                 if(!patientData.obs) patientData.obs = [];
                 if(!patientData.investigations.efast) patientData.investigations.efast = {ruq:'', luq:'', pelvis:'', pericardial:''};
-                if(!patientData.secondary.logroll) patientData.secondary.logroll = {done: false, findings: ''};
-                if(!patientData.secondary.pr) patientData.secondary.pr = {done: false, findings: ''};
-                if(!patientData.atmist.paramedicHandover) patientData.atmist.paramedicHandover = '';
                 if(patientData.disability.ma4l === undefined) patientData.disability.ma4l = false;
-                
+                if(!patientData.neuroExam) patientData.neuroExam = { pul:'5/5', sul:'Intact', pur:'5/5', sur:'Intact', pll:'5/5', sll:'Intact', plr:'5/5', slr:'Intact' };
+                if(!patientData.checkpoints) patientData.checkpoints = { primary:{name:'', agreed:'', time:''}, secondary:{name:'', agreed:'', time:''} };
+                if(!patientData.definitive) patientData.definitive = { furtherImaging:false, furtherImagingDetails:'', tetanus:false, meds:[], disposition:'', plan:'' };
+                if(!patientData.definitive.meds) patientData.definitive.meds = [];
+                if(!patientData.patientId) patientData.patientId = '';
                 // Migrate old string lines to object arrays if needed
                 if (patientData.circulation.lines && patientData.circulation.lines.length > 0) {
                     if (typeof patientData.circulation.lines[0] === 'string') {
                         patientData.circulation.lines = patientData.circulation.lines.map(str => ({ type: str, location: 'Unknown' }));
                     }
                 }
-                
                 restoreUI();
             } catch (e) { console.error("Error loading save data", e); }
         }
@@ -87,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const setVal = (id, val) => { const el = getEl(id); if(el) el.value = val || ''; };
         const setCheck = (id, val) => { const el = getEl(id); if(el) el.checked = !!val; };
 
+        setVal('patientId', p.patientId);
         setCheck('zps_self', p.zero.self);
         setCheck('zps_leader', p.zero.leader);
         setCheck('zps_roles', p.zero.roles);
@@ -97,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if(p.arrival.time) {
             const btn = getEl('btn-arrival-now');
-            btn.innerHTML = `ARRIVAL TIME SET: ${p.arrival.time}`;
+            btn.innerHTML = `ARRIVAL TIME: <input type="time" value="${p.arrival.time}" class="arrival-time-edit" oninput="window._updateArrivalTime(this.value)">`;
             btn.classList.add('bg-green-600', 'hover:bg-green-700');
             btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
         }
@@ -179,12 +199,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const gcsEEl = getEl('disability_gcsE'); if(gcsEEl) gcsEEl.value = p.disability.gcsE;
         const gcsVEl = getEl('disability_gcsV'); if(gcsVEl) gcsVEl.value = p.disability.gcsV;
         const gcsMEl = getEl('disability_gcsM'); if(gcsMEl) gcsMEl.value = p.disability.gcsM;
+        // Restore glucose alert
+        const glucoseAlert = getEl('glucose_alert');
+        const gv = parseFloat(p.disability.glucose);
+        if(glucoseAlert) glucoseAlert.classList.toggle('hidden', isNaN(gv) || gv > 3.5);
 
         setVal('exposure_temp', p.exposure.temp);
         setVal('exposure_notes', p.exposure.notes);
         // Restore neuro exam selects from saved data
         ['pul','sul','pur','sur','pll','sll','plr','slr'].forEach(k => {
             const el = getEl(`neuro_${k}`); if(el) el.value = p.neuroExam[k];
+        });
+        // Restore breathing L/R finding button states
+        p.breathing.findings.forEach(obj => {
+            const btn = document.querySelector(`.lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
+            if(btn) btn.classList.add('active');
+        });
+        // Restore injury/bleeding site button states
+        p.circulation.bleeding.forEach(site => {
+            const btn = document.querySelector(`.injury-btn[data-site="${site}"]`);
+            if(btn) btn.classList.add('active');
+        });
+        // Restore secondary survey area tags and text
+        SS_AREAS.forEach(area => {
+            if(patientData.secondary[area.id]) {
+                patientData.secondary[area.id].tags.forEach(tag => {
+                    const chk = document.querySelector(`.tag-checkbox[data-area="${area.id}"][value="${tag}"]`);
+                    if(chk) { chk.checked = true; chk.nextElementSibling && chk.nextElementSibling.classList && chk.nextElementSibling.classList.add('tag-active'); }
+                });
+                const txt = getEl(`ss_${area.id}`);
+                if(txt) txt.value = patientData.secondary[area.id].text;
+            }
         });
 
         renderObs();
@@ -195,7 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const rSecGas = document.querySelector(`input[name="secGasType"][value="${p.investigations.secGasType}"]`);
         if(rSecGas) rSecGas.checked = true;
 
-        ['ph','pco2','po2','hco3','be','lac','ca','abgFio2'].forEach(k => { const map = {lac:'lactate', ca:'ionisedCa'}; setVal(`vbgInitial_${map[k]||k}`, p.investigations.vbg[k]); });
+        // Fix: abgFio2 uses element id 'gasFio2', not 'vbgInitial_abgFio2'
+        setVal('gasFio2', p.investigations.vbg.abgFio2);
+        ['ph','pco2','po2','hco3','be','lac','ca'].forEach(k => { const map = {lac:'lactate', ca:'ionisedCa'}; setVal(`vbgInitial_${map[k]||k}`, p.investigations.vbg[k]); });
         ['ph','pco2','po2','hco3','be','lac','ca'].forEach(k => { const map = {lac:'lactate', ca:'ionisedCa'}; setVal(`vbgSec_${map[k]||k}`, p.investigations.vbgSec[k]); });
         
         ['ruq', 'luq', 'pelvis', 'pericardial'].forEach(k => setVal(`efast_${k}`, p.investigations.efast[k]));
@@ -388,8 +435,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         tagsHtml += `</div>`;
         
-        div.innerHTML = `<label class="block text-xs font-black text-slate-600 uppercase mb-1">${area.label}</label>${tagsHtml}<textarea id="ss_${area.id}" rows="1" class="w-full px-3 py-2 border border-slate-400 rounded text-sm font-medium" placeholder="Additional details for ${area.label}..."></textarea>`;
+        div.innerHTML = `<label class="block text-xs font-black text-slate-600 uppercase mb-1">${area.label}</label>${tagsHtml}<textarea id="ss_${area.id}" rows="1" class="w-full px-3 py-2 border border-slate-400 rounded text-sm font-medium overflow-hidden" style="resize:none;" placeholder="Additional details for ${area.label}..."></textarea>`;
         secContainer.appendChild(div);
+        // Auto-expand textarea as user types
+        const ssTextarea = getEl(`ss_${area.id}`);
+        if(ssTextarea) ssTextarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
         if(!patientData.secondary[area.id]) patientData.secondary[area.id] = { tags: [], text: '' };
     });
 
@@ -424,18 +474,36 @@ document.addEventListener('DOMContentLoaded', () => {
             if(!isNaN(sys) && !isNaN(dia)) {
                 const map = Math.round((sys + (2*dia))/3);
                 let siStr = "";
-                if(!isNaN(hr) && sys > 0) siStr = ` | SI: ${(hr/sys).toFixed(2)}`;
+                let siColour = '';
+                if(!isNaN(hr) && sys > 0) {
+                    const si = (hr/sys).toFixed(2);
+                    if(parseFloat(si) >= 1.0) siColour = 'color:#dc2626;font-weight:bold;';
+                    else if(parseFloat(si) >= 0.7) siColour = 'color:#d97706;font-weight:bold;';
+                    siStr = ` | <span style="${siColour}">SI: ${si}</span>`;
+                    calcHtml = ` (MAP ${map} | SI: ${si})`;
+                } else {
+                    calcHtml = ` (MAP ${map})`;
+                }
                 const calcDisplay = getEl('calc_results');
                 calcDisplay.innerHTML = `MAP: ${map} mmHg${siStr}`;
                 calcDisplay.classList.remove('hidden');
-                calcHtml = ` (MAP ${map}${siStr})`;
             }
         }
 
         // --- PRIMARY SURVEY HTML ---
-        let h = `<b style="font-weight: bold;">Major Trauma Assessment</b><br>`;
+        const noteTime = getTime();
+        let h = `<b style="font-weight: bold;">Major Trauma Assessment</b> <span style="font-size:0.85em;color:#64748b;">(Note generated: ${noteTime})</span><br>`;
+        if(p.patientId) h += `<b style="font-weight: bold;">Patient ID:</b> ${p.patientId}<br>`;
 
-        if (p.zero.self || p.zero.leader || p.zero.notes) h += `Zero Point Survey (Preparation) Completed.<br>`;
+        const zpsDone = [];
+        if(p.zero.self) zpsDone.push('Self check');
+        if(p.zero.leader) zpsDone.push('Leader identified');
+        if(p.zero.roles) zpsDone.push('Roles allocated');
+        if(p.zero.brief) zpsDone.push('Briefing complete');
+        if(p.zero.env) zpsDone.push('Environment ready');
+        if(p.zero.ppe) zpsDone.push('PPE donned');
+        if(zpsDone.length > 0) h += `Zero Point Survey: ${zpsDone.join(', ')}.<br>`;
+        if(p.zero.notes) h += `Pre-arrival notes: ${p.zero.notes}<br>`;
         if(p.arrival.time) h += `Patient Arrival Time: <b style="font-weight: bold;">${p.arrival.time}</b><br>`;
         
         let specs = p.arrival.specialties.map(s => `${s.name} (@ ${s.time})`);
@@ -458,7 +526,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.atmist.pregnancy !== 'Not Applicable') h += `Pregnancy Status: ${p.atmist.pregnancy}<br>`;
 
         if(p.prehosp.notes) h+= `Pre-Hospital Notes: ${p.prehosp.notes}<br>`;
-        h += `AMPLE: A:${p.prehosp.history.a} M:${p.prehosp.history.m} P:${p.prehosp.history.p} L:${p.prehosp.history.l} E:${p.prehosp.history.e}<br>`;
+        const allergyTxt = p.prehosp.history.a || 'NKDA';
+        const allergyStyle = p.prehosp.history.a ? 'color:#dc2626;font-weight:bold;' : '';
+        h += `AMPLE: <span style="${allergyStyle}">A: ${allergyTxt}</span> | M: ${p.prehosp.history.m} | P: ${p.prehosp.history.p} | L: ${p.prehosp.history.l} | E: ${p.prehosp.history.e}<br>`;
 
         h += `<br><b style="font-weight: bold;">PRIMARY SURVEY</b><br>`;
         
@@ -504,7 +574,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
         h += `<b style="font-weight: bold;">Disability:</b> AVPU ${p.disability.avpu} | GCS ${gcsTot} (E${p.disability.gcsE} V${p.disability.gcsV} M${p.disability.gcsM}).<br>`;
-        h += `&nbsp;&nbsp;&nbsp;Pupils: L ${p.disability.pupilL || '-'} | R ${p.disability.pupilR || '-'}. Blood Glucose: ${p.disability.glucose} mmol/L.<br>`;
+        const glucoseVal = parseFloat(p.disability.glucose);
+        const glucoseStr = p.disability.glucose ? `${p.disability.glucose} mmol/L${(!isNaN(glucoseVal) && glucoseVal <= 3.5) ? ' <b style="color:#dc2626">⚠️ HYPOGLYCAEMIA</b>' : ''}` : 'Not recorded';
+        h += `&nbsp;&nbsp;&nbsp;Pupils: L ${p.disability.pupilL || '-'} | R ${p.disability.pupilR || '-'}. Blood Glucose: ${glucoseStr}.<br>`;
         if(p.disability.ma4l) h += `&nbsp;&nbsp;&nbsp;Gross Motor: Moving all 4 limbs.<br>`;
         if(p.disability.headInjury) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">⚠️ Head Injury Suspected</b><br>`;
         
@@ -540,10 +612,12 @@ document.addEventListener('DOMContentLoaded', () => {
         getEl('initialNoteOutput').innerHTML = h;
 
         // --- SECONDARY SURVEY HTML ---
-        let s = `<b style="font-weight: bold;">Secondary Survey</b><br><br>`;
+        let s = `<b style="font-weight: bold;">Secondary Survey</b> <span style="font-size:0.85em;color:#64748b;">(Note generated: ${noteTime})</span><br>`;
+        if(p.patientId) s += `<b style="font-weight: bold;">Patient ID:</b> ${p.patientId}<br>`;
+        s += `<br>`;
         const vSec = p.investigations.vbgSec;
         if(vSec.ph || vSec.lac) {
-            s += `<b style="font-weight: bold;">Repeat ${p.investigations.secGasType}:</b> pH ${vSec.ph} | pCO2 ${vSec.pco2} | pO2 ${vSec.po2} | HCO3 ${vSec.hco3} | BE ${vSec.be} | Lac ${vSec.lac}<br><br>`;
+            s += `<b style="font-weight: bold;">Repeat ${p.investigations.secGasType}:</b> pH ${vSec.ph} | pCO2 ${vSec.pco2} | pO2 ${vSec.po2} | HCO3 ${vSec.hco3} | BE ${vSec.be} | Lac ${vSec.lac} | Ca ${vSec.ca}<br><br>`;
         }
         
         if(p.secondary.visualAcuity.left || p.secondary.visualAcuity.right) {
@@ -616,7 +690,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 btn.classList.remove('bg-green-600', 'hover:bg-green-700');
             }, 2000);
-        } catch (err) { console.error("Copy failed", err); alert("Copy failed."); }
+        } catch (err) {
+            console.error("Clipboard API failed, trying fallback", err);
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = el.innerText;
+                ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                const btn = id.includes('Initial') ? getEl('copyInitial') : getEl('copySecondary');
+                const orig = btn.innerText;
+                btn.innerText = '✅ Copied (plain text)';
+                btn.classList.add('bg-green-600'); btn.classList.remove('bg-blue-600');
+                setTimeout(() => { btn.innerText = orig; btn.classList.add('bg-blue-600'); btn.classList.remove('bg-green-600'); }, 2000);
+            } catch(e2) { alert('Copy failed. Please select and copy the text manually.'); }
+        }
     }
 
     getEl('copyInitial').addEventListener('click', () => copyRichText('initialNoteOutput'));
@@ -624,12 +714,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LISTENERS ---
     const bind = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('input', e => { obj[key] = e.target.value; updateNotes(); }); };
+    const bindSel = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.value; updateNotes(); }); };
     const bindCheck = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.checked; updateNotes(); }); };
 
+    window._updateArrivalTime = (v) => { patientData.arrival.time = v; updateNotes(); };
     getEl('btn-arrival-now').addEventListener('click', () => {
-        patientData.arrival.time = getTime();
+        const t = getTime();
+        patientData.arrival.time = t;
         const btn = getEl('btn-arrival-now');
-        btn.innerHTML = `ARRIVAL TIME SET: ${patientData.arrival.time}`;
+        btn.innerHTML = `ARRIVAL TIME: <input type="time" value="${t}" class="arrival-time-edit" oninput="window._updateArrivalTime(this.value)">`;
         btn.classList.add('bg-green-600', 'hover:bg-green-700');
         btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
         updateNotes();
@@ -667,7 +760,10 @@ document.addEventListener('DOMContentLoaded', () => {
             else { patientData.circulation[`${prop}Time`] = getTime(); }
             toggleAccessBtn(type, true);
         } else if (e.target.id === 'btn-txa-now') {
-            patientData.circulation.txaTime = getTime();
+            const t = getTime();
+            patientData.circulation.txaTime = t;
+            e.target.classList.add('recorded');
+            e.target.innerText = t;
         }
         updateNotes();
     }));
@@ -766,14 +862,18 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('signs', patientData.atmist, 'signs');
     bind('ph_treatments_free', patientData.atmist, 'phTreatmentsFree');
     bind('ph_drugs_free', patientData.atmist, 'phDrugsFree');
-    bind('safeguarding', patientData.atmist, 'safeguarding');
-    bind('pregnancy', patientData.atmist, 'pregnancy');
+    bindSel('safeguarding', patientData.atmist, 'safeguarding');
+    bindSel('pregnancy', patientData.atmist, 'pregnancy');
     
     bind('preHospitalOther', patientData.prehosp, 'notes');
     ['a','m','p','l','e'].forEach(k => bind(`history_${k}`, patientData.prehosp.history, k));
     
-    bindCheck('preHospitalRSI', patientData.airway, 'rsi');
-    getEl('preHospitalRSI').addEventListener('change', e => getEl('rsiDetails').classList.toggle('hidden', !e.target.checked));
+    // Single listener handles data + UI (no double-fire)
+    getEl('preHospitalRSI').addEventListener('change', e => {
+        patientData.airway.rsi = e.target.checked;
+        getEl('rsiDetails').classList.toggle('hidden', !e.target.checked);
+        updateNotes();
+    });
     ['size','length','grade','etco2','drugs'].forEach(k => bind(`rsi_${k}`, patientData.airway.rsiData, k));
     
     bindCheck('cspine_collar', patientData.airway, 'collar');
@@ -791,12 +891,19 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('circ_notes', patientData.circulation, 'notes');
     document.querySelectorAll('input[name="txaGiven"]').forEach(r => r.addEventListener('change', e => { 
         patientData.circulation.txa = e.target.value; 
-        if(e.target.value !== 'None' && !patientData.circulation.txaTime) patientData.circulation.txaTime = getTime();
+        if(e.target.value !== 'None' && !patientData.circulation.txaTime) {
+            const t = getTime();
+            patientData.circulation.txaTime = t;
+            const tb = getEl('btn-txa-now');
+            tb.classList.add('recorded');
+            tb.innerText = t;
+        }
         updateNotes(); 
     }));
 
-    bindCheck('mhp_activated', patientData.mhp, 'activated');
+    // Single listener handles data + UI (no double-fire)
     getEl('mhp_activated').addEventListener('change', e => {
+            patientData.mhp.activated = e.target.checked;
             getEl('mhpDetails').classList.toggle('hidden', !e.target.checked);
             getEl('mhp_time').classList.toggle('hidden', !e.target.checked);
             if(e.target.checked && !patientData.mhp.time) {
@@ -813,6 +920,11 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('disability_pupil_left', patientData.disability, 'pupilL');
     bind('disability_pupil_right', patientData.disability, 'pupilR');
     bind('disability_glucose', patientData.disability, 'glucose');
+    getEl('disability_glucose').addEventListener('input', e => {
+        const v = parseFloat(e.target.value);
+        const alert = getEl('glucose_alert');
+        if(alert) alert.classList.toggle('hidden', isNaN(v) || v > 3.5);
+    });
     bindCheck('disability_ma4l', patientData.disability, 'ma4l');
     
     bind('exposure_temp', patientData.exposure, 'temp');
@@ -832,7 +944,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bind(`vbgSec_${k}`, patientData.investigations.vbgSec, map[k]||k);
     });
 
-    ['ruq', 'luq', 'pelvis', 'pericardial'].forEach(k => bind(`efast_${k}`, patientData.investigations.efast, k));
+    ['ruq', 'luq', 'pelvis', 'pericardial'].forEach(k => bindSel(`efast_${k}`, patientData.investigations.efast, k));
     bind('imagingDecisions', patientData.investigations, 'imaging');
 
     bind('va_left', patientData.secondary.visualAcuity, 'left');
@@ -913,7 +1025,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     getEl('btnNormalBreathing').addEventListener('click', () => {
         patientData.breathing.findings = [];
+        patientData.breathing.o2 = 'Air';
         document.querySelectorAll('.lr-btn').forEach(b => b.classList.remove('active'));
+        const airRadio = document.querySelector('input[name="breathing_o2"][value="Air"]');
+        if(airRadio) airRadio.checked = true;
+        getEl('fio2_container').classList.add('hidden');
         updateNotes();
     });
 
@@ -949,43 +1065,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     getEl('btnNormalDisability').addEventListener('click', () => {
+        patientData.disability.avpu = 'Alert';
+        patientData.disability.gcsE = 4;
+        patientData.disability.gcsV = 5;
+        patientData.disability.gcsM = 6;
         patientData.disability.headInjury = false;
-        patientData.disability.pupilL = '3';
-        patientData.disability.pupilR = '3';
+        patientData.disability.pupilL = '3mm';
+        patientData.disability.pupilR = '3mm';
+        patientData.disability.glucose = '';
         patientData.disability.ma4l = true;
 
+        const avpuR = document.querySelector('input[name="disability_avpu"][value="Alert"]');
+        if(avpuR) avpuR.checked = true;
+        getEl('disability_gcsE').value = 4;
+        getEl('disability_gcsV').value = 5;
+        getEl('disability_gcsM').value = 6;
         getEl('headInjury').checked = false;
-        getEl('disability_pupil_left').value = '3';
-        getEl('disability_pupil_right').value = '3';
+        getEl('disability_pupil_left').value = '3mm';
+        getEl('disability_pupil_right').value = '3mm';
+        getEl('disability_glucose').value = '';
         getEl('disability_ma4l').checked = true;
 
         updateNotes();
     });
 
     getEl('btnNormalExposure').addEventListener('click', () => {
-        patientData.exposure.notes = '';
-        getEl('exposure_notes').value = '';
+        patientData.exposure.notes = 'Fully exposed. No rashes, skin wounds or bruising not already documented. Skin warm and dry.';
+        getEl('exposure_notes').value = patientData.exposure.notes;
         updateNotes();
     });
 
+    bind('patientId', patientData, 'patientId');
     loadState();
-    patientData.breathing.findings.forEach(obj => {
-        const btn = document.querySelector(`.lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
-        if(btn) btn.classList.add('active');
-    });
-    patientData.circulation.bleeding.forEach(site => {
-        const btn = document.querySelector(`.injury-btn[data-site="${site}"]`);
-        if(btn) btn.classList.add('active');
-    });
-    SS_AREAS.forEach(area => {
-        if(patientData.secondary[area.id]) {
-            patientData.secondary[area.id].tags.forEach(tag => {
-                const chk = document.querySelector(`.tag-checkbox[data-area="${area.id}"][value="${tag}"]`);
-                if(chk) chk.checked = true;
-            });
-            const txt = getEl(`ss_${area.id}`);
-            if(txt) txt.value = patientData.secondary[area.id].text;
-        }
-    });
     updateNotes();
 });
