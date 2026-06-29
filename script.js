@@ -557,42 +557,42 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let o2 = p.breathing.o2 === 'Air' ? 'Air' : `Oxygen ${p.breathing.fio2}`;
         h += `<b style="font-weight: bold;">Breathing:</b> RR ${p.breathing.rr} | Sats ${p.breathing.sats}% (${o2}).<br>`;
-        if(p.breathing.findings.length) h += `&nbsp;&nbsp;&nbsp;Findings: ${p.breathing.findings.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
+        if(p.breathing.findings.length) h += `   Findings: ${p.breathing.findings.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
         const currentBFindings = p.breathing.findings.map(f => f.f);
         const negB = BREATHING_OPTS.filter(opt => !currentBFindings.includes(opt));
         if (negB.length > 0) {
             const airEntryNormal = !currentBFindings.includes('Reduced Expansion');
-            h += `&nbsp;&nbsp;&nbsp;<em>Negative Findings:</em> ${airEntryNormal ? "Air entry equal. " : ""}No ${negB.join(', ').toLowerCase()}. `;
+            h += `   <em>Negative Findings:</em> ${airEntryNormal ? "Air entry equal. " : ""}No ${negB.join(', ').toLowerCase()}. `;
         }
         if(p.breathing.notes) h += `${p.breathing.notes}`;
         h += "<br>";
         
         h += `<b style="font-weight: bold;">Circulation:</b> HR ${p.circulation.hr} | BP ${p.circulation.bp}${calcHtml} | CRT ${p.circulation.crt}s.<br>`;
-        if(p.circulation.txa && p.circulation.txa !== 'None') h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">TXA Given:</b> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime}${elapsedStr(p.arrival.time, p.circulation.txaTime)})` : ''}.<br>`;
+        if(p.circulation.txa && p.circulation.txa !== 'None') h += `   <b style="font-weight: bold;">TXA Given:</b> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime}${elapsedStr(p.arrival.time, p.circulation.txaTime)})` : ''}.<br>`;
         
         let validLines = p.circulation.lines.filter(l => l.type || l.location).map(l => `${l.type} (${l.location})`);
-        if(validLines.length) h += `&nbsp;&nbsp;&nbsp;Access: ${validLines.join(', ')}.<br>`;
+        if(validLines.length) h += `   Access: ${validLines.join(', ')}.<br>`;
         
-        if(p.circulation.bleeding.length) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">Bleeding Sites:</b> ${p.circulation.bleeding.join(', ')}.<br>`;
+        if(p.circulation.bleeding.length) h += `   <b style="font-weight: bold;">Bleeding Sites:</b> ${p.circulation.bleeding.join(', ')}.<br>`;
         
         let interventions = [];
         if(p.circulation.binder) interventions.push(`Pelvic Binder ${p.circulation.binderTime ? `(@ ${p.circulation.binderTime}${elapsedStr(p.arrival.time, p.circulation.binderTime)})` : ''}`);
         if(p.circulation.ktd) interventions.push(`KTD Splint ${p.circulation.ktdTime ? `(@ ${p.circulation.ktdTime}${elapsedStr(p.arrival.time, p.circulation.ktdTime)})` : ''}`);
         if(p.circulation.tourniquet) interventions.push(`Tourniquet ${p.circulation.tourniquetTime ? `(@ ${p.circulation.tourniquetTime}${elapsedStr(p.arrival.time, p.circulation.tourniquetTime)})` : ''}`);
-        if(interventions.length) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">Interventions:</b> ${interventions.join(', ')}.<br>`;
-        if(p.circulation.notes) h += `&nbsp;&nbsp;&nbsp;${p.circulation.notes}<br>`;
+        if(interventions.length) h += `   <b style="font-weight: bold;">Interventions:</b> ${interventions.join(', ')}.<br>`;
+        if(p.circulation.notes) h += `   ${p.circulation.notes}<br>`;
 
         if(p.mhp.activated) {
-            h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">⚠️ MHP ACTIVATED</b> (${p.mhp.time || 'Time Not Set'}${elapsedStr(p.arrival.time, p.mhp.time)})<br>&nbsp;&nbsp;&nbsp;Given: Crystalloid ${p.mhp.crystalloid || 0}ml, PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.<br>`;
+            h += `   <b style="font-weight: bold;">⚠️ MHP ACTIVATED</b> (${p.mhp.time || 'Time Not Set'}${elapsedStr(p.arrival.time, p.mhp.time)})<br>   Given: Crystalloid ${p.mhp.crystalloid || 0}ml, PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.<br>`;
         }
 
         let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
         h += `<b style="font-weight: bold;">Disability:</b> AVPU ${p.disability.avpu} | GCS ${gcsTot} (E${p.disability.gcsE} V${p.disability.gcsV} M${p.disability.gcsM}).<br>`;
         const glucoseVal = parseFloat(p.disability.glucose);
         const glucoseStr = p.disability.glucose ? `${p.disability.glucose} mmol/L${(!isNaN(glucoseVal) && glucoseVal <= 3.5) ? ' <b style="color:#dc2626">⚠️ HYPOGLYCAEMIA</b>' : ''}` : 'Not recorded';
-        h += `&nbsp;&nbsp;&nbsp;Pupils: L ${p.disability.pupilL || '-'} | R ${p.disability.pupilR || '-'}. Blood Glucose: ${glucoseStr}.<br>`;
-        if(p.disability.ma4l) h += `&nbsp;&nbsp;&nbsp;Gross Motor: Moving all 4 limbs.<br>`;
-        if(p.disability.headInjury) h += `&nbsp;&nbsp;&nbsp;<b style="font-weight: bold;">⚠️ Head Injury Suspected</b><br>`;
+        h += `   Pupils: L ${p.disability.pupilL || '-'} | R ${p.disability.pupilR || '-'}. Blood Glucose: ${glucoseStr}.<br>`;
+        if(p.disability.ma4l) h += `   Gross Motor: Moving all 4 limbs.<br>`;
+        if(p.disability.headInjury) h += `   <b style="font-weight: bold;">⚠️ Head Injury Suspected</b><br>`;
         
         h += `<b style="font-weight: bold;">Exposure:</b> Temp ${p.exposure.temp}°C. ${p.exposure.notes}<br>`;
         
@@ -685,64 +685,76 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- COPY FUNCTION ---
-    // Convert bold HTML tags to Unicode bold characters so they survive plain-text EPR paste
-    function toBoldUnicode(str) {
-        const map = {};
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((c,i) => map[c] = String.fromCodePoint(0x1D400 + i));
-        'abcdefghijklmnopqrstuvwxyz'.split('').forEach((c,i) => map[c] = String.fromCodePoint(0x1D41A + i));
-        '0123456789'.split('').forEach((c,i)           => map[c] = String.fromCodePoint(0x1D7CE + i));
-        return str.split('').map(c => map[c] || c).join('');
+    // Pre-built Unicode bold map (built once, not per-call)
+    const BOLD_MAP = (() => {
+        const m = {};
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach((c,i) => m[c] = String.fromCodePoint(0x1D400+i));
+        'abcdefghijklmnopqrstuvwxyz'.split('').forEach((c,i) => m[c] = String.fromCodePoint(0x1D41A+i));
+        '0123456789'.split('').forEach((c,i) => m[c] = String.fromCodePoint(0x1D7CE+i));
+        return m;
+    })();
+
+    function boldify(str) {
+        return str.split('').map(c => BOLD_MAP[c] || c).join('');
     }
 
-    function htmlToPlainBold(html) {
-        return html
-            .replace(/<b[^>]*>(.*?)<\/b>/gi, (_, inner) =>
-                toBoldUnicode(inner.replace(/<[^>]+>/g, '')))
-            .replace(/<br\s*\/?>/gi, '\n')
-            .replace(/&nbsp;/gi, '\u00A0')
-            .replace(/<span[^>]*>(.*?)<\/span>/gi, '$1')
-            .replace(/<[^>]+>/g, '')
-            .replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+    // Walk the live DOM to extract plain text — the browser handles all entity
+    // decoding and tag stripping automatically, with no regex fragility.
+    function domToPlainBold(el) {
+        let out = '';
+        function walk(node, inBold) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                out += inBold ? boldify(node.textContent) : node.textContent;
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const tag = node.tagName;
+                const nowBold = inBold || tag === 'B' || tag === 'STRONG';
+                if (tag === 'BR') { out += '\n'; return; }
+                node.childNodes.forEach(child => walk(child, nowBold));
+            }
+        }
+        el.childNodes.forEach(child => walk(child, false));
+        // Collapse excessive blank lines (>2 in a row)
+        return out.replace(/\n{3,}/g, '\n\n').trim();
     }
 
     async function copyRichText(id) {
         const el = getEl(id);
         const btn = id.includes('Initial') ? getEl('copyInitial') : getEl('copySecondary');
-        const showSuccess = (label) => {
-            const orig = btn.innerText;
-            btn.innerText = label;
+        const showSuccess = () => {
+            const orig = btn.textContent;
+            btn.textContent = '✅ Copied!';
             btn.classList.add('bg-green-600', 'hover:bg-green-700');
             btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             setTimeout(() => {
-                btn.innerText = orig;
+                btn.textContent = orig;
                 btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 btn.classList.remove('bg-green-600', 'hover:bg-green-700');
             }, 2000);
         };
+        const plainText = domToPlainBold(el);
         try {
             const htmlBlob = new Blob([el.innerHTML], { type: 'text/html' });
-            const plainText = htmlToPlainBold(el.innerHTML);
             const textBlob = new Blob([plainText], { type: 'text/plain' });
             await navigator.clipboard.write([
                 new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })
             ]);
-            showSuccess('✅ Copied!');
+            showSuccess();
         } catch (err) {
-            // Fallback: plain text with Unicode bold
+            // Fallback 1: writeText with Unicode bold
             try {
-                const plain = htmlToPlainBold(el.innerHTML);
-                await navigator.clipboard.writeText(plain);
-                showSuccess('✅ Copied!');
+                await navigator.clipboard.writeText(plainText);
+                showSuccess();
             } catch(e2) {
+                // Fallback 2: execCommand
                 try {
                     const ta = document.createElement('textarea');
-                    ta.value = htmlToPlainBold(el.innerHTML);
+                    ta.value = plainText;
                     ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
                     document.body.appendChild(ta);
                     ta.select();
                     document.execCommand('copy');
                     document.body.removeChild(ta);
-                    showSuccess('✅ Copied!');
+                    showSuccess();
                 } catch(e3) { alert('Copy failed — please select and copy the text manually.'); }
             }
         }
