@@ -87,7 +87,15 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
 #dept-clock { position: fixed; top: 0.5rem; right: 0.5rem; z-index: 100; background: #0f172a; color: white; padding: 0.4rem 0.75rem; border-radius: 0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.25); border: 1px solid #334155; text-align: center; line-height: 1.15; }
 #dept-clock .dc-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.03em; color: #94a3b8; font-weight: 700; }
 #dept-clock .dc-value { font-size: 1.1rem; font-weight: 800; font-family: 'SFMono-Regular', Consolas, monospace; }
-@media print { #dept-clock { display: none !important; } }
+@media print { #dept-clock, #undo-toast, .quick-toggle-btn { display: none !important; } }
+
+.quick-toggle-btn { font-size: 0.65rem; font-weight: 700; color: #0891b2; background: none; border: none; padding: 2px 4px; text-transform: uppercase; letter-spacing: 0.02em; cursor: pointer; }
+.quick-toggle-btn:hover { text-decoration: underline; }
+
+.trend-arrow { font-size: 0.9rem; font-weight: 800; margin-left: 2px; }
+
+#undo-toast { animation: undo-toast-in 0.15s ease-out; }
+@keyframes undo-toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
 .access-btn { transition: all 0.1s; background-color: white; border-color: #fecaca; color: #b91c1c; position: relative; }
 .access-btn:hover { background-color: #fef2f2; }

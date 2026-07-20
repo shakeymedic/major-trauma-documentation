@@ -22,13 +22,18 @@
         <div class="dc-value" id="dept-clock-value">--:--</div>
     </div>
 
+    <div id="undo-toast" class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-[110] bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 text-sm max-w-[92vw]">
+        <span id="undo-toast-msg" class="truncate"></span>
+        <button type="button" id="undo-toast-btn" class="font-bold text-teal-300 underline shrink-0">Undo</button>
+    </div>
+
     <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-300">
         <div class="container mx-auto px-4 py-2">
             <div class="flex justify-between items-center mb-2">
                 <div class="flex items-center gap-3">
                     <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-12 md:h-14 w-auto object-contain">
                     <div>
-                        <h1 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border align-middle ml-1">v3.0</span></h1>
+                        <h1 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border align-middle ml-1">v3.1</span></h1>
                         <p class="text-[10px] text-green-600 font-bold flex items-center gap-1" id="saveStatus">
                             <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Auto-save
                         </p>
@@ -270,8 +275,11 @@
                     <textarea id="airway_notes" rows="2" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm" placeholder="Additional Airway Notes..."></textarea>
 
                     <div class="mt-3 pt-3 border-t border-slate-200">
-                        <span class="text-xs font-black text-slate-500 uppercase mb-1 block">Treatment Given</span>
-                        <div class="flex flex-wrap gap-2 mb-2" id="airway_treatmentGiven_btns">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-black text-slate-500 uppercase block">Treatment Given</span>
+                            <button type="button" class="quick-toggle-btn" data-target="airway_treatmentGiven_btns">+ Quick options</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-2 hidden" id="airway_treatmentGiven_btns">
                             <button type="button" class="phrase-btn phrase-btn-none" data-phrase="None">None</button>
                             <button type="button" class="phrase-btn" data-phrase="Suction performed">Suction performed</button>
                             <button type="button" class="phrase-btn" data-phrase="Jaw thrust / chin lift">Jaw thrust / chin lift</button>
@@ -289,8 +297,8 @@
                     </div>
                     
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 bg-slate-50 p-4 rounded-xl border border-slate-400">
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">RR (bpm)</label><input type="number" id="breathing_rr" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-sky-500"></div>
-                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Sats (%)</label><input type="number" id="breathing_sats" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-sky-500"></div>
+                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">RR (bpm) <span id="rr_trend" class="trend-arrow"></span></label><input type="number" id="breathing_rr" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-sky-500"><p id="rr_alert" class="text-xs font-bold hidden mt-1"></p></div>
+                        <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Sats (%) <span id="sats_trend" class="trend-arrow"></span></label><input type="number" id="breathing_sats" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-sky-500"><p id="sats_alert" class="text-xs font-bold hidden mt-1"></p></div>
                         <div class="col-span-2">
                             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Oxygen</label>
                             <div class="flex rounded-md shadow-sm w-full bg-white">
@@ -308,8 +316,11 @@
                     <textarea id="breathing_notes" rows="2" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm" placeholder="Breathing Notes..."></textarea>
 
                     <div class="mt-3 pt-3 border-t border-slate-200">
-                        <span class="text-xs font-black text-slate-500 uppercase mb-1 block">Treatment Given</span>
-                        <div class="flex flex-wrap gap-2 mb-2" id="breathing_treatmentGiven_btns">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-black text-slate-500 uppercase block">Treatment Given</span>
+                            <button type="button" class="quick-toggle-btn" data-target="breathing_treatmentGiven_btns">+ Quick options</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-2 hidden" id="breathing_treatmentGiven_btns">
                             <button type="button" class="phrase-btn phrase-btn-none" data-phrase="None">None</button>
                             <button type="button" class="phrase-btn" data-phrase="Needle decompression performed">Needle decompression performed</button>
                             <button type="button" class="phrase-btn" data-phrase="Nebulisers given">Nebulisers given</button>
@@ -328,8 +339,8 @@
                     
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-400 mb-4">
                         <div class="grid grid-cols-3 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">HR (bpm)</label><input type="number" id="circ_hr" min="20" max="300" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-red-500"><p id="hr_alert" class="text-xs font-bold hidden mt-1"></p></div>
-                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">BP (Sys/Dia)</label><input type="text" id="circ_bp" placeholder="120/80" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-red-500"><p id="bp_alert" class="text-xs font-bold hidden mt-1"></p></div>
+                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">HR (bpm) <span id="hr_trend" class="trend-arrow"></span></label><input type="number" id="circ_hr" min="20" max="300" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-red-500"><p id="hr_alert" class="text-xs font-bold hidden mt-1"></p></div>
+                            <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">BP (Sys/Dia) <span id="bp_trend" class="trend-arrow"></span></label><input type="text" id="circ_bp" placeholder="120/80" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-red-500"><p id="bp_alert" class="text-xs font-bold hidden mt-1"></p></div>
                             <div><label class="block text-xs font-bold text-slate-600 uppercase mb-1">CRT (sec)</label><input type="number" id="circ_capRefill" class="w-full text-xl font-mono font-black px-2 py-2 border border-slate-400 rounded text-center focus:ring-red-500"></div>
                         </div>
                         <div id="calc_results" class="mt-2 text-center text-xs font-bold text-red-700 hidden">
@@ -406,8 +417,11 @@
                     </div>
                     
                     <div class="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-400">
-                        <span class="block text-sm font-bold text-slate-800 mb-2">Treatment Given</span>
-                        <div class="flex flex-wrap gap-2 mb-2" id="circ_treatment_btns">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="block text-sm font-bold text-slate-800">Treatment Given</span>
+                            <button type="button" class="quick-toggle-btn" data-target="circ_treatment_btns">+ Quick options</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-2 hidden" id="circ_treatment_btns">
                             <button type="button" class="treat-btn-none px-3 py-2 border rounded text-xs font-bold" data-tx="__none__">None Given</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="Fluids">Fluids</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="FFP">FFP</button>
@@ -522,8 +536,11 @@
                     </label>
 
                     <div class="mb-2 bg-slate-50 p-4 rounded-xl border border-slate-400">
-                        <span class="block text-sm font-bold text-slate-800 mb-2">Treatment Given</span>
-                        <div class="flex flex-wrap gap-2 mb-2" id="disability_treatment_btns">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="block text-sm font-bold text-slate-800">Treatment Given</span>
+                            <button type="button" class="quick-toggle-btn" data-target="disability_treatment_btns">+ Quick options</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-2 hidden" id="disability_treatment_btns">
                             <button type="button" class="treat-btn-none px-3 py-2 border rounded text-xs font-bold" data-tx="__none__">None Given</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="Mannitol">Mannitol</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="Hypertonic Saline">Hypertonic Saline</button>
@@ -542,12 +559,15 @@
                         <h3 class="text-2xl font-black text-green-700">E Exposure</h3>
                         <button type="button" id="btnNormalExposure" class="px-3 py-1 text-xs font-bold bg-green-100 text-green-800 border border-green-300 rounded hover:bg-green-200 transition">Set Normal</button>
                     </div>
-                    <div class="w-1/3 mb-3"><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Temp (°C)</label><input type="number" id="exposure_temp" step="0.1" min="28" max="44" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-bold"></div>
+                    <div class="w-1/3 mb-3"><label class="block text-xs font-bold text-slate-600 uppercase mb-1">Temp (°C) <span id="temp_trend" class="trend-arrow"></span></label><input type="number" id="exposure_temp" step="0.1" min="28" max="44" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-bold"><p id="temp_alert" class="text-xs font-bold hidden mt-1"></p></div>
                     <textarea id="exposure_notes" rows="2" class="w-full px-3 py-2 border border-slate-400 rounded-md text-sm font-medium" placeholder="Exposure notes..."></textarea>
 
                     <div class="mt-3 pt-3 border-t border-slate-200">
-                        <span class="text-xs font-black text-slate-500 uppercase mb-1 block">Treatment Given</span>
-                        <div class="flex flex-wrap gap-2 mb-2" id="exposure_treatmentGiven_btns">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-black text-slate-500 uppercase block">Treatment Given</span>
+                            <button type="button" class="quick-toggle-btn" data-target="exposure_treatmentGiven_btns">+ Quick options</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mb-2 hidden" id="exposure_treatmentGiven_btns">
                             <button type="button" class="phrase-btn phrase-btn-none" data-phrase="None">None</button>
                             <button type="button" class="phrase-btn" data-phrase="Warmed blankets applied">Warmed blankets applied</button>
                             <button type="button" class="phrase-btn" data-phrase="Fluid warmer in use">Fluid warmer in use</button>
@@ -608,6 +628,7 @@
                             </table>
                         </div>
                         <button type="button" id="btnAddObs" class="mt-3 px-4 py-2 bg-purple-600 text-white font-bold text-xs rounded-md hover:bg-purple-700 shadow-sm transition">ADD OBSERVATION ROW</button>
+                        <button type="button" id="btnCopyLastObs" class="mt-3 ml-2 px-4 py-2 bg-purple-100 text-purple-700 border border-purple-300 font-bold text-xs rounded-md hover:bg-purple-200 shadow-sm transition">COPY LAST OBSERVATION</button>
                     </div>
 
                     <div class="mt-4 mb-4 border border-slate-300 rounded-lg p-4 bg-slate-50">

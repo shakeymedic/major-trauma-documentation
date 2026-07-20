@@ -113,6 +113,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const getEl = (id) => document.getElementById(id);
     const getTime = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+    // --- UNDO TOAST (safety net for accidental removals) ---
+    let undoTimer = null;
+    function showUndoToast(message, undoFn) {
+        const toast = getEl('undo-toast');
+        const msgEl = getEl('undo-toast-msg');
+        const btn = getEl('undo-toast-btn');
+        if(!toast || !msgEl || !btn) return;
+        msgEl.textContent = message;
+        clearTimeout(undoTimer);
+        btn.onclick = () => {
+            undoFn();
+            toast.classList.add('hidden');
+            clearTimeout(undoTimer);
+        };
+        toast.classList.remove('hidden');
+        undoTimer = setTimeout(() => toast.classList.add('hidden'), 6000);
+    }
+
+    // --- COLLAPSIBLE QUICK-OPTION ROWS ---
+    document.querySelectorAll('.quick-toggle-btn').forEach(btn => btn.addEventListener('click', () => {
+        const target = getEl(btn.dataset.target);
+        if(!target) return;
+        const willShow = target.classList.contains('hidden');
+        target.classList.toggle('hidden');
+        btn.textContent = willShow ? '− Hide quick options' : '+ Quick options';
+    }));
+
     function minutesBetween(t1, t2) {
         if(!t1 || !t2) return null;
         const [h1,m1] = t1.split(':').map(Number);
@@ -319,6 +346,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if(hrEl && p.circulation.hr) { const hv = parseInt(p.circulation.hr); if(hv < 40) { hrEl.textContent = '⚠️ Bradycardia'; hrEl.style.color='#dc2626'; hrEl.classList.remove('hidden'); } else if(hv > 150) { hrEl.textContent = '⚠️ Tachycardia'; hrEl.style.color='#dc2626'; hrEl.classList.remove('hidden'); } else if(hv > 100) { hrEl.textContent = '↑ Tachycardia'; hrEl.style.color='#d97706'; hrEl.classList.remove('hidden'); } }
         const bpEl = getEl('bp_alert');
         if(bpEl && p.circulation.bp) { const pts = p.circulation.bp.split('/'); if(pts.length === 2) { const sv = parseInt(pts[0]); if(sv < 90) { bpEl.textContent = '⚠️ Hypotension'; bpEl.style.color='#dc2626'; bpEl.classList.remove('hidden'); } else if(sv > 200) { bpEl.textContent = '⚠️ Hypertension'; bpEl.style.color='#dc2626'; bpEl.classList.remove('hidden'); } } }
+        const rrEl = getEl('rr_alert');
+        if(rrEl && p.breathing.rr) { const rv = parseInt(p.breathing.rr); if(rv < 8) { rrEl.textContent = '⚠️ Severe Bradypnoea'; rrEl.style.color='#dc2626'; rrEl.classList.remove('hidden'); } else if(rv <= 11) { rrEl.textContent = '↓ Bradypnoea'; rrEl.style.color='#d97706'; rrEl.classList.remove('hidden'); } else if(rv > 24) { rrEl.textContent = '⚠️ Severe Tachypnoea'; rrEl.style.color='#dc2626'; rrEl.classList.remove('hidden'); } else if(rv >= 21) { rrEl.textContent = '↑ Tachypnoea'; rrEl.style.color='#d97706'; rrEl.classList.remove('hidden'); } }
+        const satsEl = getEl('sats_alert');
+        if(satsEl && p.breathing.sats) { const sv2 = parseInt(p.breathing.sats); if(sv2 < 90) { satsEl.textContent = '⚠️ Severe Hypoxia'; satsEl.style.color='#dc2626'; satsEl.classList.remove('hidden'); } else if(sv2 <= 93) { satsEl.textContent = '↓ Hypoxia'; satsEl.style.color='#d97706'; satsEl.classList.remove('hidden'); } }
+        const tempEl = getEl('temp_alert');
+        if(tempEl && p.exposure.temp) { const tv = parseFloat(p.exposure.temp); if(tv < 35) { tempEl.textContent = '⚠️ Hypothermia'; tempEl.style.color='#dc2626'; tempEl.classList.remove('hidden'); } else if(tv < 36) { tempEl.textContent = '↓ Mild Hypothermia'; tempEl.style.color='#d97706'; tempEl.classList.remove('hidden'); } else if(tv >= 39) { tempEl.textContent = '⚠️ High Fever'; tempEl.style.color='#dc2626'; tempEl.classList.remove('hidden'); } else if(tv >= 38) { tempEl.textContent = '↑ Fever'; tempEl.style.color='#d97706'; tempEl.classList.remove('hidden'); } }
 
         setVal('exposure_temp', p.exposure.temp);
         setVal('exposure_notes', p.exposure.notes);
@@ -428,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
             div.innerHTML = `${spec.name}<span class="time">@ ${spec.time}</span>`;
             const remBtn = document.createElement('button');
             remBtn.innerHTML = '&times;';
-            remBtn.onclick = () => removeSpecialty(index);
+            remBtn.onclick = () => removeSpecialtyWithUndo(index);
             div.appendChild(remBtn);
             container.appendChild(div);
         });
@@ -449,6 +482,16 @@ document.addEventListener('DOMContentLoaded', () => {
         patientData.arrival.specialties.splice(index, 1);
         renderSpecialties();
         updateNotes();
+    }
+
+    function removeSpecialtyWithUndo(index) {
+        const removed = patientData.arrival.specialties[index];
+        removeSpecialty(index);
+        showUndoToast(`Removed ${removed.name}`, () => {
+            patientData.arrival.specialties.splice(index, 0, removed);
+            renderSpecialties();
+            updateNotes();
+        });
     }
     
     // --- LINES & ACCESS MANAGEMENT ---
@@ -494,9 +537,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     window.removeLine = function(index) {
+        const removed = patientData.circulation.lines[index];
         patientData.circulation.lines.splice(index, 1);
         renderLines();
         updateNotes();
+        showUndoToast('Removed line/access entry', () => {
+            patientData.circulation.lines.splice(index, 0, removed);
+            renderLines();
+            updateNotes();
+        });
     };
 
     getEl('btnAddLine').addEventListener('click', () => {
@@ -532,9 +581,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.updateObs = function(index, field, value) { patientData.obs[index][field] = value; renderObs(); updateNotes(); };
-    window.removeObs = function(index) { patientData.obs.splice(index, 1); renderObs(); updateNotes(); };
+    window.removeObs = function(index) {
+        const removed = patientData.obs[index];
+        patientData.obs.splice(index, 1);
+        renderObs();
+        updateNotes();
+        showUndoToast(`Removed observation @ ${removed.time || ''}`, () => {
+            patientData.obs.splice(index, 0, removed);
+            renderObs();
+            updateNotes();
+        });
+    };
     getEl('btnAddObs').addEventListener('click', () => {
         patientData.obs.push({ time: getTime(), hr: '', bp: '', rr: '', spo2: '', onO2: false, temp: '', gcs: '', pupils: '' });
+        renderObs();
+        updateNotes();
+    });
+
+    const btnCopyLastObs = getEl('btnCopyLastObs');
+    if(btnCopyLastObs) btnCopyLastObs.addEventListener('click', () => {
+        if(patientData.obs.length === 0) {
+            patientData.obs.push({ time: getTime(), hr: '', bp: '', rr: '', spo2: '', onO2: false, temp: '', gcs: '', pupils: '' });
+        } else {
+            const last = patientData.obs[patientData.obs.length - 1];
+            patientData.obs.push({ ...last, time: getTime() });
+        }
         renderObs();
         updateNotes();
     });
@@ -641,9 +712,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setInterval(updateDeptClock, 15000);
 
+    function setTrendArrow(elId, currentVal, lastVal) {
+        const el = getEl(elId);
+        if(!el) return;
+        const c = parseFloat(currentVal), l = parseFloat(lastVal);
+        if(currentVal === '' || currentVal === undefined || currentVal === null || lastVal === '' || lastVal === undefined || lastVal === null || isNaN(c) || isNaN(l)) { el.textContent = ''; el.title = ''; el.style.color = ''; return; }
+        if(c > l) { el.textContent = '↑'; el.title = `Was ${lastVal}`; el.style.color = '#0369a1'; }
+        else if(c < l) { el.textContent = '↓'; el.title = `Was ${lastVal}`; el.style.color = '#b45309'; }
+        else { el.textContent = '→'; el.title = `Unchanged from ${lastVal}`; el.style.color = '#64748b'; }
+    }
+
+    function updateTrendArrows() {
+        const p = patientData;
+        const lastObs = p.obs.length ? p.obs[p.obs.length - 1] : null;
+        if(!lastObs) {
+            ['hr_trend', 'bp_trend', 'rr_trend', 'sats_trend', 'temp_trend'].forEach(id => { const el = getEl(id); if(el) { el.textContent = ''; el.title = ''; } });
+            return;
+        }
+        setTrendArrow('hr_trend', p.circulation.hr, lastObs.hr);
+        setTrendArrow('rr_trend', p.breathing.rr, lastObs.rr);
+        setTrendArrow('sats_trend', p.breathing.sats, lastObs.spo2);
+        setTrendArrow('temp_trend', p.exposure.temp, lastObs.temp);
+        const bpSys = (p.circulation.bp || '').split('/')[0];
+        const lastBpSys = (lastObs.bp || '').split('/')[0];
+        setTrendArrow('bp_trend', bpSys, lastBpSys);
+    }
+
     function updateNotes() {
         const p = patientData;
         updateDeptClock();
+        updateTrendArrows();
         
         let calcHtml = "";
         const bp = p.circulation.bp || "";
@@ -1095,12 +1193,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function removePhDrug(index) {
-        const name = patientData.atmist.phDrugs[index].name;
+        const removed = patientData.atmist.phDrugs[index];
         patientData.atmist.phDrugs.splice(index, 1);
-        const btn = document.querySelector(`.drug-btn[data-d="${name}"]`);
+        const btn = document.querySelector(`.drug-btn[data-d="${removed.name}"]`);
         if(btn) btn.classList.remove('active');
         renderPhDrugs();
         updateNotes();
+        showUndoToast(`Removed ${removed.name}`, () => {
+            patientData.atmist.phDrugs.splice(index, 0, removed);
+            const btn2 = document.querySelector(`.drug-btn[data-d="${removed.name}"]`);
+            if(btn2) btn2.classList.add('active');
+            renderPhDrugs();
+            updateNotes();
+        });
     }
 
     // --- GENERIC TIMESTAMPED TREATMENT LISTS (Circulation / Disability "Treatment Given") ---
@@ -1124,12 +1229,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const remBtn = document.createElement('button');
             remBtn.innerHTML = '&times;';
             remBtn.onclick = () => {
-                const removedName = arr[i].name;
+                const removedItem = arr[i];
+                const removedIndex = i;
                 arr.splice(i, 1);
-                const btn = document.querySelector(`${reg.btnSelector}[data-tx="${removedName}"]`);
+                const btn = document.querySelector(`${reg.btnSelector}[data-tx="${removedItem.name}"]`);
                 if(btn) btn.classList.remove('active');
                 renderTreatmentList(listContainerId);
                 updateNotes();
+                showUndoToast(`Removed ${removedItem.name}`, () => {
+                    arr.splice(removedIndex, 0, removedItem);
+                    const btn2 = document.querySelector(`${reg.btnSelector}[data-tx="${removedItem.name}"]`);
+                    if(btn2) btn2.classList.add('active');
+                    renderTreatmentList(listContainerId);
+                    updateNotes();
+                });
             };
             div.appendChild(remBtn);
             container.appendChild(div);
@@ -1261,7 +1374,27 @@ document.addEventListener('DOMContentLoaded', () => {
     bind('airway_treatmentGiven', patientData.airway, 'treatmentGiven');
     
     bind('breathing_rr', patientData.breathing, 'rr');
+    getEl('breathing_rr').addEventListener('input', e => {
+        const v = parseInt(e.target.value);
+        const el = getEl('rr_alert');
+        if(!el) return;
+        if(isNaN(v) || e.target.value === '') { el.classList.add('hidden'); return; }
+        if(v < 8) { el.textContent = '⚠️ Severe Bradypnoea'; el.style.color = '#dc2626'; el.classList.remove('hidden'); }
+        else if(v <= 11) { el.textContent = '↓ Bradypnoea'; el.style.color = '#d97706'; el.classList.remove('hidden'); }
+        else if(v > 24) { el.textContent = '⚠️ Severe Tachypnoea'; el.style.color = '#dc2626'; el.classList.remove('hidden'); }
+        else if(v >= 21) { el.textContent = '↑ Tachypnoea'; el.style.color = '#d97706'; el.classList.remove('hidden'); }
+        else { el.classList.add('hidden'); }
+    });
     bind('breathing_sats', patientData.breathing, 'sats');
+    getEl('breathing_sats').addEventListener('input', e => {
+        const v = parseInt(e.target.value);
+        const el = getEl('sats_alert');
+        if(!el) return;
+        if(isNaN(v) || e.target.value === '') { el.classList.add('hidden'); return; }
+        if(v < 90) { el.textContent = '⚠️ Severe Hypoxia'; el.style.color = '#dc2626'; el.classList.remove('hidden'); }
+        else if(v <= 93) { el.textContent = '↓ Hypoxia'; el.style.color = '#d97706'; el.classList.remove('hidden'); }
+        else { el.classList.add('hidden'); }
+    });
     bind('breathing_fio2', patientData.breathing, 'fio2');
     bind('breathing_notes', patientData.breathing, 'notes');
     bind('breathing_treatmentGiven', patientData.breathing, 'treatmentGiven');
@@ -1332,6 +1465,17 @@ document.addEventListener('DOMContentLoaded', () => {
     bindCheck('disability_ma4l', patientData.disability, 'ma4l');
     
     bind('exposure_temp', patientData.exposure, 'temp');
+    getEl('exposure_temp').addEventListener('input', e => {
+        const v = parseFloat(e.target.value);
+        const el = getEl('temp_alert');
+        if(!el) return;
+        if(isNaN(v) || e.target.value === '') { el.classList.add('hidden'); return; }
+        if(v < 35) { el.textContent = '⚠️ Hypothermia'; el.style.color = '#dc2626'; el.classList.remove('hidden'); }
+        else if(v < 36) { el.textContent = '↓ Mild Hypothermia'; el.style.color = '#d97706'; el.classList.remove('hidden'); }
+        else if(v >= 39) { el.textContent = '⚠️ High Fever'; el.style.color = '#dc2626'; el.classList.remove('hidden'); }
+        else if(v >= 38) { el.textContent = '↑ Fever'; el.style.color = '#d97706'; el.classList.remove('hidden'); }
+        else { el.classList.add('hidden'); }
+    });
     bind('exposure_notes', patientData.exposure, 'notes');
     bind('exposure_treatmentGiven', patientData.exposure, 'treatmentGiven');
     
@@ -1428,6 +1572,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Quick Action Listeners
     getEl('btnNormalAirway').addEventListener('click', () => {
+        const hasExistingAirway = patientData.airway.adjuncts.some(a => a !== 'None') || patientData.airway.collar || patientData.airway.blocks;
+        if(hasExistingAirway && !confirm('This will clear existing airway adjunct/C-spine entries. Continue?')) return;
         patientData.airway.status = 'Patent';
         patientData.airway.adjuncts = ['None'];
         patientData.airway.collar = false;
@@ -1444,6 +1590,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     getEl('btnNormalBreathing').addEventListener('click', () => {
+        const hasExistingBreathing = patientData.breathing.findings.some(f => f.s && f.s !== 'None');
+        if(hasExistingBreathing && !confirm('This will clear existing breathing findings. Continue?')) return;
         patientData.breathing.findings = [];
         patientData.breathing.o2 = 'Air';
         document.querySelectorAll('.lr-btn').forEach(b => b.classList.remove('active'));
@@ -1456,6 +1604,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     getEl('btnNormalCirc').addEventListener('click', () => {
+        const cannedCircNotes = "No external bleeding, abdomen SNT, pelvis symmetrical and appears stable, no long bone deformity.";
+        const hasExistingCirc = (patientData.circulation.notes && patientData.circulation.notes !== cannedCircNotes) ||
+            patientData.circulation.bleeding.some(b => b !== 'None Noted') ||
+            patientData.circulation.binder || patientData.circulation.ktd || patientData.circulation.tourniquet ||
+            (patientData.circulation.txa && patientData.circulation.txa !== 'None');
+        if(hasExistingCirc && !confirm('This will clear existing circulation findings/interventions. Continue?')) return;
         patientData.circulation.txa = 'None';
         patientData.circulation.txaTime = '';
         patientData.circulation.bleeding = ['None Noted'];
@@ -1494,6 +1648,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     getEl('btnNormalDisability').addEventListener('click', () => {
+        const hasExistingDisability = patientData.disability.avpu !== 'Alert' ||
+            patientData.disability.gcsE !== 4 || patientData.disability.gcsV !== 5 || patientData.disability.gcsM !== 6 ||
+            patientData.disability.headInjury ||
+            (patientData.disability.pupilL && patientData.disability.pupilL !== '3mm') ||
+            (patientData.disability.pupilR && patientData.disability.pupilR !== '3mm');
+        if(hasExistingDisability && !confirm('This will clear existing disability findings. Continue?')) return;
         patientData.disability.avpu = 'Alert';
         patientData.disability.gcsE = 4;
         patientData.disability.gcsV = 5;
@@ -1525,6 +1685,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     getEl('btnNormalExposure').addEventListener('click', () => {
+        const cannedExpNotes = 'Fully exposed. No rashes, skin wounds or bruising not already documented. Skin warm and dry.';
+        const hasExistingExposure = patientData.exposure.notes && patientData.exposure.notes !== cannedExpNotes;
+        if(hasExistingExposure && !confirm('This will clear existing exposure findings. Continue?')) return;
         patientData.exposure.notes = 'Fully exposed. No rashes, skin wounds or bruising not already documented. Skin warm and dry.';
         getEl('exposure_notes').value = patientData.exposure.notes;
         patientData.exposure.treatmentGiven = '';
