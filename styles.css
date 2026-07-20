@@ -35,10 +35,14 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
 
 .lr-btn { transition: all 0.1s; }
 .lr-btn.active { background-color: #0284c7; color: white; font-weight: bold; border-color: #0284c7; }
+.lr-btn.active[data-s="L"], .lr-btn.active[data-s="R"], .lr-btn.active[data-s="Both"] { background-color: #dc2626; border-color: #b91c1c; }
+.lr-btn.active[data-s="None"] { background-color: #16a34a; border-color: #15803d; }
 
 .injury-btn { transition: all 0.1s; background-color: white; border-color: #cbd5e1; color: #475569; }
 .injury-btn:hover { background-color: #fef2f2; }
 .injury-btn.active { background-color: #dc2626; color: white; border-color: #b91c1c; font-weight: bold; }
+
+#btnNoInjurySites.none-active { background-color: #16a34a; color: white; border-color: #15803d; }
 
 .ph-btn { transition: all 0.1s; background-color: #f8fafc; border-color: #cbd5e1; color: #334155; }
 .ph-btn:hover { background-color: #ecfdf5; }
@@ -119,6 +123,31 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
 .spec-chip span.time { font-family: monospace; color: #64748b; font-size: 0.7rem; margin-left: 2px; }
 .spec-chip button { margin-left: 4px; color: #94a3b8; padding: 2px; border-radius: 50%; }
 .spec-chip button:hover { background: #cbd5e1; color: #ef4444; }
+
+.ph-drug-time-edit {
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: #6b21a8;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #d8b4fe;
+    width: 3.4rem;
+    margin-left: 2px;
+    padding: 0 2px;
+}
+
+/* NEWS2 score badges */
+.news2-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.news2-badge.news2-low { background: #dcfce7; color: #166534; }
+.news2-badge.news2-medium { background: #fef3c7; color: #92400e; }
+.news2-badge.news2-high { background: #fee2e2; color: #991b1b; }
 
 /* Arrival time editable input inside the green button */
 .arrival-time-edit {
