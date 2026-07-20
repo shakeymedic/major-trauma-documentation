@@ -307,9 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setVal('disability_glucose', p.disability.glucose);
         setCheck('disability_ma4l', p.disability.ma4l);
         // Restore GCS dropdown values from saved data
-        const gcsEEl = getEl('disability_gcsE'); if(gcsEEl) gcsEEl.value = p.disability.gcsE;
-        const gcsVEl = getEl('disability_gcsV'); if(gcsVEl) gcsVEl.value = p.disability.gcsV;
-        const gcsMEl = getEl('disability_gcsM'); if(gcsMEl) gcsMEl.value = p.disability.gcsM;
+        { const r = document.querySelector(`input[name="disability_gcsE"][value="${p.disability.gcsE}"]`); if(r) r.checked = true; }
+        { const r = document.querySelector(`input[name="disability_gcsV"][value="${p.disability.gcsV}"]`); if(r) r.checked = true; }
+        { const r = document.querySelector(`input[name="disability_gcsM"][value="${p.disability.gcsM}"]`); if(r) r.checked = true; }
         // Restore glucose alert
         const glucoseAlert = getEl('glucose_alert');
         const gv = parseFloat(p.disability.glucose);
@@ -589,14 +589,61 @@ document.addEventListener('DOMContentLoaded', () => {
            updateNotes();
         });
     });
-    const popSel = (id, opts, def) => { const s=getEl(id); opts.forEach(o=>s.add(new Option(o,o))); s.value=def; s.addEventListener('change',e=>{patientData.disability[id.split('_')[1]]=e.target.value; updateNotes();})};
-    popSel('disability_gcsE', [4,3,2,1], 4);
-    popSel('disability_gcsV', [5,4,3,2,1], 5);
-    popSel('disability_gcsM', [6,5,4,3,2,1], 6);
+    document.querySelectorAll('input[name="disability_gcsE"]').forEach(r => r.addEventListener('change', e => { patientData.disability.gcsE = parseInt(e.target.value); updateNotes(); }));
+    document.querySelectorAll('input[name="disability_gcsV"]').forEach(r => r.addEventListener('change', e => { patientData.disability.gcsV = parseInt(e.target.value); updateNotes(); }));
+    document.querySelectorAll('input[name="disability_gcsM"]').forEach(r => r.addEventListener('change', e => { patientData.disability.gcsM = parseInt(e.target.value); updateNotes(); }));
+
+    // --- QUICK-PHRASE CHIPS (Airway/Breathing/Exposure Treatment Given free text) ---
+    function initPhraseButtons(containerId, inputId) {
+        const container = getEl(containerId);
+        const input = getEl(inputId);
+        if(!container || !input) return;
+        container.querySelectorAll('.phrase-btn').forEach(btn => btn.addEventListener('click', () => {
+            const phrase = btn.dataset.phrase;
+            if(phrase === 'None') {
+                input.value = 'None';
+            } else {
+                const current = input.value.trim();
+                const parts = current.split(',').map(s => s.trim()).filter(s => s && s !== 'None');
+                if(!parts.includes(phrase)) parts.push(phrase);
+                input.value = parts.join(', ');
+            }
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }));
+    }
+    initPhraseButtons('airway_treatmentGiven_btns', 'airway_treatmentGiven');
+    initPhraseButtons('breathing_treatmentGiven_btns', 'breathing_treatmentGiven');
+    initPhraseButtons('exposure_treatmentGiven_btns', 'exposure_treatmentGiven');
+
+    // --- QUICK-TAP PRESETS (Pupils — replaces value rather than appending) ---
+    function initPresetButtons(containerId, inputId) {
+        const container = getEl(containerId);
+        const input = getEl(inputId);
+        if(!container || !input) return;
+        container.querySelectorAll('.preset-btn').forEach(btn => btn.addEventListener('click', () => {
+            input.value = btn.dataset.val;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }));
+    }
+    initPresetButtons('pupil_left_presets', 'disability_pupil_left');
+    initPresetButtons('pupil_right_presets', 'disability_pupil_right');
 
     // --- NOTE GENERATION (RICH TEXT) ---
+    function updateDeptClock() {
+        const el = getEl('dept-clock-value');
+        if(!el) return;
+        if(!patientData.arrival.time) { el.textContent = '--:--'; return; }
+        const mins = minutesBetween(patientData.arrival.time, getTime());
+        if(mins === null || mins < 0) { el.textContent = '--:--'; return; }
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        el.textContent = h > 0 ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`;
+    }
+    setInterval(updateDeptClock, 15000);
+
     function updateNotes() {
         const p = patientData;
+        updateDeptClock();
         
         let calcHtml = "";
         const bp = p.circulation.bp || "";
@@ -1096,17 +1143,36 @@ document.addEventListener('DOMContentLoaded', () => {
         updateNotes();
     };
 
-    function initTreatmentList(btnsContainerId, listContainerId, getArray, emptyText) {
+    function initTreatmentList(btnsContainerId, listContainerId, getArray, emptyText, freeTextId) {
         const btnSelector = `#${btnsContainerId} .treat-btn`;
         TREATMENT_LISTS[listContainerId] = { getArray, btnSelector, emptyText };
         const btnsContainer = getEl(btnsContainerId);
         if(!btnsContainer) return;
+        const noneBtn = btnsContainer.querySelector('.treat-btn-none');
+        if(noneBtn) {
+            noneBtn.addEventListener('click', () => {
+                btnsContainer.querySelectorAll('.treat-btn').forEach(b => b.classList.remove('active'));
+                getArray().length = 0;
+                if(freeTextId) {
+                    const fEl = getEl(freeTextId);
+                    if(fEl) { fEl.value = 'None'; fEl.dispatchEvent(new Event('input', { bubbles: true })); }
+                }
+                renderTreatmentList(listContainerId);
+                updateNotes();
+            });
+        }
         btnsContainer.querySelectorAll('.treat-btn').forEach(btn => btn.addEventListener('click', e => {
             e.target.classList.toggle('active');
             const name = e.target.dataset.tx;
             const arr = getArray();
             const isActive = e.target.classList.contains('active');
-            if(isActive) arr.push({ name, time: getTime() });
+            if(isActive) {
+                arr.push({ name, time: getTime() });
+                if(freeTextId) {
+                    const fEl = getEl(freeTextId);
+                    if(fEl && fEl.value.trim() === 'None') { fEl.value = ''; fEl.dispatchEvent(new Event('input', { bubbles: true })); }
+                }
+            }
             else { const idx = arr.findIndex(x => x.name === name); if(idx > -1) arr.splice(idx, 1); }
             renderTreatmentList(listContainerId);
             updateNotes();
@@ -1114,8 +1180,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTreatmentList(listContainerId);
     }
 
-    initTreatmentList('circ_treatment_btns', 'circ_treatment_list', () => patientData.circulation.treatmentGiven, 'No circulation treatment recorded yet.');
-    initTreatmentList('disability_treatment_btns', 'disability_treatment_list', () => patientData.disability.treatmentGiven, 'No disability treatment recorded yet.');
+    initTreatmentList('circ_treatment_btns', 'circ_treatment_list', () => patientData.circulation.treatmentGiven, 'No circulation treatment recorded yet.', 'circ_treatmentGivenFree');
+    initTreatmentList('disability_treatment_btns', 'disability_treatment_list', () => patientData.disability.treatmentGiven, 'No disability treatment recorded yet.', 'disability_treatmentGivenFree');
 
     document.querySelectorAll('.access-btn').forEach(btn => btn.addEventListener('click', e => {
         e.target.classList.toggle('active');
@@ -1440,9 +1506,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const avpuR = document.querySelector('input[name="disability_avpu"][value="Alert"]');
         if(avpuR) avpuR.checked = true;
-        getEl('disability_gcsE').value = 4;
-        getEl('disability_gcsV').value = 5;
-        getEl('disability_gcsM').value = 6;
+        { const r = document.querySelector('input[name="disability_gcsE"][value="4"]'); if(r) r.checked = true; }
+        { const r = document.querySelector('input[name="disability_gcsV"][value="5"]'); if(r) r.checked = true; }
+        { const r = document.querySelector('input[name="disability_gcsM"][value="6"]'); if(r) r.checked = true; }
         getEl('headInjury').checked = false;
         getEl('disability_pupil_left').value = '3mm';
         getEl('disability_pupil_right').value = '3mm';

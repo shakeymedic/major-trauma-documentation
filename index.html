@@ -17,13 +17,18 @@
 </head>
 <body class="bg-slate-100 text-slate-900 antialiased pb-10">
 
+    <div id="dept-clock">
+        <div class="dc-label">Time in Dept</div>
+        <div class="dc-value" id="dept-clock-value">--:--</div>
+    </div>
+
     <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-300">
         <div class="container mx-auto px-4 py-2">
             <div class="flex justify-between items-center mb-2">
                 <div class="flex items-center gap-3">
                     <img src="https://iili.io/KGQOvkl.md.png" alt="WMEBEM Logo" class="h-12 md:h-14 w-auto object-contain">
                     <div>
-                        <h1 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border align-middle ml-1">v2.9</span></h1>
+                        <h1 class="text-lg md:text-xl font-black text-slate-900 leading-tight">Major Trauma Tool <span class="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border align-middle ml-1">v3.0</span></h1>
                         <p class="text-[10px] text-green-600 font-bold flex items-center gap-1" id="saveStatus">
                             <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Auto-save
                         </p>
@@ -266,6 +271,13 @@
 
                     <div class="mt-3 pt-3 border-t border-slate-200">
                         <span class="text-xs font-black text-slate-500 uppercase mb-1 block">Treatment Given</span>
+                        <div class="flex flex-wrap gap-2 mb-2" id="airway_treatmentGiven_btns">
+                            <button type="button" class="phrase-btn phrase-btn-none" data-phrase="None">None</button>
+                            <button type="button" class="phrase-btn" data-phrase="Suction performed">Suction performed</button>
+                            <button type="button" class="phrase-btn" data-phrase="Jaw thrust / chin lift">Jaw thrust / chin lift</button>
+                            <button type="button" class="phrase-btn" data-phrase="Bag-mask ventilation">Bag-mask ventilation</button>
+                            <button type="button" class="phrase-btn" data-phrase="High-flow oxygen applied">High-flow oxygen applied</button>
+                        </div>
                         <input type="text" id="airway_treatmentGiven" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Any airway treatment given, if anything...">
                     </div>
                 </section>
@@ -297,6 +309,13 @@
 
                     <div class="mt-3 pt-3 border-t border-slate-200">
                         <span class="text-xs font-black text-slate-500 uppercase mb-1 block">Treatment Given</span>
+                        <div class="flex flex-wrap gap-2 mb-2" id="breathing_treatmentGiven_btns">
+                            <button type="button" class="phrase-btn phrase-btn-none" data-phrase="None">None</button>
+                            <button type="button" class="phrase-btn" data-phrase="Needle decompression performed">Needle decompression performed</button>
+                            <button type="button" class="phrase-btn" data-phrase="Nebulisers given">Nebulisers given</button>
+                            <button type="button" class="phrase-btn" data-phrase="CPAP/NIV commenced">CPAP/NIV commenced</button>
+                            <button type="button" class="phrase-btn" data-phrase="Assisted ventilation increased">Assisted ventilation increased</button>
+                        </div>
                         <input type="text" id="breathing_treatmentGiven" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Any breathing treatment given, if anything...">
                     </div>
                 </section>
@@ -389,6 +408,7 @@
                     <div class="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-400">
                         <span class="block text-sm font-bold text-slate-800 mb-2">Treatment Given</span>
                         <div class="flex flex-wrap gap-2 mb-2" id="circ_treatment_btns">
+                            <button type="button" class="treat-btn-none px-3 py-2 border rounded text-xs font-bold" data-tx="__none__">None Given</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="Fluids">Fluids</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="FFP">FFP</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="Red Cells">Red Cells</button>
@@ -435,15 +455,64 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-3 mb-4">
-                         <div><label class="block text-xs font-bold text-slate-600 mb-1">Eyes</label><select id="disability_gcsE" class="w-full text-sm border-slate-400 rounded bg-white py-2 font-medium"></select></div>
-                         <div><label class="block text-xs font-bold text-slate-600 mb-1">Verbal</label><select id="disability_gcsV" class="w-full text-sm border-slate-400 rounded bg-white py-2 font-medium"></select></div>
-                         <div><label class="block text-xs font-bold text-slate-600 mb-1">Motor</label><select id="disability_gcsM" class="w-full text-sm border-slate-400 rounded bg-white py-2 font-medium"></select></div>
+                    <div class="space-y-2 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Eyes (E)</label>
+                            <div class="flex rounded-lg shadow-sm bg-slate-100 p-1 border border-slate-300">
+                                <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_gcsE" value="4" checked class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">4</span><span class="block text-[9px] font-normal">Spontaneous</span></div></label>
+                                <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_gcsE" value="3" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">3</span><span class="block text-[9px] font-normal">To voice</span></div></label>
+                                <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_gcsE" value="2" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">2</span><span class="block text-[9px] font-normal">To pain</span></div></label>
+                                <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_gcsE" value="1" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">1</span><span class="block text-[9px] font-normal">None</span></div></label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Verbal (V)</label>
+                            <div class="flex rounded-lg shadow-sm bg-slate-100 p-1 border border-slate-300">
+                                <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_gcsV" value="5" checked class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">5</span><span class="block text-[9px] font-normal">Orientated</span></div></label>
+                                <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_gcsV" value="4" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">4</span><span class="block text-[9px] font-normal">Confused</span></div></label>
+                                <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_gcsV" value="3" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">3</span><span class="block text-[9px] font-normal">Words</span></div></label>
+                                <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_gcsV" value="2" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">2</span><span class="block text-[9px] font-normal">Sounds</span></div></label>
+                                <label class="cursor-pointer flex-1 text-center"><input type="radio" name="disability_gcsV" value="1" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">1</span><span class="block text-[9px] font-normal">None</span></div></label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 mb-1">Motor (M)</label>
+                            <div class="flex flex-wrap rounded-lg shadow-sm bg-slate-100 p-1 border border-slate-300">
+                                <label class="cursor-pointer flex-1 min-w-[16%] text-center"><input type="radio" name="disability_gcsM" value="6" checked class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">6</span><span class="block text-[9px] font-normal">Obeys</span></div></label>
+                                <label class="cursor-pointer flex-1 min-w-[16%] text-center"><input type="radio" name="disability_gcsM" value="5" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">5</span><span class="block text-[9px] font-normal">Localises</span></div></label>
+                                <label class="cursor-pointer flex-1 min-w-[16%] text-center"><input type="radio" name="disability_gcsM" value="4" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">4</span><span class="block text-[9px] font-normal">Withdraws</span></div></label>
+                                <label class="cursor-pointer flex-1 min-w-[16%] text-center"><input type="radio" name="disability_gcsM" value="3" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">3</span><span class="block text-[9px] font-normal">Flexion</span></div></label>
+                                <label class="cursor-pointer flex-1 min-w-[16%] text-center"><input type="radio" name="disability_gcsM" value="2" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">2</span><span class="block text-[9px] font-normal">Extension</span></div></label>
+                                <label class="cursor-pointer flex-1 min-w-[16%] text-center"><input type="radio" name="disability_gcsM" value="1" class="sr-only toggle-radio peer"><div class="px-1 py-2 leading-tight rounded transition text-slate-600 hover:bg-slate-200 peer-checked:bg-yellow-500 peer-checked:text-white"><span class="block text-sm font-bold">1</span><span class="block text-[9px] font-normal">None</span></div></label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                        <div><label class="block text-xs font-black text-slate-600 uppercase mb-1">L Pupil</label><input type="text" id="disability_pupil_left" class="w-full px-2 py-2 border border-slate-400 rounded text-sm" placeholder="e.g. 3mm"></div>
-                        <div><label class="block text-xs font-black text-slate-600 uppercase mb-1">R Pupil</label><input type="text" id="disability_pupil_right" class="w-full px-2 py-2 border border-slate-400 rounded text-sm" placeholder="e.g. 3mm"></div>
+                        <div>
+                            <label class="block text-xs font-black text-slate-600 uppercase mb-1">L Pupil</label>
+                            <div class="flex flex-wrap gap-1 mb-1" id="pupil_left_presets">
+                                <button type="button" class="preset-btn" data-val="2mm">2mm</button>
+                                <button type="button" class="preset-btn" data-val="3mm">3mm</button>
+                                <button type="button" class="preset-btn" data-val="4mm">4mm</button>
+                                <button type="button" class="preset-btn" data-val="5mm">5mm</button>
+                                <button type="button" class="preset-btn" data-val="Fixed">Fixed</button>
+                                <button type="button" class="preset-btn" data-val="Sluggish">Sluggish</button>
+                            </div>
+                            <input type="text" id="disability_pupil_left" class="w-full px-2 py-2 border border-slate-400 rounded text-sm" placeholder="e.g. 3mm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-slate-600 uppercase mb-1">R Pupil</label>
+                            <div class="flex flex-wrap gap-1 mb-1" id="pupil_right_presets">
+                                <button type="button" class="preset-btn" data-val="2mm">2mm</button>
+                                <button type="button" class="preset-btn" data-val="3mm">3mm</button>
+                                <button type="button" class="preset-btn" data-val="4mm">4mm</button>
+                                <button type="button" class="preset-btn" data-val="5mm">5mm</button>
+                                <button type="button" class="preset-btn" data-val="Fixed">Fixed</button>
+                                <button type="button" class="preset-btn" data-val="Sluggish">Sluggish</button>
+                            </div>
+                            <input type="text" id="disability_pupil_right" class="w-full px-2 py-2 border border-slate-400 rounded text-sm" placeholder="e.g. 3mm">
+                        </div>
                         <div><label class="block text-xs font-black text-slate-600 uppercase mb-1">Glucose (mmol/L)</label><input type="number" id="disability_glucose" step="0.1" min="0" max="40" class="w-full px-2 py-2 border border-slate-400 rounded text-sm" placeholder="mmol/L"><p id="glucose_alert" class="text-xs text-red-700 font-bold hidden mt-1">⚠️ Hypoglycaemia</p></div>
                     </div>
 
@@ -455,6 +524,7 @@
                     <div class="mb-2 bg-slate-50 p-4 rounded-xl border border-slate-400">
                         <span class="block text-sm font-bold text-slate-800 mb-2">Treatment Given</span>
                         <div class="flex flex-wrap gap-2 mb-2" id="disability_treatment_btns">
+                            <button type="button" class="treat-btn-none px-3 py-2 border rounded text-xs font-bold" data-tx="__none__">None Given</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="Mannitol">Mannitol</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="Hypertonic Saline">Hypertonic Saline</button>
                             <button type="button" class="treat-btn px-3 py-2 border rounded text-xs font-bold" data-tx="Benzodiazepines">Benzodiazepines</button>
@@ -477,6 +547,13 @@
 
                     <div class="mt-3 pt-3 border-t border-slate-200">
                         <span class="text-xs font-black text-slate-500 uppercase mb-1 block">Treatment Given</span>
+                        <div class="flex flex-wrap gap-2 mb-2" id="exposure_treatmentGiven_btns">
+                            <button type="button" class="phrase-btn phrase-btn-none" data-phrase="None">None</button>
+                            <button type="button" class="phrase-btn" data-phrase="Warmed blankets applied">Warmed blankets applied</button>
+                            <button type="button" class="phrase-btn" data-phrase="Fluid warmer in use">Fluid warmer in use</button>
+                            <button type="button" class="phrase-btn" data-phrase="Wound dressed/packed">Wound dressed/packed</button>
+                            <button type="button" class="phrase-btn" data-phrase="Log roll completed - no additional injury found">Log roll completed - no additional injury found</button>
+                        </div>
                         <input type="text" id="exposure_treatmentGiven" class="w-full px-3 py-2 border border-slate-300 rounded-md text-sm" placeholder="Any treatment given during exposure, if anything...">
                     </div>
                 </section>
