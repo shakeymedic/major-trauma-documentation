@@ -52,6 +52,26 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
 .drug-btn:hover { background-color: #f3e8ff; }
 .drug-btn.active { background-color: #7e22ce; color: white; border-color: #6b21a8; font-weight: 800; }
 
+.treat-btn { transition: all 0.1s; background-color: #f8fafc; border-color: #cbd5e1; color: #334155; }
+.treat-btn:hover { background-color: #fef2f2; }
+.treat-btn.active { background-color: #b91c1c; color: white; border-color: #991b1b; font-weight: 800; }
+
+.treat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+.treat-chip .time { font-family: monospace; color: #b91c1c; font-size: 0.7rem; margin-left: 2px; }
+.treat-chip button { margin-left: 4px; color: #b91c1c; padding: 2px; border-radius: 50%; opacity: 0.7; }
+.treat-chip button:hover { background: #fecaca; opacity: 1; }
+
 .access-btn { transition: all 0.1s; background-color: white; border-color: #fecaca; color: #b91c1c; position: relative; }
 .access-btn:hover { background-color: #fef2f2; }
 .access-btn.active { background-color: #dc2626; color: white; border-color: #991b1b; font-weight: 800; }
