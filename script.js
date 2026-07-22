@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
         airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, traumaMat: false, notes: '', treatmentGiven: '' },
         breathing: { rr: '', sats: '', o2: 'Air', fio2: '', findings: [], notes: '', treatmentGiven: '' },
-        circulation: { hr: '', bp: '', crt: '', lines: [], bleeding: [], txa: 'None', txaTime: '', binder: false, binderTime: '', ktd: false, ktdTime: '', tourniquet: false, tourniquetTime: '', notes: '', treatmentGiven: [], treatmentGivenFree: '' },
+        circulation: { hr: '', bp: '', crt: '', lines: [], bleeding: [], regionFindings: [], txa: 'None', txaTime: '', binder: false, binderTime: '', ktd: false, ktdTime: '', tourniquet: false, tourniquetTime: '', notes: '', treatmentGiven: [], treatmentGivenFree: '' },
         mhp: { activated: false, time: '', crystalloid: '', prbc: '', ffp: '', plt: '', cryo: '' },
         disability: { avpu: 'Alert', headInjury: false, gcsE: 4, gcsV: 5, gcsM: 6, pupilL: '', pupilR: '', glucose: '', ma4l: false, treatmentGiven: [], treatmentGivenFree: '' },
         exposure: { temp: '', notes: '', treatmentGiven: '' },
@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const BREATHING_OPTS = ['Chest Wall Injury', 'Sucking Chest Wound', 'Flail Segment', 'Surgical Emphysema', 'Crepitus', 'Bruising', 'Deformity', 'Reduced Expansion'];
     const INJURY_SITES = ['Scalp', 'Face', 'Chest', 'Abdomen', 'Pelvis', 'L Arm', 'R Arm', 'L Leg', 'R Leg', 'Back'];
+    const CIRC_REGION_OPTS = ['Chest', 'Abdomen', 'Pelvis', 'Long Bones', 'Open Wounds'];
     const CANNULA_SIZES = ['14G (Orange)', '16G (Grey)', '18G (Green)', '20G (Pink)', '22G (Blue)'];
 
     // --- NEWS2 (National Early Warning Score 2) ---
@@ -195,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(patientData.exposure.treatmentGiven === undefined) patientData.exposure.treatmentGiven = '';
                 if(!patientData.circulation.treatmentGiven) patientData.circulation.treatmentGiven = [];
                 if(patientData.circulation.treatmentGivenFree === undefined) patientData.circulation.treatmentGivenFree = '';
+                if(!Array.isArray(patientData.circulation.regionFindings)) patientData.circulation.regionFindings = [];
                 if(!patientData.disability.treatmentGiven) patientData.disability.treatmentGiven = [];
                 if(patientData.disability.treatmentGivenFree === undefined) patientData.disability.treatmentGivenFree = '';
                 if(patientData.disability.ma4l === undefined) patientData.disability.ma4l = false;
@@ -367,6 +369,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Restore breathing L/R finding button states
         p.breathing.findings.forEach(obj => {
             const btn = document.querySelector(`.lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
+            if(btn) btn.classList.add('active');
+        });
+        // Restore circulation occult bleeding region finding button states
+        p.circulation.regionFindings.forEach(obj => {
+            const btn = document.querySelector(`#circ_region_findings .lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
             if(btn) btn.classList.add('active');
         });
         // Restore injury/bleeding site button states
@@ -630,6 +637,20 @@ document.addEventListener('DOMContentLoaded', () => {
         injContainer.innerHTML += `<button class="injury-btn py-2 border-2 rounded-md text-xs font-bold" data-site="${site}">${site}</button>`;
     });
 
+    const circRegionContainer = getEl('circ_region_findings');
+    CIRC_REGION_OPTS.forEach(opt => {
+        circRegionContainer.innerHTML += `
+            <div class="flex items-center justify-between bg-slate-50 border border-slate-300 rounded-lg p-2 gap-2">
+                <span class="text-sm font-bold text-slate-700 flex-1">${opt}</span>
+                <div class="flex gap-1">
+                    <button class="lr-btn w-9 h-9 rounded-md border-2 border-slate-300 bg-white font-black text-slate-600 hover:bg-slate-100 text-xs" data-f="${opt}" data-s="L">L</button>
+                    <button class="lr-btn w-9 h-9 rounded-md border-2 border-slate-300 bg-white font-black text-slate-600 hover:bg-slate-100 text-xs" data-f="${opt}" data-s="R">R</button>
+                    <button class="lr-btn w-9 h-9 rounded-md border-2 border-slate-300 bg-white font-black text-slate-600 hover:bg-slate-100 text-[10px]" data-f="${opt}" data-s="Both">B/L</button>
+                    <button class="lr-btn w-9 h-9 rounded-md border-2 border-slate-300 bg-white font-black text-slate-600 hover:bg-slate-100 text-[10px]" data-f="${opt}" data-s="None">None</button>
+                </div>
+            </div>`;
+    });
+
     const secContainer = getEl('secondary_container');
     SS_AREAS.forEach(area => {
         const div = document.createElement('div');
@@ -849,6 +870,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if(p.circulation.bleeding.includes('None Noted')) h += `   <b style="font-weight: bold;">Bleeding Sites:</b> None noted.<br>`;
             else h += `   <b style="font-weight: bold;">Bleeding Sites:</b> ${p.circulation.bleeding.join(', ')}.<br>`;
         }
+
+        const positiveCircRegions = p.circulation.regionFindings.filter(f => f.s !== 'None');
+        const explicitlyNegativeCircRegions = p.circulation.regionFindings.filter(f => f.s === 'None').map(f => f.f);
+        if(positiveCircRegions.length) h += `   <b style="font-weight: bold;">Occult Bleeding Screen:</b> ${positiveCircRegions.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
+        const assessedCircRegionNames = p.circulation.regionFindings.map(f => f.f);
+        const unassessedCircRegions = CIRC_REGION_OPTS.filter(opt => !assessedCircRegionNames.includes(opt));
+        const negCircRegions = [...explicitlyNegativeCircRegions, ...unassessedCircRegions];
+        if(negCircRegions.length > 0) h += `   <em>Occult Bleeding Screen — Negative:</em> No concerning findings in ${negCircRegions.join(', ').toLowerCase()}.<br>`;
         
         let interventions = [];
         if(p.circulation.binder) interventions.push(`Pelvic Binder ${p.circulation.binderTime ? `(@ ${p.circulation.binderTime}${elapsedStr(p.arrival.time, p.circulation.binderTime)})` : ''}`);
@@ -1141,6 +1170,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if(existingIdx > -1) patientData.breathing.findings.splice(existingIdx, 1);
             if(!wasThisActive) {
                 patientData.breathing.findings.push({f, s});
+                e.target.classList.add('active');
+            }
+            updateNotes();
+        }
+    });
+
+    circRegionContainer.addEventListener('click', e => {
+        if(e.target.classList.contains('lr-btn')) {
+            e.preventDefault();
+            const { f, s } = e.target.dataset;
+            const existingIdx = patientData.circulation.regionFindings.findIndex(x => x.f === f);
+            const wasThisActive = existingIdx > -1 && patientData.circulation.regionFindings[existingIdx].s === s;
+            document.querySelectorAll(`#circ_region_findings .lr-btn[data-f="${f}"]`).forEach(b => b.classList.remove('active'));
+            if(existingIdx > -1) patientData.circulation.regionFindings.splice(existingIdx, 1);
+            if(!wasThisActive) {
+                patientData.circulation.regionFindings.push({f, s});
                 e.target.classList.add('active');
             }
             updateNotes();
@@ -1592,9 +1637,10 @@ document.addEventListener('DOMContentLoaded', () => {
     getEl('btnNormalBreathing').addEventListener('click', () => {
         const hasExistingBreathing = patientData.breathing.findings.some(f => f.s && f.s !== 'None');
         if(hasExistingBreathing && !confirm('This will clear existing breathing findings. Continue?')) return;
-        patientData.breathing.findings = [];
+        patientData.breathing.findings = BREATHING_OPTS.map(opt => ({ f: opt, s: 'None' }));
         patientData.breathing.o2 = 'Air';
-        document.querySelectorAll('.lr-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#breathing_findings .lr-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#breathing_findings .lr-btn[data-s="None"]').forEach(b => b.classList.add('active'));
         const airRadio = document.querySelector('input[name="breathing_o2"][value="Air"]');
         if(airRadio) airRadio.checked = true;
         getEl('fio2_container').classList.add('hidden');
@@ -1607,12 +1653,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const cannedCircNotes = "No external bleeding, abdomen SNT, pelvis symmetrical and appears stable, no long bone deformity.";
         const hasExistingCirc = (patientData.circulation.notes && patientData.circulation.notes !== cannedCircNotes) ||
             patientData.circulation.bleeding.some(b => b !== 'None Noted') ||
+            patientData.circulation.regionFindings.some(f => f.s && f.s !== 'None') ||
             patientData.circulation.binder || patientData.circulation.ktd || patientData.circulation.tourniquet ||
             (patientData.circulation.txa && patientData.circulation.txa !== 'None');
         if(hasExistingCirc && !confirm('This will clear existing circulation findings/interventions. Continue?')) return;
         patientData.circulation.txa = 'None';
         patientData.circulation.txaTime = '';
         patientData.circulation.bleeding = ['None Noted'];
+        patientData.circulation.regionFindings = CIRC_REGION_OPTS.map(opt => ({ f: opt, s: 'None' }));
         patientData.circulation.binder = false;
         patientData.circulation.ktd = false;
         patientData.circulation.tourniquet = false;
@@ -1620,6 +1668,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('input[name="txaGiven"][value="None"]').checked = true;
         document.querySelectorAll('.injury-btn').forEach(b => b.classList.remove('active'));
         getEl('btnNoInjurySites').classList.add('none-active');
+        document.querySelectorAll('#circ_region_findings .lr-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#circ_region_findings .lr-btn[data-s="None"]').forEach(b => b.classList.add('active'));
         
         patientData.circulation.binderTime = '';
         patientData.circulation.ktdTime = '';
