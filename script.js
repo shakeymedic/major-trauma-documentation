@@ -1,18 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- DATA STORE ---
-    const DATA_VERSION = '2.9';
+    const DATA_VERSION = '3.0';
     let patientData = {
         _version: DATA_VERSION,
         zero: { self: false, leader: false, roles: false, brief: false, env: false, ppe: false, notes: '' },
         arrival: { time: '', specialties: [] },
         atmist: { paramedicHandover: '', age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phTreatmentsFree: '', phDrugs: [], phDrugsFree: '', safeguarding: 'No Concern', pregnancy: 'Not Applicable' },
         prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
-        airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, traumaMat: false, notes: '', treatmentGiven: '' },
-        breathing: { rr: '', sats: '', o2: 'Air', fio2: '', findings: [], notes: '', treatmentGiven: '' },
-        circulation: { hr: '', bp: '', crt: '', lines: [], bleeding: [], regionFindings: [], txa: 'None', txaTime: '', binder: false, binderTime: '', ktd: false, ktdTime: '', tourniquet: false, tourniquetTime: '', notes: '', treatmentGiven: [], treatmentGivenFree: '' },
-        mhp: { activated: false, time: '', crystalloid: '', prbc: '', ffp: '', plt: '', cryo: '' },
+        airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, traumaMat: false, notes: '', treatmentGiven: [], treatmentGivenFree: '' },
+        breathing: { rr: '', sats: '', o2: 'Air', fio2: '', findings: [], notes: '', treatmentGiven: [], treatmentGivenFree: '' },
+        circulation: { hr: '', bp: '', crt: '', lines: [], bodyFindings: [], txa: 'None', txaTime: '', binder: false, binderTime: '', ktd: false, ktdTime: '', tourniquet: false, tourniquetTime: '', notes: '', treatmentGiven: [], treatmentGivenFree: '' },
+        mhp: { activated: false, time: '', crystalloid: '', units: { rbc: [], ffp: [], plt: [], cryo: [] } },
         disability: { avpu: 'Alert', headInjury: false, gcsE: 4, gcsV: 5, gcsM: 6, pupilL: '', pupilR: '', glucose: '', ma4l: false, treatmentGiven: [], treatmentGivenFree: '' },
-        exposure: { temp: '', notes: '', treatmentGiven: '' },
+        exposure: { temp: '', notes: '', treatmentGiven: [], treatmentGivenFree: '' },
         ecg: { done: false, time: '', findings: '' },
         obs: [], // Serial Observations
         investigations: { 
@@ -45,8 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     const BREATHING_OPTS = ['Chest Wall Injury', 'Sucking Chest Wound', 'Flail Segment', 'Surgical Emphysema', 'Crepitus', 'Bruising', 'Deformity', 'Reduced Expansion'];
-    const INJURY_SITES = ['Scalp', 'Face', 'Chest', 'Abdomen', 'Pelvis', 'L Arm', 'R Arm', 'L Leg', 'R Leg', 'Back'];
-    const CIRC_REGION_OPTS = ['Chest', 'Abdomen', 'Pelvis', 'Long Bones', 'Open Wounds'];
+    const BODY_REGION_OPTS = ['Scalp', 'Face', 'Chest', 'Abdomen', 'Pelvis', 'Back', 'Arms', 'Legs', 'Open Wounds'];
     const CANNULA_SIZES = ['14G (Orange)', '16G (Grey)', '18G (Green)', '20G (Pink)', '22G (Blue)'];
 
     // --- NEWS2 (National Early Warning Score 2) ---
@@ -191,12 +190,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(!patientData.investigations.efast) patientData.investigations.efast = {ruq:'', luq:'', pelvis:'', pericardial:'', lung:''};
                 if(patientData.investigations.efast.lung === undefined) patientData.investigations.efast.lung = '';
                 if(patientData.airway.traumaMat === undefined) patientData.airway.traumaMat = false;
-                if(patientData.airway.treatmentGiven === undefined) patientData.airway.treatmentGiven = '';
-                if(patientData.breathing.treatmentGiven === undefined) patientData.breathing.treatmentGiven = '';
-                if(patientData.exposure.treatmentGiven === undefined) patientData.exposure.treatmentGiven = '';
+                // Migrate A/B/E Treatment Given from the old plain-string shape to the timestamped array + free-text shape
+                ['airway', 'breathing', 'exposure'].forEach(sec => {
+                    if(!Array.isArray(patientData[sec].treatmentGiven)) {
+                        const oldVal = typeof patientData[sec].treatmentGiven === 'string' ? patientData[sec].treatmentGiven : '';
+                        patientData[sec].treatmentGiven = [];
+                        patientData[sec].treatmentGivenFree = oldVal;
+                    }
+                    if(patientData[sec].treatmentGivenFree === undefined) patientData[sec].treatmentGivenFree = '';
+                });
                 if(!patientData.circulation.treatmentGiven) patientData.circulation.treatmentGiven = [];
                 if(patientData.circulation.treatmentGivenFree === undefined) patientData.circulation.treatmentGivenFree = '';
-                if(!Array.isArray(patientData.circulation.regionFindings)) patientData.circulation.regionFindings = [];
+                // NOTE: deepMerge() above back-fills bodyFindings/mhp.units from the default template even when the
+                // saved data predates them, so these migrations must detect the legacy fields directly — checking
+                // whether the new field is merely "missing" would never fire once the default has been merged in.
+                if(patientData.mhp.prbc !== undefined || patientData.mhp.ffp !== undefined || patientData.mhp.plt !== undefined || patientData.mhp.cryo !== undefined) {
+                    // Migrate old plain-number MHP unit counts into timestamped unit arrays (exact times unknown, use MHP activation time as best guess)
+                    const t = patientData.mhp.time || '';
+                    const makeUnits = n => { const arr = []; const count = parseInt(n) || 0; for(let i = 0; i < count; i++) arr.push({ time: t }); return arr; };
+                    patientData.mhp.units = {
+                        rbc: makeUnits(patientData.mhp.prbc),
+                        ffp: makeUnits(patientData.mhp.ffp),
+                        plt: makeUnits(patientData.mhp.plt),
+                        cryo: makeUnits(patientData.mhp.cryo)
+                    };
+                    delete patientData.mhp.prbc;
+                    delete patientData.mhp.ffp;
+                    delete patientData.mhp.plt;
+                    delete patientData.mhp.cryo;
+                }
+                if(!patientData.mhp.units) patientData.mhp.units = { rbc: [], ffp: [], plt: [], cryo: [] };
+                ['rbc','ffp','plt','cryo'].forEach(k => { if(!Array.isArray(patientData.mhp.units[k])) patientData.mhp.units[k] = []; });
+                if(patientData.circulation.bleeding !== undefined || patientData.circulation.regionFindings !== undefined) {
+                    // One-time best-effort migration from the older separate External Bleeding Sites / Occult Bleeding Screen fields
+                    const legacyBleeding = Array.isArray(patientData.circulation.bleeding) ? patientData.circulation.bleeding : [];
+                    const legacyRegion = Array.isArray(patientData.circulation.regionFindings) ? patientData.circulation.regionFindings : [];
+                    const merged = Array.isArray(patientData.circulation.bodyFindings) ? patientData.circulation.bodyFindings.slice() : [];
+                    const siteMap = { 'L Arm': {f:'Arms', s:'L'}, 'R Arm': {f:'Arms', s:'R'}, 'L Leg': {f:'Legs', s:'L'}, 'R Leg': {f:'Legs', s:'R'} };
+                    legacyBleeding.forEach(site => {
+                        if(site === 'None Noted') return;
+                        if(siteMap[site]) { if(!merged.some(m => m.f === siteMap[site].f)) merged.push(siteMap[site]); }
+                        else if(BODY_REGION_OPTS.includes(site) && !merged.some(m => m.f === site)) merged.push({ f: site, s: 'Both' });
+                    });
+                    legacyRegion.forEach(rf => {
+                        const f = rf.f === 'Long Bones' ? 'Legs' : rf.f;
+                        if(BODY_REGION_OPTS.includes(f) && rf.s !== 'None' && !merged.some(m => m.f === f)) merged.push({ f, s: rf.s });
+                    });
+                    patientData.circulation.bodyFindings = merged;
+                    delete patientData.circulation.bleeding;
+                    delete patientData.circulation.regionFindings;
+                }
+                if(!Array.isArray(patientData.circulation.bodyFindings)) patientData.circulation.bodyFindings = [];
                 if(!patientData.disability.treatmentGiven) patientData.disability.treatmentGiven = [];
                 if(patientData.disability.treatmentGivenFree === undefined) patientData.disability.treatmentGivenFree = '';
                 if(patientData.disability.ma4l === undefined) patientData.disability.ma4l = false;
@@ -281,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setCheck('cspine_blocks', p.airway.blocks);
         setCheck('cspine_traumaMat', p.airway.traumaMat);
         setVal('airway_notes', p.airway.notes);
-        setVal('airway_treatmentGiven', p.airway.treatmentGiven);
+        setVal('airway_treatmentGivenFree', p.airway.treatmentGivenFree);
 
         setVal('breathing_rr', p.breathing.rr);
         setVal('breathing_sats', p.breathing.sats);
@@ -292,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         setVal('breathing_fio2', p.breathing.fio2);
         setVal('breathing_notes', p.breathing.notes);
-        setVal('breathing_treatmentGiven', p.breathing.treatmentGiven);
+        setVal('breathing_treatmentGivenFree', p.breathing.treatmentGivenFree);
         
         setVal('circ_hr', p.circulation.hr);
         setVal('circ_bp', p.circulation.bp);
@@ -302,8 +346,14 @@ document.addEventListener('DOMContentLoaded', () => {
         setVal('disability_treatmentGivenFree', p.disability.treatmentGivenFree);
         p.circulation.treatmentGiven.forEach(t => { const b = document.querySelector(`#circ_treatment_btns .treat-btn[data-tx="${t.name}"]`); if(b) b.classList.add('active'); });
         p.disability.treatmentGiven.forEach(t => { const b = document.querySelector(`#disability_treatment_btns .treat-btn[data-tx="${t.name}"]`); if(b) b.classList.add('active'); });
+        p.airway.treatmentGiven.forEach(t => { const b = document.querySelector(`#airway_treatment_btns .treat-btn[data-tx="${t.name}"]`); if(b) b.classList.add('active'); });
+        p.breathing.treatmentGiven.forEach(t => { const b = document.querySelector(`#breathing_treatment_btns .treat-btn[data-tx="${t.name}"]`); if(b) b.classList.add('active'); });
+        p.exposure.treatmentGiven.forEach(t => { const b = document.querySelector(`#exposure_treatment_btns .treat-btn[data-tx="${t.name}"]`); if(b) b.classList.add('active'); });
         renderTreatmentList('circ_treatment_list');
         renderTreatmentList('disability_treatment_list');
+        renderTreatmentList('airway_treatment_list');
+        renderTreatmentList('breathing_treatment_list');
+        renderTreatmentList('exposure_treatment_list');
         if(p.circulation.txa) { const r = document.querySelector(`input[name="txaGiven"][value="${p.circulation.txa}"]`); if(r) r.checked = true; }
         
         renderLines();
@@ -327,7 +377,8 @@ document.addEventListener('DOMContentLoaded', () => {
             getEl('mhp_time').classList.remove('hidden');
         }
         setVal('mhp_time', p.mhp.time);
-        ['crystalloid', 'prbc','ffp','plt','cryo'].forEach(k => setVal(`mhp_${k}`, p.mhp[k]));
+        setVal('mhp_crystalloid', p.mhp.crystalloid);
+        renderBloodProducts();
 
         setCheck('headInjury', p.disability.headInjury);
         if(p.disability.avpu) { const r = document.querySelector(`input[name="disability_avpu"][value="${p.disability.avpu}"]`); if(r) r.checked = true; }
@@ -357,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setVal('exposure_temp', p.exposure.temp);
         setVal('exposure_notes', p.exposure.notes);
-        setVal('exposure_treatmentGiven', p.exposure.treatmentGiven);
+        setVal('exposure_treatmentGivenFree', p.exposure.treatmentGivenFree);
 
         setCheck('ecg_done', p.ecg.done);
         setVal('ecg_findings', p.ecg.findings);
@@ -371,17 +422,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = document.querySelector(`.lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
             if(btn) btn.classList.add('active');
         });
-        // Restore circulation occult bleeding region finding button states
-        p.circulation.regionFindings.forEach(obj => {
-            const btn = document.querySelector(`#circ_region_findings .lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
+        // Restore circulation body findings (injury/bleeding screen) button states
+        p.circulation.bodyFindings.forEach(obj => {
+            const btn = document.querySelector(`#circ_body_findings .lr-btn[data-f="${obj.f}"][data-s="${obj.s}"]`);
             if(btn) btn.classList.add('active');
         });
-        // Restore injury/bleeding site button states
-        p.circulation.bleeding.forEach(site => {
-            const btn = document.querySelector(`.injury-btn[data-site="${site}"]`);
-            if(btn) btn.classList.add('active');
-        });
-        if(p.circulation.bleeding.includes('None Noted')) { const nb = getEl('btnNoInjurySites'); if(nb) nb.classList.add('none-active'); }
         // Restore secondary survey area tags and text
         SS_AREAS.forEach(area => {
             if(patientData.secondary[area.id]) {
@@ -599,8 +644,31 @@ document.addEventListener('DOMContentLoaded', () => {
             updateNotes();
         });
     };
+    // Quick win: build the first observation row from primary survey vitals already recorded,
+    // so nothing has to be re-typed. Only used when there are no obs rows yet — never overwrites real data.
+    function firstObsFromPrimarySurvey() {
+        const p = patientData;
+        const gcsParts = [p.disability.gcsE, p.disability.gcsV, p.disability.gcsM];
+        const gcsTot = gcsParts.every(v => v !== '' && v !== undefined && v !== null) ? (parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM)) : '';
+        const pupils = (p.disability.pupilL || p.disability.pupilR) ? `${p.disability.pupilL || '?'}/${p.disability.pupilR || '?'}` : '';
+        return {
+            time: getTime(),
+            hr: p.circulation.hr || '',
+            bp: p.circulation.bp || '',
+            rr: p.breathing.rr || '',
+            spo2: p.breathing.sats || '',
+            onO2: !!(p.breathing.o2 && p.breathing.o2 !== 'Air'),
+            temp: p.exposure.temp || '',
+            gcs: gcsTot,
+            pupils: pupils
+        };
+    }
     getEl('btnAddObs').addEventListener('click', () => {
-        patientData.obs.push({ time: getTime(), hr: '', bp: '', rr: '', spo2: '', onO2: false, temp: '', gcs: '', pupils: '' });
+        if(patientData.obs.length === 0) {
+            patientData.obs.push(firstObsFromPrimarySurvey());
+        } else {
+            patientData.obs.push({ time: getTime(), hr: '', bp: '', rr: '', spo2: '', onO2: false, temp: '', gcs: '', pupils: '' });
+        }
         renderObs();
         updateNotes();
     });
@@ -608,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCopyLastObs = getEl('btnCopyLastObs');
     if(btnCopyLastObs) btnCopyLastObs.addEventListener('click', () => {
         if(patientData.obs.length === 0) {
-            patientData.obs.push({ time: getTime(), hr: '', bp: '', rr: '', spo2: '', onO2: false, temp: '', gcs: '', pupils: '' });
+            patientData.obs.push(firstObsFromPrimarySurvey());
         } else {
             const last = patientData.obs[patientData.obs.length - 1];
             patientData.obs.push({ ...last, time: getTime() });
@@ -632,14 +700,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
     });
 
-    const injContainer = getEl('injury_grid');
-    INJURY_SITES.forEach(site => {
-        injContainer.innerHTML += `<button class="injury-btn py-2 border-2 rounded-md text-xs font-bold" data-site="${site}">${site}</button>`;
-    });
-
-    const circRegionContainer = getEl('circ_region_findings');
-    CIRC_REGION_OPTS.forEach(opt => {
-        circRegionContainer.innerHTML += `
+    const circBodyContainer = getEl('circ_body_findings');
+    BODY_REGION_OPTS.forEach(opt => {
+        circBodyContainer.innerHTML += `
             <div class="flex items-center justify-between bg-slate-50 border border-slate-300 rounded-lg p-2 gap-2">
                 <span class="text-sm font-bold text-slate-700 flex-1">${opt}</span>
                 <div class="flex gap-1">
@@ -703,9 +766,6 @@ document.addEventListener('DOMContentLoaded', () => {
             input.dispatchEvent(new Event('input', { bubbles: true }));
         }));
     }
-    initPhraseButtons('airway_treatmentGiven_btns', 'airway_treatmentGiven');
-    initPhraseButtons('breathing_treatmentGiven_btns', 'breathing_treatmentGiven');
-    initPhraseButtons('exposure_treatmentGiven_btns', 'exposure_treatmentGiven');
 
     // --- QUICK-TAP PRESETS (Pupils — replaces value rather than appending) ---
     function initPresetButtons(containerId, inputId) {
@@ -745,15 +805,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTrendArrows() {
         const p = patientData;
+        // GCS total display always updates, regardless of obs history
+        const gcsTotalEl = getEl('gcs_total');
+        const gcsTot = (parseInt(p.disability.gcsE) || 0) + (parseInt(p.disability.gcsV) || 0) + (parseInt(p.disability.gcsM) || 0);
+        if(gcsTotalEl) {
+            gcsTotalEl.textContent = gcsTot;
+            gcsTotalEl.style.color = gcsTot <= 8 ? '#b91c1c' : (gcsTot <= 13 ? '#b45309' : '#1e293b');
+        }
         const lastObs = p.obs.length ? p.obs[p.obs.length - 1] : null;
         if(!lastObs) {
-            ['hr_trend', 'bp_trend', 'rr_trend', 'sats_trend', 'temp_trend'].forEach(id => { const el = getEl(id); if(el) { el.textContent = ''; el.title = ''; } });
+            ['hr_trend', 'bp_trend', 'rr_trend', 'sats_trend', 'temp_trend', 'gcs_trend'].forEach(id => { const el = getEl(id); if(el) { el.textContent = ''; el.title = ''; } });
             return;
         }
         setTrendArrow('hr_trend', p.circulation.hr, lastObs.hr);
         setTrendArrow('rr_trend', p.breathing.rr, lastObs.rr);
         setTrendArrow('sats_trend', p.breathing.sats, lastObs.spo2);
         setTrendArrow('temp_trend', p.exposure.temp, lastObs.temp);
+        setTrendArrow('gcs_trend', gcsTot, lastObs.gcs);
         const bpSys = (p.circulation.bp || '').split('/')[0];
         const lastBpSys = (lastObs.bp || '').split('/')[0];
         setTrendArrow('bp_trend', bpSys, lastBpSys);
@@ -839,7 +907,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.airway.traumaMat) h += `Immobilised in trauma mat (ED). `;
         if(p.airway.notes) h += ` ${p.airway.notes}`;
         h += "<br>";
-        if(p.airway.treatmentGiven) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${p.airway.treatmentGiven}<br>`;
+        let airwayTx = p.airway.treatmentGiven.map(t => `${t.name}${t.time ? ` (@ ${t.time})` : ''}`);
+        if(p.airway.treatmentGivenFree) airwayTx.push(p.airway.treatmentGivenFree);
+        if(airwayTx.length) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${airwayTx.join(', ')}.<br>`;
         
         let o2 = p.breathing.o2 === 'Air' ? 'Air' : `Oxygen ${p.breathing.fio2}`;
         h += `<b style="font-weight: bold;">Breathing:</b> RR ${p.breathing.rr} | Sats ${p.breathing.sats}% (${o2}).<br>`;
@@ -855,7 +925,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if(p.breathing.notes) h += `${p.breathing.notes}`;
         h += "<br>";
-        if(p.breathing.treatmentGiven) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${p.breathing.treatmentGiven}<br>`;
+        let breathingTx = p.breathing.treatmentGiven.map(t => `${t.name}${t.time ? ` (@ ${t.time})` : ''}`);
+        if(p.breathing.treatmentGivenFree) breathingTx.push(p.breathing.treatmentGivenFree);
+        if(breathingTx.length) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${breathingTx.join(', ')}.<br>`;
         
         h += `<b style="font-weight: bold;">Circulation:</b> HR ${p.circulation.hr} | BP ${p.circulation.bp}${calcHtml} | CRT ${p.circulation.crt}s.<br>`;
         if(p.circulation.txa && p.circulation.txa !== 'None') h += `   <b style="font-weight: bold;">TXA Given:</b> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime}${elapsedStr(p.arrival.time, p.circulation.txaTime)})` : ''}.<br>`;
@@ -866,18 +938,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if(validLines.length) h += `   Access: ${validLines.join(', ')}.<br>`;
         
-        if(p.circulation.bleeding.length) {
-            if(p.circulation.bleeding.includes('None Noted')) h += `   <b style="font-weight: bold;">Bleeding Sites:</b> None noted.<br>`;
-            else h += `   <b style="font-weight: bold;">Bleeding Sites:</b> ${p.circulation.bleeding.join(', ')}.<br>`;
-        }
-
-        const positiveCircRegions = p.circulation.regionFindings.filter(f => f.s !== 'None');
-        const explicitlyNegativeCircRegions = p.circulation.regionFindings.filter(f => f.s === 'None').map(f => f.f);
-        if(positiveCircRegions.length) h += `   <b style="font-weight: bold;">Occult Bleeding Screen:</b> ${positiveCircRegions.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
-        const assessedCircRegionNames = p.circulation.regionFindings.map(f => f.f);
-        const unassessedCircRegions = CIRC_REGION_OPTS.filter(opt => !assessedCircRegionNames.includes(opt));
-        const negCircRegions = [...explicitlyNegativeCircRegions, ...unassessedCircRegions];
-        if(negCircRegions.length > 0) h += `   <em>Occult Bleeding Screen — Negative:</em> No concerning findings in ${negCircRegions.join(', ').toLowerCase()}.<br>`;
+        const positiveBodyFindings = p.circulation.bodyFindings.filter(f => f.s !== 'None');
+        const explicitlyNegativeBody = p.circulation.bodyFindings.filter(f => f.s === 'None').map(f => f.f);
+        if(positiveBodyFindings.length) h += `   <b style="font-weight: bold;">Injury/Bleeding Screen:</b> ${positiveBodyFindings.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
+        const assessedBodyNames = p.circulation.bodyFindings.map(f => f.f);
+        const unassessedBody = BODY_REGION_OPTS.filter(opt => !assessedBodyNames.includes(opt));
+        const negBody = [...explicitlyNegativeBody, ...unassessedBody];
+        if(negBody.length > 0) h += `   <em>Injury/Bleeding Screen — Negative:</em> No concerning findings in ${negBody.join(', ').toLowerCase()}.<br>`;
         
         let interventions = [];
         if(p.circulation.binder) interventions.push(`Pelvic Binder ${p.circulation.binderTime ? `(@ ${p.circulation.binderTime}${elapsedStr(p.arrival.time, p.circulation.binderTime)})` : ''}`);
@@ -890,7 +957,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if(circTx.length) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${circTx.join(', ')}.<br>`;
 
         if(p.mhp.activated) {
-            h += `   <b style="font-weight: bold;">⚠️ MHP ACTIVATED</b> (${p.mhp.time || 'Time Not Set'}${elapsedStr(p.arrival.time, p.mhp.time)})<br>   Given: Crystalloid ${p.mhp.crystalloid || 0}ml, PRBC ${p.mhp.prbc || 0}, FFP ${p.mhp.ffp || 0}, Plt ${p.mhp.plt || 0}, Cryo ${p.mhp.cryo || 0}.<br>`;
+            h += `   <b style="font-weight: bold;">⚠️ MHP ACTIVATED</b> (${p.mhp.time || 'Time Not Set'}${elapsedStr(p.arrival.time, p.mhp.time)})<br>   Crystalloid: ${p.mhp.crystalloid || 0}ml.<br>`;
+            const bpLabels = { rbc: 'RBC', ffp: 'FFP', plt: 'Platelets', cryo: 'Cryo' };
+            const bpParts = [];
+            Object.keys(bpLabels).forEach(k => {
+                const arr = p.mhp.units[k] || [];
+                if(arr.length) bpParts.push(`${bpLabels[k]} x${arr.length} (@ ${arr.map(u=>u.time).join(', ')})`);
+            });
+            if(bpParts.length) h += `   <b style="font-weight: bold;">Blood Products:</b> ${bpParts.join(', ')}.<br>`;
         }
 
         let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
@@ -905,7 +979,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.disability.headInjury) h += `   <b style="font-weight: bold;">⚠️ Head Injury Suspected</b><br>`;
         
         h += `<b style="font-weight: bold;">Exposure:</b> Temp ${p.exposure.temp}°C. ${p.exposure.notes}<br>`;
-        if(p.exposure.treatmentGiven) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${p.exposure.treatmentGiven}<br>`;
+        let exposureTx = p.exposure.treatmentGiven.map(t => `${t.name}${t.time ? ` (@ ${t.time})` : ''}`);
+        if(p.exposure.treatmentGivenFree) exposureTx.push(p.exposure.treatmentGivenFree);
+        if(exposureTx.length) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${exposureTx.join(', ')}.<br>`;
         
         if (p.obs.length > 0) {
             h += `<br><b style="font-weight: bold;">Serial Observations:</b><br>`;
@@ -1176,38 +1252,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    circRegionContainer.addEventListener('click', e => {
+    circBodyContainer.addEventListener('click', e => {
         if(e.target.classList.contains('lr-btn')) {
             e.preventDefault();
             const { f, s } = e.target.dataset;
-            const existingIdx = patientData.circulation.regionFindings.findIndex(x => x.f === f);
-            const wasThisActive = existingIdx > -1 && patientData.circulation.regionFindings[existingIdx].s === s;
-            document.querySelectorAll(`#circ_region_findings .lr-btn[data-f="${f}"]`).forEach(b => b.classList.remove('active'));
-            if(existingIdx > -1) patientData.circulation.regionFindings.splice(existingIdx, 1);
+            const existingIdx = patientData.circulation.bodyFindings.findIndex(x => x.f === f);
+            const wasThisActive = existingIdx > -1 && patientData.circulation.bodyFindings[existingIdx].s === s;
+            document.querySelectorAll(`#circ_body_findings .lr-btn[data-f="${f}"]`).forEach(b => b.classList.remove('active'));
+            if(existingIdx > -1) patientData.circulation.bodyFindings.splice(existingIdx, 1);
             if(!wasThisActive) {
-                patientData.circulation.regionFindings.push({f, s});
+                patientData.circulation.bodyFindings.push({f, s});
                 e.target.classList.add('active');
             }
             updateNotes();
         }
     });
 
-    injContainer.addEventListener('click', e => {
-        if(e.target.classList.contains('injury-btn')) {
-            e.target.classList.toggle('active');
-            const site = e.target.dataset.site;
-            patientData.circulation.bleeding = patientData.circulation.bleeding.filter(x => x !== 'None Noted');
-            getEl('btnNoInjurySites').classList.remove('none-active');
-            if(patientData.circulation.bleeding.includes(site)) patientData.circulation.bleeding = patientData.circulation.bleeding.filter(x => x !== site);
-            else patientData.circulation.bleeding.push(site);
-            updateNotes();
-        }
-    });
-
     getEl('btnNoInjurySites').addEventListener('click', () => {
-        patientData.circulation.bleeding = ['None Noted'];
-        document.querySelectorAll('.injury-btn').forEach(b => b.classList.remove('active'));
-        getEl('btnNoInjurySites').classList.add('none-active');
+        patientData.circulation.bodyFindings = BODY_REGION_OPTS.map(opt => ({ f: opt, s: 'None' }));
+        document.querySelectorAll('#circ_body_findings .lr-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#circ_body_findings .lr-btn[data-s="None"]').forEach(b => b.classList.add('active'));
         updateNotes();
     });
 
@@ -1249,6 +1313,54 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn2 = document.querySelector(`.drug-btn[data-d="${removed.name}"]`);
             if(btn2) btn2.classList.add('active');
             renderPhDrugs();
+            updateNotes();
+        });
+    }
+
+    // --- BLOOD PRODUCTS (MHP running list, tally & Calcium reminder) ---
+    const BLOOD_LABELS = { rbc: 'RBC', ffp: 'FFP', plt: 'Platelets', cryo: 'Cryo' };
+    function renderBloodProducts() {
+        const tallyEl = getEl('bloodTally');
+        const listEl = getEl('bloodProductsList');
+        if(!tallyEl || !listEl) return;
+        const units = patientData.mhp.units;
+        let total = 0;
+        tallyEl.innerHTML = '';
+        Object.keys(BLOOD_LABELS).forEach(k => {
+            const count = (units[k] || []).length;
+            total += count;
+            const div = document.createElement('div');
+            div.className = 'bg-white border border-red-300 rounded p-2';
+            div.textContent = `${BLOOD_LABELS[k]}: ${count} unit${count === 1 ? '' : 's'}`;
+            tallyEl.appendChild(div);
+        });
+
+        listEl.innerHTML = '';
+        Object.keys(BLOOD_LABELS).forEach(k => {
+            (units[k] || []).forEach((u, i) => {
+                const chip = document.createElement('div');
+                chip.className = 'blood-chip';
+                chip.innerHTML = `${BLOOD_LABELS[k]}<span class="time">@ ${u.time}</span>`;
+                const remBtn = document.createElement('button');
+                remBtn.innerHTML = '&times;';
+                remBtn.onclick = () => removeBloodUnit(k, i);
+                chip.appendChild(remBtn);
+                listEl.appendChild(chip);
+            });
+        });
+
+        const reminder = getEl('calciumReminder');
+        if(reminder) reminder.classList.toggle('hidden', total === 0 || total % 2 !== 0);
+    }
+
+    function removeBloodUnit(product, index) {
+        const removed = patientData.mhp.units[product][index];
+        patientData.mhp.units[product].splice(index, 1);
+        renderBloodProducts();
+        updateNotes();
+        showUndoToast(`Removed ${BLOOD_LABELS[product] || product} unit`, () => {
+            patientData.mhp.units[product].splice(index, 0, removed);
+            renderBloodProducts();
             updateNotes();
         });
     }
@@ -1338,8 +1450,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTreatmentList(listContainerId);
     }
 
+    initPhraseButtons('mechanism_btns', 'mechanism');
+
     initTreatmentList('circ_treatment_btns', 'circ_treatment_list', () => patientData.circulation.treatmentGiven, 'No circulation treatment recorded yet.', 'circ_treatmentGivenFree');
     initTreatmentList('disability_treatment_btns', 'disability_treatment_list', () => patientData.disability.treatmentGiven, 'No disability treatment recorded yet.', 'disability_treatmentGivenFree');
+    initTreatmentList('airway_treatment_btns', 'airway_treatment_list', () => patientData.airway.treatmentGiven, 'No airway treatment recorded yet.', 'airway_treatmentGivenFree');
+    initTreatmentList('breathing_treatment_btns', 'breathing_treatment_list', () => patientData.breathing.treatmentGiven, 'No breathing treatment recorded yet.', 'breathing_treatmentGivenFree');
+    initTreatmentList('exposure_treatment_btns', 'exposure_treatment_list', () => patientData.exposure.treatmentGiven, 'No exposure treatment recorded yet.', 'exposure_treatmentGivenFree');
 
     document.querySelectorAll('.access-btn').forEach(btn => btn.addEventListener('click', e => {
         e.target.classList.toggle('active');
@@ -1389,6 +1506,12 @@ document.addEventListener('DOMContentLoaded', () => {
     bindCheck('zps_ppe', patientData.zero, 'ppe');
     bind('zps_notes', patientData.zero, 'notes');
 
+    getEl('btnZpsCompleteAll').addEventListener('click', () => {
+        ['self','leader','roles','brief','env','ppe'].forEach(key => { patientData.zero[key] = true; });
+        ['zps_self','zps_leader','zps_roles','zps_brief','zps_env','zps_ppe'].forEach(id => { getEl(id).checked = true; });
+        updateNotes();
+    });
+
     bind('paramedicHandover', patientData.atmist, 'paramedicHandover');
     bind('age', patientData.atmist, 'age');
     bindCheck('ageEstimated', patientData.atmist, 'ageEst');
@@ -1416,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bindCheck('cspine_blocks', patientData.airway, 'blocks');
     bindCheck('cspine_traumaMat', patientData.airway, 'traumaMat');
     bind('airway_notes', patientData.airway, 'notes');
-    bind('airway_treatmentGiven', patientData.airway, 'treatmentGiven');
+    bind('airway_treatmentGivenFree', patientData.airway, 'treatmentGivenFree');
     
     bind('breathing_rr', patientData.breathing, 'rr');
     getEl('breathing_rr').addEventListener('input', e => {
@@ -1442,7 +1565,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     bind('breathing_fio2', patientData.breathing, 'fio2');
     bind('breathing_notes', patientData.breathing, 'notes');
-    bind('breathing_treatmentGiven', patientData.breathing, 'treatmentGiven');
+    bind('breathing_treatmentGivenFree', patientData.breathing, 'treatmentGivenFree');
     
     bind('circ_hr', patientData.circulation, 'hr');
     getEl('circ_hr').addEventListener('input', e => {
@@ -1495,7 +1618,14 @@ document.addEventListener('DOMContentLoaded', () => {
             updateNotes();
     });
     bind('mhp_time', patientData.mhp, 'time');
-    ['crystalloid', 'prbc','ffp','plt','cryo'].forEach(k => bind(`mhp_${k}`, patientData.mhp, k));
+    bind('mhp_crystalloid', patientData.mhp, 'crystalloid');
+
+    document.querySelectorAll('.blood-btn').forEach(btn => btn.addEventListener('click', e => {
+        const product = e.currentTarget.dataset.product;
+        patientData.mhp.units[product].push({ time: getTime() });
+        renderBloodProducts();
+        updateNotes();
+    }));
 
     bindCheck('headInjury', patientData.disability, 'headInjury');
     document.querySelectorAll('input[name="disability_avpu"]').forEach(r => r.addEventListener('change', e => { patientData.disability.avpu = e.target.value; updateNotes(); }));
@@ -1522,7 +1652,7 @@ document.addEventListener('DOMContentLoaded', () => {
         else { el.classList.add('hidden'); }
     });
     bind('exposure_notes', patientData.exposure, 'notes');
-    bind('exposure_treatmentGiven', patientData.exposure, 'treatmentGiven');
+    bind('exposure_treatmentGivenFree', patientData.exposure, 'treatmentGivenFree');
     
     document.querySelectorAll('input[name="gasType"]').forEach(r => r.addEventListener('change', e => {
         patientData.investigations.gasType = e.target.value;
@@ -1629,8 +1759,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if(noneBtn) noneBtn.classList.add('active');
         getEl('cspine_collar').checked = false;
         getEl('cspine_blocks').checked = false;
-        patientData.airway.treatmentGiven = '';
-        getEl('airway_treatmentGiven').value = '';
+        patientData.airway.treatmentGiven = [];
+        patientData.airway.treatmentGivenFree = '';
+        getEl('airway_treatmentGivenFree').value = '';
+        document.querySelectorAll('#airway_treatment_btns .treat-btn').forEach(b => b.classList.remove('active'));
+        renderTreatmentList('airway_treatment_list');
         updateNotes();
     });
 
@@ -1644,32 +1777,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const airRadio = document.querySelector('input[name="breathing_o2"][value="Air"]');
         if(airRadio) airRadio.checked = true;
         getEl('fio2_container').classList.add('hidden');
-        patientData.breathing.treatmentGiven = '';
-        getEl('breathing_treatmentGiven').value = '';
+        patientData.breathing.treatmentGiven = [];
+        patientData.breathing.treatmentGivenFree = '';
+        getEl('breathing_treatmentGivenFree').value = '';
+        document.querySelectorAll('#breathing_treatment_btns .treat-btn').forEach(b => b.classList.remove('active'));
+        renderTreatmentList('breathing_treatment_list');
         updateNotes();
     });
 
     getEl('btnNormalCirc').addEventListener('click', () => {
         const cannedCircNotes = "No external bleeding, abdomen SNT, pelvis symmetrical and appears stable, no long bone deformity.";
         const hasExistingCirc = (patientData.circulation.notes && patientData.circulation.notes !== cannedCircNotes) ||
-            patientData.circulation.bleeding.some(b => b !== 'None Noted') ||
-            patientData.circulation.regionFindings.some(f => f.s && f.s !== 'None') ||
+            patientData.circulation.bodyFindings.some(f => f.s && f.s !== 'None') ||
             patientData.circulation.binder || patientData.circulation.ktd || patientData.circulation.tourniquet ||
             (patientData.circulation.txa && patientData.circulation.txa !== 'None');
         if(hasExistingCirc && !confirm('This will clear existing circulation findings/interventions. Continue?')) return;
         patientData.circulation.txa = 'None';
         patientData.circulation.txaTime = '';
-        patientData.circulation.bleeding = ['None Noted'];
-        patientData.circulation.regionFindings = CIRC_REGION_OPTS.map(opt => ({ f: opt, s: 'None' }));
+        patientData.circulation.bodyFindings = BODY_REGION_OPTS.map(opt => ({ f: opt, s: 'None' }));
         patientData.circulation.binder = false;
         patientData.circulation.ktd = false;
         patientData.circulation.tourniquet = false;
         
         document.querySelector('input[name="txaGiven"][value="None"]').checked = true;
-        document.querySelectorAll('.injury-btn').forEach(b => b.classList.remove('active'));
-        getEl('btnNoInjurySites').classList.add('none-active');
-        document.querySelectorAll('#circ_region_findings .lr-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('#circ_region_findings .lr-btn[data-s="None"]').forEach(b => b.classList.add('active'));
+        document.querySelectorAll('#circ_body_findings .lr-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#circ_body_findings .lr-btn[data-s="None"]').forEach(b => b.classList.add('active'));
         
         patientData.circulation.binderTime = '';
         patientData.circulation.ktdTime = '';
@@ -1740,8 +1872,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if(hasExistingExposure && !confirm('This will clear existing exposure findings. Continue?')) return;
         patientData.exposure.notes = 'Fully exposed. No rashes, skin wounds or bruising not already documented. Skin warm and dry.';
         getEl('exposure_notes').value = patientData.exposure.notes;
-        patientData.exposure.treatmentGiven = '';
-        getEl('exposure_treatmentGiven').value = '';
+        patientData.exposure.treatmentGiven = [];
+        patientData.exposure.treatmentGivenFree = '';
+        getEl('exposure_treatmentGivenFree').value = '';
+        document.querySelectorAll('#exposure_treatment_btns .treat-btn').forEach(b => b.classList.remove('active'));
+        renderTreatmentList('exposure_treatment_list');
         updateNotes();
     });
 

@@ -255,3 +255,35 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
   /* Hide copy buttons */
   #copyInitial, #copySecondary { display: none !important; }
 }
+
+/* Blood Product Buttons (MHP running list) */
+.blood-btn {
+    transition: all 0.1s;
+    background-color: white;
+    border: 2px solid #fecaca;
+    color: #b91c1c;
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 0.6rem 0.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+.blood-btn:hover { background-color: #fef2f2; }
+.blood-btn:active { transform: scale(0.97); }
+
+/* Chip style for the running blood product list (mirrors .spec-chip) */
+.blood-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+.blood-chip span.time { font-family: monospace; color: #b91c1c; font-size: 0.7rem; margin-left: 2px; }
+.blood-chip button { margin-left: 4px; color: #b91c1c; padding: 2px; border-radius: 50%; }
+.blood-chip button:hover { background: #fca5a5; color: #7f1d1d; }
