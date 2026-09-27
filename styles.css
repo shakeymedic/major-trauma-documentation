@@ -211,30 +211,18 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
 
 /* ===== PRINT STYLESHEET ===== */
 @media print {
-  /* Hide everything except the note outputs */
-  body { background: white !important; }
-  header, .no-print, #sec-zero, #sec-atmist, #sec-prehosp, #sec-airway,
-  #sec-circulation, #sec-disability, #sec-secondary, #sec-imaging,
-  #sec-investigations, #sec-plan, #sec-neuro, #sec-checkpoints,
-  #sec-obs, #sec-mhp, button, details, .obs-section,
-  [id^="btn-"], .spec-row, nav, .print\:hidden { display: none !important; }
-
-  main { padding: 0 !important; margin: 0 !important; }
-
-  /* Show and style the note panels */
-  #notePanel {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;
-    background: white !important;
-    box-shadow: none !important;
-    border: none !important;
-  }
+  /* Print only the two generated notes */
+  body { background: white !important; padding: 0 !important; }
+  header, #form-col, #dept-clock, #undo-toast, #resume-modal, .edited-banner, button { display: none !important; }
+  main { padding: 0 !important; margin: 0 !important; max-width: none !important; }
+  main > .grid { display: block !important; }
+  #notes-col, #notes-col > div { position: static !important; width: 100% !important; }
+  #notes-col section { box-shadow: none !important; border: none !important; padding: 0 !important; }
 
   #initialNoteOutput,
   #secondaryNoteOutput {
     display: block !important;
+    min-height: 0 !important;
     font-size: 10pt !important;
     line-height: 1.5 !important;
     font-family: Arial, sans-serif !important;
@@ -243,18 +231,25 @@ input:focus, textarea:focus, select:focus { border-color: #2563eb; box-shadow: 0
     border: none !important;
     padding: 0 !important;
     margin-bottom: 24pt !important;
-    page-break-inside: avoid;
+    overflow: visible !important;
   }
 
   /* Force page break between primary and secondary notes */
-  #secondaryNoteOutput { page-break-before: always; }
+  #notes-col section + section { page-break-before: always; }
 
-  /* Print headings */
   b { font-weight: bold !important; }
-
-  /* Hide copy buttons */
-  #copyInitial, #copySecondary { display: none !important; }
 }
+
+/* Manual-edit lock banner on the note panels */
+.edited-banner { margin-bottom: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 0.5rem; background: #fef3c7; border: 2px solid #d97706; color: #78350f; font-size: 0.75rem; font-weight: 800; }
+.regen-btn { margin-left: 4px; text-decoration: underline; color: #b45309; font-weight: 800; }
+
+/* Secondary survey per-area Normal toggle */
+.ss-normal-btn { font-size: 0.7rem; font-weight: 800; padding: 2px 10px; border-radius: 5px; border: 2px solid #86efac; background: #f0fdf4; color: #166534; }
+.ss-normal-btn.active { background: #16a34a; border-color: #15803d; color: white; }
+
+/* Keep the fixed dept clock clear of the header on narrow screens */
+@media (max-width: 640px) { header > .container { padding-right: 6.5rem; } }
 
 /* Blood Product Buttons (MHP running list) */
 .blood-btn {

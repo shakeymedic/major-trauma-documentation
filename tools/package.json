@@ -1,0 +1,14 @@
+{
+  "name": "major-trauma-tool-tools",
+  "private": true,
+  "description": "Build and test tooling for the Major Trauma Tool. Kept out of the site root so static hosting is unaffected.",
+  "type": "module",
+  "scripts": {
+    "build": "node build-standalone.mjs",
+    "test": "node tests/run-tests.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1",
+    "tailwindcss": "3.4.17"
+  }
+}
