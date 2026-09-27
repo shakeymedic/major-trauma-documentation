@@ -1,17 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Safe storage: falls back to in-memory when localStorage is unavailable (sandboxed/file:// contexts)
+    const _storage = (() => {
+        const mem = {};
+        try { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return localStorage; }
+        catch(e) { return { getItem:k=>mem[k]??null, setItem:(k,v)=>{mem[k]=String(v);}, removeItem:k=>{delete mem[k];} }; }
+    })();
+    const STORAGE_KEY = 'wmebem_trauma_data';
+
+    // Every piece of user-entered text is escaped before it goes into innerHTML, so that text such as
+    // "<L side" is documented verbatim rather than being swallowed as an HTML tag.
+    const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const nl2br = (v) => esc(v).replace(/\n/g, '<br>');
+    // Unexamined findings are never documented as normal: they are printed as "Not assessed".
+    // Values that were simply not entered (age, vitals, times) are printed as "Not recorded".
+    const NA = 'Not assessed';
+    const NR = 'Not recorded';
+
     // --- DATA STORE ---
-    const DATA_VERSION = '3.0';
+    const DATA_VERSION = '3.4';
     let patientData = {
         _version: DATA_VERSION,
+        _savedAt: '',
+        _manualEdits: { initial: null, secondary: null },
         zero: { self: false, leader: false, roles: false, brief: false, env: false, ppe: false, notes: '' },
         arrival: { time: '', specialties: [] },
         atmist: { paramedicHandover: '', age: '', ageEst: false, time: '', mech: '', inj: '', signs: '', phTreatments: [], phTreatmentsFree: '', phDrugs: [], phDrugsFree: '', safeguarding: 'No Concern', pregnancy: 'Not Applicable' },
         prehosp: { notes: '', history: {a:'', m:'', p:'', l:'', e:''} },
-        airway: { status: 'Patent', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, traumaMat: false, notes: '', treatmentGiven: [], treatmentGivenFree: '' },
-        breathing: { rr: '', sats: '', o2: 'Air', fio2: '', findings: [], notes: '', treatmentGiven: [], treatmentGivenFree: '' },
+        airway: { status: '', rsi: false, rsiData: {size:'', length:'', grade:'', etco2:'', drugs:''}, adjuncts: [], collar: false, blocks: false, traumaMat: false, notes: '', treatmentGiven: [], treatmentGivenFree: '' },
+        breathing: { rr: '', sats: '', o2: '', fio2: '', findings: [], notes: '', treatmentGiven: [], treatmentGivenFree: '' },
         circulation: { hr: '', bp: '', crt: '', lines: [], bodyFindings: [], txa: 'None', txaTime: '', binder: false, binderTime: '', ktd: false, ktdTime: '', tourniquet: false, tourniquetTime: '', notes: '', treatmentGiven: [], treatmentGivenFree: '' },
         mhp: { activated: false, time: '', crystalloid: '', units: { rbc: [], ffp: [], plt: [], cryo: [] } },
-        disability: { avpu: 'Alert', headInjury: false, gcsE: 4, gcsV: 5, gcsM: 6, pupilL: '', pupilR: '', glucose: '', ma4l: false, treatmentGiven: [], treatmentGivenFree: '' },
+        disability: { avpu: '', headInjury: false, gcsE: '', gcsV: '', gcsM: '', pupilL: '', pupilR: '', glucose: '', ma4l: false, treatmentGiven: [], treatmentGivenFree: '' },
         exposure: { temp: '', notes: '', treatmentGiven: [], treatmentGivenFree: '' },
         ecg: { done: false, time: '', findings: '' },
         obs: [], // Serial Observations
@@ -26,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             primary: { name: '', agreed: '', time: '' },
             secondary: { name: '', agreed: '', time: '' }
         },
-        neuroExam: { pul: '5/5', sul: 'Intact', pur: '5/5', sur: 'Intact', pll: '5/5', sll: 'Intact', plr: '5/5', slr: 'Intact' },
+        neuroExam: { pul: '', sul: '', pur: '', sur: '', pll: '', sll: '', plr: '', slr: '' },
         definitive: { furtherImaging: false, furtherImagingDetails: '', tetanus: false, meds: [], disposition: '', plan: '' },
         problemList: ''
     };
@@ -73,7 +92,6 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (spo2 <= 95) parts.spo2 = 1;
             else parts.spo2 = 0;
         }
-        parts.o2 = onO2 ? 2 : 0;
         if (!isNaN(sys)) {
             if (sys <= 90) parts.bp = 3;
             else if (sys <= 100) parts.bp = 2;
@@ -98,13 +116,15 @@ document.addEventListener('DOMContentLoaded', () => {
             else parts.temp = 2;
         }
 
+        if (Object.keys(parts).length === 0) return null; // no physiological values entered yet for this row
+        parts.o2 = onO2 ? 2 : 0;
         const scoredKeys = Object.keys(parts);
-        if (scoredKeys.length === 0) return null; // nothing entered yet for this row
         const total = scoredKeys.reduce((sum, k) => sum + parts[k], 0);
         const anyThree = scoredKeys.some(k => parts[k] === 3);
         let band, colorClass;
         if (total >= 7) { band = 'High'; colorClass = 'news2-high'; }
-        else if (total >= 5 || anyThree) { band = 'Medium'; colorClass = 'news2-medium'; }
+        else if (total >= 5) { band = 'Medium'; colorClass = 'news2-medium'; }
+        else if (anyThree) { band = 'Low-medium'; colorClass = 'news2-medium'; } // RCP: a 3 in any single parameter
         else { band = 'Low'; colorClass = 'news2-low'; }
         const complete = ['rr','spo2','o2','bp','hr','consciousness','temp'].every(k => k in parts);
         return { total, band, colorClass, partial: !complete };
@@ -112,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getEl = (id) => document.getElementById(id);
     const getTime = () => new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const getDateTime = () => new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
     // --- UNDO TOAST (safety net for accidental removals) ---
     let undoTimer = null;
@@ -140,23 +161,35 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.textContent = willShow ? '− Hide quick options' : '+ Quick options';
     }));
 
+    // Times are HH:MM only, so differences are taken as the nearest interpretation across midnight
+    // (within +/- 12 hours): arrival 23:50 and an event at 00:10 is +20min, not -1420min.
     function minutesBetween(t1, t2) {
         if(!t1 || !t2) return null;
         const [h1,m1] = t1.split(':').map(Number);
         const [h2,m2] = t2.split(':').map(Number);
         if(isNaN(h1)||isNaN(m1)||isNaN(h2)||isNaN(m2)) return null;
-        return (h2*60+m2) - (h1*60+m1);
+        let diff = (h2*60+m2) - (h1*60+m1);
+        if(diff < -720) diff += 1440;
+        else if(diff > 720) diff -= 1440;
+        return diff;
     }
     function elapsedStr(arrival, event) {
         const mins = minutesBetween(arrival, event);
         if(mins === null) return '';
-        const sign = mins < 0 ? '-' : '+';
-        return ` (+${Math.abs(mins)}min)`;
+        return mins < 0 ? ` (${Math.abs(mins)}min before arrival)` : ` (+${mins}min)`;
     }
 
     // --- LOCAL STORAGE & RESTORE ---
+    let suppressSave = false; // set while clearing the record so nothing is written back before reload
     function saveState() {
-        localStorage.setItem('wmebem_trauma_data', JSON.stringify(patientData));
+        if(suppressSave) return;
+        patientData._savedAt = new Date().toISOString();
+        _storage.setItem(STORAGE_KEY, JSON.stringify(patientData));
+    }
+    function clearRecordAndReload() {
+        suppressSave = true;
+        _storage.removeItem(STORAGE_KEY);
+        location.reload();
     }
 
     function deepMerge(target, source) {
@@ -172,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadState() {
-        const saved = localStorage.getItem('wmebem_trauma_data');
+        const saved = _storage.getItem(STORAGE_KEY);
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
@@ -244,7 +277,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(!patientData.disability.treatmentGiven) patientData.disability.treatmentGiven = [];
                 if(patientData.disability.treatmentGivenFree === undefined) patientData.disability.treatmentGivenFree = '';
                 if(patientData.disability.ma4l === undefined) patientData.disability.ma4l = false;
-                if(!patientData.neuroExam) patientData.neuroExam = { pul:'5/5', sul:'Intact', pur:'5/5', sur:'Intact', pll:'5/5', sll:'Intact', plr:'5/5', slr:'Intact' };
+                if(!patientData.neuroExam) patientData.neuroExam = { pul:'', sul:'', pur:'', sur:'', pll:'', sll:'', plr:'', slr:'' };
+                if(!patientData._manualEdits) patientData._manualEdits = { initial: null, secondary: null };
                 if(!patientData.checkpoints) patientData.checkpoints = { primary:{name:'', agreed:'', time:''}, secondary:{name:'', agreed:'', time:''} };
                 if(!patientData.definitive) patientData.definitive = { furtherImaging:false, furtherImagingDetails:'', tetanus:false, meds:[], disposition:'', plan:'' };
                 if(!patientData.definitive.meds) patientData.definitive.meds = [];
@@ -260,6 +294,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 if(!patientData.ecg) patientData.ecg = { done: false, time: '', findings: '' };
+                SS_AREAS.forEach(area => {
+                    const d = patientData.secondary[area.id];
+                    if(d && d.normal === undefined) d.normal = false;
+                });
                 // Migrate old string-array phDrugs to {name,time} objects (v2.8)
                 if (patientData.atmist.phDrugs && patientData.atmist.phDrugs.length > 0 && typeof patientData.atmist.phDrugs[0] === 'string') {
                     patientData.atmist.phDrugs = patientData.atmist.phDrugs.map(name => ({ name, time: '' }));
@@ -289,12 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setCheck('zps_ppe', p.zero.ppe);
         setVal('zps_notes', p.zero.notes);
 
-        if(p.arrival.time) {
-            const btn = getEl('btn-arrival-now');
-            btn.innerHTML = `ARRIVAL TIME: <input type="time" value="${p.arrival.time}" class="arrival-time-edit" oninput="window._updateArrivalTime(this.value)">`;
-            btn.classList.add('bg-green-600', 'hover:bg-green-700');
-            btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-        }
+        if(p.arrival.time) showArrivalTime(p.arrival.time);
 
         renderSpecialties();
 
@@ -415,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.ecg.time) { const btn = getEl('btn-ecg-now'); btn.classList.add('recorded'); btn.innerText = p.ecg.time; }
         // Restore neuro exam selects from saved data
         ['pul','sul','pur','sur','pll','sll','plr','slr'].forEach(k => {
-            const el = getEl(`neuro_${k}`); if(el) el.value = p.neuroExam[k];
+            const el = getEl(`neuro_${k}`); if(el) el.value = p.neuroExam[k] || '';
         });
         // Restore breathing L/R finding button states
         p.breathing.findings.forEach(obj => {
@@ -435,7 +468,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(chk) { chk.checked = true; chk.nextElementSibling && chk.nextElementSibling.classList && chk.nextElementSibling.classList.add('tag-active'); }
                 });
                 const txt = getEl(`ss_${area.id}`);
-                if(txt) txt.value = patientData.secondary[area.id].text;
+                if(txt) { txt.value = patientData.secondary[area.id].text; txt.style.height = 'auto'; txt.style.height = txt.scrollHeight + 'px'; }
+                updateSsNormalBtn(area.id);
             }
         });
 
@@ -478,6 +512,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.definitive.disposition) { const btn = document.querySelector(`.disp-btn[data-val="${p.definitive.disposition}"]`); if(btn) btn.classList.add('active'); }
         setVal('definitivePlan', p.definitive.plan);
         setVal('problemList', p.problemList);
+
+        // Manually edited note panels are restored as edited (and stay locked until regenerated)
+        ['initial', 'secondary'].forEach(panel => {
+            const html = p._manualEdits && p._manualEdits[panel];
+            if(html) { getEl(`${panel}NoteOutput`).innerHTML = html; setEditedBanner(panel, true); }
+        });
+    }
+
+    function showArrivalTime(t) {
+        getEl('btn-arrival-now').classList.add('hidden');
+        getEl('arrival-set').classList.remove('hidden');
+        getEl('arrival_time').value = t;
+    }
+
+    function setEditedBanner(panel, show) {
+        const el = getEl(`${panel}NoteEditedBanner`);
+        if(el) el.classList.toggle('hidden', !show);
+    }
+
+    function updateSsNormalBtn(areaId) {
+        const btn = document.querySelector(`.ss-normal-btn[data-area="${areaId}"]`);
+        if(btn) btn.classList.toggle('active', !!(patientData.secondary[areaId] && patientData.secondary[areaId].normal));
     }
 
     function toggleAccessBtn(txtPart, active) {
@@ -510,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (spec.isPreset) { const btn = document.querySelector(`[data-spec="${spec.name}"]`); if(btn) btn.classList.add('active'); }
             const div = document.createElement('div');
             div.className = 'spec-chip';
-            div.innerHTML = `${spec.name}<span class="time">@ ${spec.time}</span>`;
+            div.innerHTML = `${esc(spec.name)}<span class="time">@ ${esc(spec.time)}</span>`;
             const remBtn = document.createElement('button');
             remBtn.innerHTML = '&times;';
             remBtn.onclick = () => removeSpecialtyWithUndo(index);
@@ -576,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <option value="Subclavian" ${line.location==='Subclavian'?'selected':''}>Subclavian</option>
                         <option value="Femoral" ${line.location==='Femoral'?'selected':''}>Femoral</option>
                     </select>
-                    <input type="text" class="flex-1 min-w-[8rem] px-2 py-1 text-sm border border-slate-300 rounded bg-white" placeholder="Exact site e.g. ACF, hand, forearm..." value="${line.locationDetail||''}" onchange="updateLine(${i}, 'locationDetail', this.value)">
+                    <input type="text" class="flex-1 min-w-[8rem] px-2 py-1 text-sm border border-slate-300 rounded bg-white" placeholder="Exact site e.g. ACF, hand, forearm..." value="${esc(line.locationDetail||'')}" onchange="updateLine(${i}, 'locationDetail', this.value)">
                     <button type="button" class="px-2 bg-red-100 text-red-600 font-bold rounded hover:bg-red-200 transition" onclick="removeLine(${i})">&times;</button>
                 </div>
             `;
@@ -607,32 +663,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- SERIAL OBSERVATIONS ---
+    function news2Html(o) {
+        const news = calcNews2(o);
+        return news ? `<span class="news2-badge ${news.colorClass}">${news.total}${news.partial ? '*' : ''} ${news.band}</span>` : `<span class="text-slate-300 text-xs">\u2014</span>`;
+    }
     function renderObs() {
         const tbody = getEl('obsBody');
         tbody.innerHTML = '';
         patientData.obs.forEach((o, i) => {
             const tr = document.createElement('tr');
             tr.className = 'border-b border-slate-200 bg-white';
-            const news = calcNews2(o);
-            const newsHtml = news ? `<span class="news2-badge ${news.colorClass}">${news.total}${news.partial ? '*' : ''} ${news.band}</span>` : `<span class="text-slate-300 text-xs">\u2014</span>`;
             tr.innerHTML = `
-                <td class="p-2"><input type="time" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.time}" onchange="updateObs(${i}, 'time', this.value)"></td>
-                <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.hr}" onchange="updateObs(${i}, 'hr', this.value)"></td>
-                <td class="p-2"><input type="text" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.bp}" onchange="updateObs(${i}, 'bp', this.value)"></td>
-                <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.rr}" onchange="updateObs(${i}, 'rr', this.value)"></td>
-                <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.spo2}" onchange="updateObs(${i}, 'spo2', this.value)"></td>
+                <td class="p-2"><input type="time" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${esc(o.time)}" onchange="updateObs(${i}, 'time', this.value)"></td>
+                <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${esc(o.hr)}" onchange="updateObs(${i}, 'hr', this.value)"></td>
+                <td class="p-2"><input type="text" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${esc(o.bp)}" onchange="updateObs(${i}, 'bp', this.value)"></td>
+                <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${esc(o.rr)}" onchange="updateObs(${i}, 'rr', this.value)"></td>
+                <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${esc(o.spo2)}" onchange="updateObs(${i}, 'spo2', this.value)"></td>
                 <td class="p-2 text-center"><label class="inline-flex items-center gap-1 text-xs font-bold text-slate-600 cursor-pointer"><input type="checkbox" ${o.onO2?'checked':''} onchange="updateObs(${i}, 'onO2', this.checked)">O2</label></td>
-                <td class="p-2"><input type="number" step="0.1" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.temp||''}" onchange="updateObs(${i}, 'temp', this.value)"></td>
-                <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${o.gcs}" onchange="updateObs(${i}, 'gcs', this.value)"></td>
-                <td class="p-2"><input type="text" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" placeholder="L/R" value="${o.pupils||''}" onchange="updateObs(${i}, 'pupils', this.value)"></td>
-                <td class="p-2 text-center">${newsHtml}</td>
+                <td class="p-2"><input type="number" step="0.1" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${esc(o.temp||'')}" onchange="updateObs(${i}, 'temp', this.value)"></td>
+                <td class="p-2"><input type="number" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" value="${esc(o.gcs)}" onchange="updateObs(${i}, 'gcs', this.value)"></td>
+                <td class="p-2"><input type="text" class="w-full px-2 py-1 text-sm border border-slate-300 rounded" placeholder="L/R" value="${esc(o.pupils||'')}" onchange="updateObs(${i}, 'pupils', this.value)"></td>
+                <td class="p-2 text-center" id="news2_cell_${i}">${news2Html(o)}</td>
                 <td class="p-2 text-center"><button class="text-red-500 hover:text-red-700 font-bold" onclick="removeObs(${i})">&times;</button></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    window.updateObs = function(index, field, value) { patientData.obs[index][field] = value; renderObs(); updateNotes(); };
+    window.updateObs = function(index, field, value) {
+        patientData.obs[index][field] = value;
+        const cell = getEl(`news2_cell_${index}`);
+        if(cell) cell.innerHTML = news2Html(patientData.obs[index]);
+        updateNotes();
+    };
     window.removeObs = function(index) {
         const removed = patientData.obs[index];
         patientData.obs.splice(index, 1);
@@ -657,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bp: p.circulation.bp || '',
             rr: p.breathing.rr || '',
             spo2: p.breathing.sats || '',
-            onO2: !!(p.breathing.o2 && p.breathing.o2 !== 'Air'),
+            onO2: p.breathing.o2 === 'O2',
             temp: p.exposure.temp || '',
             gcs: gcsTot,
             pupils: pupils
@@ -724,12 +787,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         tagsHtml += `</div>`;
         
-        div.innerHTML = `<label class="block text-xs font-black text-slate-600 uppercase mb-1">${area.label}</label>${tagsHtml}<textarea id="ss_${area.id}" rows="1" class="w-full px-3 py-2 border border-slate-400 rounded text-sm font-medium overflow-hidden" style="resize:none;" placeholder="Additional details for ${area.label}..."></textarea>`;
+        div.innerHTML = `<div class="flex items-center justify-between mb-1"><label class="block text-xs font-black text-slate-600 uppercase">${area.label}</label><button type="button" class="ss-normal-btn" data-area="${area.id}" data-label="${area.label}" title="${area.normal}">Normal</button></div>${tagsHtml}<textarea id="ss_${area.id}" rows="1" class="w-full px-3 py-2 border border-slate-400 rounded text-sm font-medium overflow-hidden" style="resize:none;" placeholder="Additional details for ${area.label}..."></textarea>`;
         secContainer.appendChild(div);
         // Auto-expand textarea as user types
         const ssTextarea = getEl(`ss_${area.id}`);
         if(ssTextarea) ssTextarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
-        if(!patientData.secondary[area.id]) patientData.secondary[area.id] = { tags: [], text: '' };
+        if(!patientData.secondary[area.id]) patientData.secondary[area.id] = { tags: [], text: '', normal: false };
     });
 
     const powerOpts = ['5/5', '4/5', '3/5', '2/5', '1/5', '0/5'];
@@ -737,8 +800,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.neuro-select').forEach(sel => {
         const isPower = sel.id.includes('neuro_p');
         const opts = isPower ? powerOpts : sensOpts;
+        sel.add(new Option(isPower ? 'Power: not assessed' : 'Sensation: not assessed', ''));
         opts.forEach(o => sel.add(new Option(isPower ? `Power ${o}` : o, o)));
-        sel.value = isPower ? '5/5' : 'Intact';
+        sel.value = '';
         sel.addEventListener('change', e => {
            patientData.neuroExam[sel.id.replace('neuro_', '')] = e.target.value;
            updateNotes();
@@ -785,8 +849,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const el = getEl('dept-clock-value');
         if(!el) return;
         if(!patientData.arrival.time) { el.textContent = '--:--'; return; }
-        const mins = minutesBetween(patientData.arrival.time, getTime());
-        if(mins === null || mins < 0) { el.textContent = '--:--'; return; }
+        let mins = minutesBetween(patientData.arrival.time, getTime());
+        if(mins === null) { el.textContent = '--:--'; return; }
+        if(mins < 0) mins += 1440; // arrival was before midnight
+
         const h = Math.floor(mins / 60);
         const m = mins % 60;
         el.textContent = h > 0 ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`;
@@ -807,10 +873,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const p = patientData;
         // GCS total display always updates, regardless of obs history
         const gcsTotalEl = getEl('gcs_total');
-        const gcsTot = (parseInt(p.disability.gcsE) || 0) + (parseInt(p.disability.gcsV) || 0) + (parseInt(p.disability.gcsM) || 0);
+        const gcsTot = gcsTotal(p.disability);
         if(gcsTotalEl) {
-            gcsTotalEl.textContent = gcsTot;
-            gcsTotalEl.style.color = gcsTot <= 8 ? '#b91c1c' : (gcsTot <= 13 ? '#b45309' : '#1e293b');
+            gcsTotalEl.textContent = gcsTot === null ? '—' : gcsTot;
+            gcsTotalEl.style.color = gcsTot === null ? '#94a3b8' : (gcsTot <= 8 ? '#b91c1c' : (gcsTot <= 13 ? '#b45309' : '#1e293b'));
         }
         const lastObs = p.obs.length ? p.obs[p.obs.length - 1] : null;
         if(!lastObs) {
@@ -821,18 +887,50 @@ document.addEventListener('DOMContentLoaded', () => {
         setTrendArrow('rr_trend', p.breathing.rr, lastObs.rr);
         setTrendArrow('sats_trend', p.breathing.sats, lastObs.spo2);
         setTrendArrow('temp_trend', p.exposure.temp, lastObs.temp);
-        setTrendArrow('gcs_trend', gcsTot, lastObs.gcs);
+        setTrendArrow('gcs_trend', gcsTot === null ? '' : gcsTot, lastObs.gcs);
         const bpSys = (p.circulation.bp || '').split('/')[0];
         const lastBpSys = (lastObs.bp || '').split('/')[0];
         setTrendArrow('bp_trend', bpSys, lastBpSys);
     }
 
+    // GCS total, or null unless all three components have been assessed
+    function gcsTotal(d) {
+        const parts = [d.gcsE, d.gcsV, d.gcsM].map(v => parseInt(v));
+        return parts.some(isNaN) ? null : parts[0] + parts[1] + parts[2];
+    }
+    const B = (txt) => `<b style="font-weight: bold;">${txt}</b>`;
+    const orNR = (v, suffix = '') => (v !== '' && v !== null && v !== undefined) ? `${esc(v)}${suffix}` : NR;
+    const txList = (sec) => {
+        const arr = sec.treatmentGiven.map(t => `${esc(t.name)}${t.time ? ` (@ ${esc(t.time)})` : ''}`);
+        if(sec.treatmentGivenFree) arr.push(esc(sec.treatmentGivenFree));
+        return arr;
+    };
+    // Three-state finding rows (L/R/Both = positive, None = explicitly negative, absent = not assessed)
+    function findingsHtml(findings, opts, label) {
+        const positive = findings.filter(f => f.s !== 'None');
+        const negative = findings.filter(f => f.s === 'None').map(f => f.f);
+        const assessed = findings.map(f => f.f);
+        const unassessed = opts.filter(o => !assessed.includes(o));
+        if(unassessed.length === opts.length) return `   ${label}: ${NA}.<br>`;
+        let out = '';
+        if(positive.length) out += `   ${B(label + ':')} ${positive.map(f => `${esc(f.f)} (${esc(f.s)})`).join(', ')}.<br>`;
+        if(negative.length) out += `   <em>${label} — Negative:</em> No ${negative.map(n => esc(n).toLowerCase()).join(', ')}.<br>`;
+        if(unassessed.length) out += `   <em>${label} — Not assessed:</em> ${unassessed.map(n => esc(n).toLowerCase()).join(', ')}.<br>`;
+        return out;
+    }
+    const gasLine = (v) => {
+        const fields = [['pH','ph'],['pCO2','pco2'],['pO2','po2'],['HCO3','hco3'],['BE','be'],['Lac','lac'],['Ca','ca']];
+        return fields.filter(([, k]) => v[k] !== '' && v[k] !== undefined).map(([l, k]) => `${l} ${esc(v[k])}`).join(' | ');
+    };
+
     function updateNotes() {
         const p = patientData;
         updateDeptClock();
         updateTrendArrows();
-        
+
         let calcHtml = "";
+        const calcDisplay = getEl('calc_results');
+        let calcShown = false;
         const bp = p.circulation.bp || "";
         const hr = parseInt(p.circulation.hr);
         if(bp.includes('/')) {
@@ -852,15 +950,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     calcHtml = ` (MAP ${map})`;
                 }
-                const calcDisplay = getEl('calc_results');
                 calcDisplay.innerHTML = `MAP: ${map} mmHg${siStr}`;
                 calcDisplay.classList.remove('hidden');
+                calcShown = true;
             }
         }
+        if(!calcShown) { calcDisplay.innerHTML = ''; calcDisplay.classList.add('hidden'); }
 
         // --- PRIMARY SURVEY HTML ---
-        const noteTime = getTime();
-        let h = `<b style="font-weight: bold;">Major Trauma Assessment</b> <span style="font-size:0.85em;color:#64748b;">(Note generated: ${noteTime})</span><br>`;
+        const noteStamp = getDateTime();
+        let h = `${B('Major Trauma Assessment')} <span style="font-size:0.85em;color:#64748b;">(Note generated: ${noteStamp})</span><br>`;
         const zpsDone = [];
         if(p.zero.self) zpsDone.push('Self check');
         if(p.zero.leader) zpsDone.push('Leader identified');
@@ -869,210 +968,202 @@ document.addEventListener('DOMContentLoaded', () => {
         if(p.zero.env) zpsDone.push('Environment ready');
         if(p.zero.ppe) zpsDone.push('PPE donned');
         if(zpsDone.length > 0) h += `Zero Point Survey: ${zpsDone.join(', ')}.<br>`;
-        if(p.zero.notes) h += `Pre-arrival notes: ${p.zero.notes}<br>`;
-        if(p.arrival.time) h += `Patient Arrival Time: <b style="font-weight: bold;">${p.arrival.time}</b><br>`;
-        
-        let specs = p.arrival.specialties.map(s => `${s.name} (@ ${s.time})`);
+        if(p.zero.notes) h += `Pre-arrival notes: ${nl2br(p.zero.notes)}<br>`;
+        h += `Patient Arrival Time: ${p.arrival.time ? B(esc(p.arrival.time)) : NR}<br>`;
+
+        const specs = p.arrival.specialties.map(s => `${esc(s.name)} (@ ${esc(s.time)})`);
         if(specs.length) h += `Specialties Present: ${specs.join(', ')}<br>`;
-        
-        h += `<br><b style="font-weight: bold;">ATMIST</b><br>`;
-        if (p.atmist.paramedicHandover) h += `Handover / History: ${p.atmist.paramedicHandover}<br>`;
-        h += `Age: ${p.atmist.age}${p.atmist.ageEst?' (Est)':''} | Time of Incident: ${p.atmist.time}<br>`;
-        h += `Mechanism: ${p.atmist.mech}<br>Injuries Suspected: ${p.atmist.inj}<br>Signs: ${p.atmist.signs}<br>`;
-        
-        let phInterventions = [...p.atmist.phTreatments];
-        if(p.atmist.phTreatmentsFree) phInterventions.push(p.atmist.phTreatmentsFree);
+
+        h += `<br>${B('ATMIST')}<br>`;
+        if (p.atmist.paramedicHandover) h += `Handover / History: ${nl2br(p.atmist.paramedicHandover)}<br>`;
+        h += `Age: ${p.atmist.age ? `${esc(p.atmist.age)}${p.atmist.ageEst ? ' (Est)' : ''}` : NR} | Time of Incident: ${orNR(p.atmist.time)}<br>`;
+        h += `Mechanism: ${orNR(p.atmist.mech)}<br>Injuries Suspected: ${orNR(p.atmist.inj)}<br>Signs: ${orNR(p.atmist.signs)}<br>`;
+
+        const phInterventions = p.atmist.phTreatments.map(esc);
+        if(p.atmist.phTreatmentsFree) phInterventions.push(esc(p.atmist.phTreatmentsFree));
         if(phInterventions.length > 0) h += `Pre-Hosp Interventions: ${phInterventions.join(', ')}<br>`;
 
-        let phDrugsList = p.atmist.phDrugs.map(d => `${d.name}${d.time ? ` (@ ${d.time})` : ''}`);
-        if(p.atmist.phDrugsFree) phDrugsList.push(p.atmist.phDrugsFree);
+        const phDrugsList = p.atmist.phDrugs.map(d => `${esc(d.name)}${d.time ? ` (@ ${esc(d.time)})` : ''}`);
+        if(p.atmist.phDrugsFree) phDrugsList.push(esc(p.atmist.phDrugsFree));
         if(phDrugsList.length > 0) h += `Pre-Hosp Medications: ${phDrugsList.join(', ')}<br>`;
 
-        if(p.atmist.safeguarding !== 'No Concern') h += `<b style="font-weight: bold;">⚠️ ${p.atmist.safeguarding}</b><br>`;
-        if(p.atmist.pregnancy !== 'Not Applicable') h += `Pregnancy Status: ${p.atmist.pregnancy}<br>`;
+        if(p.atmist.safeguarding !== 'No Concern') h += `${B(`⚠️ ${esc(p.atmist.safeguarding)}`)}<br>`;
+        if(p.atmist.pregnancy !== 'Not Applicable') h += `Pregnancy Status: ${esc(p.atmist.pregnancy)}<br>`;
 
-        if(p.prehosp.notes) h+= `Pre-Hospital Notes: ${p.prehosp.notes}<br>`;
-        const allergyTxt = p.prehosp.history.a || 'NKDA';
-        const allergyStyle = p.prehosp.history.a ? 'color:#dc2626;font-weight:bold;' : '';
-        h += `AMPLE: <span style="${allergyStyle}">A: ${allergyTxt}</span> | M: ${p.prehosp.history.m} | P: ${p.prehosp.history.p} | L: ${p.prehosp.history.l} | E: ${p.prehosp.history.e}<br>`;
+        if(p.prehosp.notes) h += `Pre-Hospital Notes: ${nl2br(p.prehosp.notes)}<br>`;
+        const allergy = p.prehosp.history.a;
+        const allergyStyle = (allergy && !/^\s*nkda\s*$/i.test(allergy)) ? 'color:#dc2626;font-weight:bold;' : '';
+        h += `AMPLE: <span style="${allergyStyle}">A: ${orNR(allergy)}</span> | M: ${orNR(p.prehosp.history.m)} | P: ${orNR(p.prehosp.history.p)} | L: ${orNR(p.prehosp.history.l)} | E: ${orNR(p.prehosp.history.e)}<br>`;
 
-        h += `<br><b style="font-weight: bold;">PRIMARY SURVEY</b><br>`;
-        
-        h += `<b style="font-weight: bold;">Airway:</b> ${p.airway.status}`;
-        if(p.airway.status === 'Patent' && p.airway.adjuncts.length > 0) h += " (Maintained with adjuncts)";
+        h += `<br>${B('PRIMARY SURVEY')}<br>`;
+
+        // Airway
+        const realAdjuncts = p.airway.adjuncts.filter(a => a !== 'None');
+        h += `${B('Airway:')} ${p.airway.status ? esc(p.airway.status) : NA}`;
+        if(p.airway.status === 'Patent' && realAdjuncts.length > 0) h += " (maintained with adjuncts)";
         h += ". ";
-        if(p.airway.adjuncts.length) h += `Adjuncts: ${p.airway.adjuncts.join(', ')}. `;
-        if (p.airway.rsi) h += `<b style="font-weight: bold;">Pre-Hosp RSI:</b> Size ${p.airway.rsiData.size}, Length ${p.airway.rsiData.length}cm, Grade ${p.airway.rsiData.grade}, ETCO2 ${p.airway.rsiData.etco2}. Drugs: ${p.airway.rsiData.drugs}. `;
-        if(p.airway.collar || p.airway.blocks) h += `C-Spine: ${p.airway.collar?'Collar ':''}${p.airway.blocks?'Blocks':''}. `;
-        if(p.airway.traumaMat) h += `Immobilised in trauma mat (ED). `;
-        if(p.airway.notes) h += ` ${p.airway.notes}`;
-        h += "<br>";
-        let airwayTx = p.airway.treatmentGiven.map(t => `${t.name}${t.time ? ` (@ ${t.time})` : ''}`);
-        if(p.airway.treatmentGivenFree) airwayTx.push(p.airway.treatmentGivenFree);
-        if(airwayTx.length) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${airwayTx.join(', ')}.<br>`;
-        
-        let o2 = p.breathing.o2 === 'Air' ? 'Air' : `Oxygen ${p.breathing.fio2}`;
-        h += `<b style="font-weight: bold;">Breathing:</b> RR ${p.breathing.rr} | Sats ${p.breathing.sats}% (${o2}).<br>`;
-        const positiveBFindings = p.breathing.findings.filter(f => f.s !== 'None');
-        const explicitlyNegativeB = p.breathing.findings.filter(f => f.s === 'None').map(f => f.f);
-        if(positiveBFindings.length) h += `   Findings: ${positiveBFindings.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
-        const assessedBNames = p.breathing.findings.map(f => f.f);
-        const unassessedB = BREATHING_OPTS.filter(opt => !assessedBNames.includes(opt));
-        const negB = [...explicitlyNegativeB, ...unassessedB];
-        if (negB.length > 0) {
-            const airEntryNormal = !assessedBNames.includes('Reduced Expansion') || explicitlyNegativeB.includes('Reduced Expansion');
-            h += `   <em>Negative Findings:</em> ${airEntryNormal ? "Air entry equal. " : ""}No ${negB.join(', ').toLowerCase()}. `;
+        if(realAdjuncts.length) h += `Adjuncts: ${realAdjuncts.map(esc).join(', ')}. `;
+        else if(p.airway.adjuncts.includes('None')) h += `No adjuncts. `;
+        if (p.airway.rsi) {
+            const r = p.airway.rsiData;
+            const rsiParts = [r.size && `Size ${esc(r.size)}`, r.length && `Length ${esc(r.length)}cm`, r.grade && `Grade ${esc(r.grade)}`, r.etco2 && `ETCO2 ${esc(r.etco2)}`].filter(Boolean);
+            h += `${B('Pre-Hosp RSI:')} ${rsiParts.length ? rsiParts.join(', ') : 'details not recorded'}.${r.drugs ? ` Drugs: ${esc(r.drugs)}.` : ''} `;
         }
-        if(p.breathing.notes) h += `${p.breathing.notes}`;
+        const cspine = [p.airway.collar && 'Collar', p.airway.blocks && 'Blocks'].filter(Boolean);
+        if(cspine.length) h += `C-Spine: ${cspine.join(' + ')}. `;
+        if(p.airway.traumaMat) h += `Immobilised in trauma mat (ED). `;
+        if(p.airway.notes) h += ` ${nl2br(p.airway.notes)}`;
         h += "<br>";
-        let breathingTx = p.breathing.treatmentGiven.map(t => `${t.name}${t.time ? ` (@ ${t.time})` : ''}`);
-        if(p.breathing.treatmentGivenFree) breathingTx.push(p.breathing.treatmentGivenFree);
-        if(breathingTx.length) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${breathingTx.join(', ')}.<br>`;
-        
-        h += `<b style="font-weight: bold;">Circulation:</b> HR ${p.circulation.hr} | BP ${p.circulation.bp}${calcHtml} | CRT ${p.circulation.crt}s.<br>`;
-        if(p.circulation.txa && p.circulation.txa !== 'None') h += `   <b style="font-weight: bold;">TXA Given:</b> ${p.circulation.txa} ${p.circulation.txaTime ? `(@ ${p.circulation.txaTime}${elapsedStr(p.arrival.time, p.circulation.txaTime)})` : ''}.<br>`;
-        
-        let validLines = p.circulation.lines.filter(l => l.type || l.location || l.locationDetail).map(l => {
-            const siteDetail = l.locationDetail ? `${l.location ? l.location + ' - ' : ''}${l.locationDetail}` : (l.location || '');
-            return `${l.type}${l.size ? ' ' + l.size : ''} (${siteDetail})`;
+        const airwayTx = txList(p.airway);
+        if(airwayTx.length) h += `   ${B('Treatment Given:')} ${airwayTx.join(', ')}.<br>`;
+
+        // Breathing
+        const o2Str = p.breathing.o2 === 'Air' ? 'Air' : (p.breathing.o2 === 'O2' ? `Oxygen${p.breathing.fio2 ? ' ' + esc(p.breathing.fio2) : ''}` : 'O2 status not recorded');
+        h += `${B('Breathing:')} RR ${orNR(p.breathing.rr)} | Sats ${orNR(p.breathing.sats, '%')} (${o2Str}).<br>`;
+        h += findingsHtml(p.breathing.findings, BREATHING_OPTS, 'Chest Findings');
+        if(p.breathing.notes) h += `   ${nl2br(p.breathing.notes)}<br>`;
+        const breathingTx = txList(p.breathing);
+        if(breathingTx.length) h += `   ${B('Treatment Given:')} ${breathingTx.join(', ')}.<br>`;
+
+        // Circulation
+        h += `${B('Circulation:')} HR ${orNR(p.circulation.hr)} | BP ${orNR(p.circulation.bp)}${calcHtml} | CRT ${orNR(p.circulation.crt, 's')}.<br>`;
+        if(p.circulation.txa && p.circulation.txa !== 'None') h += `   ${B('TXA Given:')} ${esc(p.circulation.txa)}${p.circulation.txaTime ? ` (@ ${esc(p.circulation.txaTime)}${elapsedStr(p.arrival.time, p.circulation.txaTime)})` : ''}.<br>`;
+
+        const validLines = p.circulation.lines.filter(l => l.type || l.location || l.locationDetail || l.size).map(l => {
+            const site = [l.location, l.locationDetail].filter(Boolean).map(esc).join(' - ');
+            return `${l.type ? esc(l.type) : 'Line (type not recorded)'}${l.size ? ' ' + esc(l.size) : ''}${site ? ` (${site})` : ''}`;
         });
         if(validLines.length) h += `   Access: ${validLines.join(', ')}.<br>`;
-        
-        const positiveBodyFindings = p.circulation.bodyFindings.filter(f => f.s !== 'None');
-        const explicitlyNegativeBody = p.circulation.bodyFindings.filter(f => f.s === 'None').map(f => f.f);
-        if(positiveBodyFindings.length) h += `   <b style="font-weight: bold;">Injury/Bleeding Screen:</b> ${positiveBodyFindings.map(f=>`${f.f} (${f.s})`).join(', ')}.<br>`;
-        const assessedBodyNames = p.circulation.bodyFindings.map(f => f.f);
-        const unassessedBody = BODY_REGION_OPTS.filter(opt => !assessedBodyNames.includes(opt));
-        const negBody = [...explicitlyNegativeBody, ...unassessedBody];
-        if(negBody.length > 0) h += `   <em>Injury/Bleeding Screen — Negative:</em> No concerning findings in ${negBody.join(', ').toLowerCase()}.<br>`;
-        
-        let interventions = [];
-        if(p.circulation.binder) interventions.push(`Pelvic Binder ${p.circulation.binderTime ? `(@ ${p.circulation.binderTime}${elapsedStr(p.arrival.time, p.circulation.binderTime)})` : ''}`);
-        if(p.circulation.ktd) interventions.push(`KTD Splint ${p.circulation.ktdTime ? `(@ ${p.circulation.ktdTime}${elapsedStr(p.arrival.time, p.circulation.ktdTime)})` : ''}`);
-        if(p.circulation.tourniquet) interventions.push(`Tourniquet ${p.circulation.tourniquetTime ? `(@ ${p.circulation.tourniquetTime}${elapsedStr(p.arrival.time, p.circulation.tourniquetTime)})` : ''}`);
-        if(interventions.length) h += `   <b style="font-weight: bold;">Interventions:</b> ${interventions.join(', ')}.<br>`;
-        if(p.circulation.notes) h += `   ${p.circulation.notes}<br>`;
-        let circTx = p.circulation.treatmentGiven.map(t => `${t.name}${t.time ? ` (@ ${t.time})` : ''}`);
-        if(p.circulation.treatmentGivenFree) circTx.push(p.circulation.treatmentGivenFree);
-        if(circTx.length) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${circTx.join(', ')}.<br>`;
+
+        h += findingsHtml(p.circulation.bodyFindings, BODY_REGION_OPTS, 'Injury/Bleeding Screen');
+
+        const interventions = [];
+        if(p.circulation.binder) interventions.push(`Pelvic Binder${p.circulation.binderTime ? ` (@ ${esc(p.circulation.binderTime)}${elapsedStr(p.arrival.time, p.circulation.binderTime)})` : ''}`);
+        if(p.circulation.ktd) interventions.push(`KTD Splint${p.circulation.ktdTime ? ` (@ ${esc(p.circulation.ktdTime)}${elapsedStr(p.arrival.time, p.circulation.ktdTime)})` : ''}`);
+        if(p.circulation.tourniquet) interventions.push(`Tourniquet${p.circulation.tourniquetTime ? ` (@ ${esc(p.circulation.tourniquetTime)}${elapsedStr(p.arrival.time, p.circulation.tourniquetTime)})` : ''}`);
+        if(interventions.length) h += `   ${B('Interventions:')} ${interventions.join(', ')}.<br>`;
+        if(p.circulation.notes) h += `   ${nl2br(p.circulation.notes)}<br>`;
+        const circTx = txList(p.circulation);
+        if(circTx.length) h += `   ${B('Treatment Given:')} ${circTx.join(', ')}.<br>`;
 
         if(p.mhp.activated) {
-            h += `   <b style="font-weight: bold;">⚠️ MHP ACTIVATED</b> (${p.mhp.time || 'Time Not Set'}${elapsedStr(p.arrival.time, p.mhp.time)})<br>   Crystalloid: ${p.mhp.crystalloid || 0}ml.<br>`;
+            h += `   ${B('⚠️ MHP ACTIVATED')} (${p.mhp.time ? esc(p.mhp.time) + elapsedStr(p.arrival.time, p.mhp.time) : 'Time Not Set'})<br>`;
+            if(p.mhp.crystalloid !== '' && p.mhp.crystalloid !== undefined) h += `   Crystalloid: ${esc(p.mhp.crystalloid)}ml.<br>`;
             const bpLabels = { rbc: 'RBC', ffp: 'FFP', plt: 'Platelets', cryo: 'Cryo' };
             const bpParts = [];
             Object.keys(bpLabels).forEach(k => {
                 const arr = p.mhp.units[k] || [];
-                if(arr.length) bpParts.push(`${bpLabels[k]} x${arr.length} (@ ${arr.map(u=>u.time).join(', ')})`);
+                if(arr.length) bpParts.push(`${bpLabels[k]} x${arr.length} (@ ${arr.map(u => esc(u.time) || 'time not recorded').join(', ')})`);
             });
-            if(bpParts.length) h += `   <b style="font-weight: bold;">Blood Products:</b> ${bpParts.join(', ')}.<br>`;
+            if(bpParts.length) h += `   ${B('Blood Products:')} ${bpParts.join(', ')}.<br>`;
         }
 
-        let gcsTot = parseInt(p.disability.gcsE) + parseInt(p.disability.gcsV) + parseInt(p.disability.gcsM);
-        h += `<b style="font-weight: bold;">Disability:</b> AVPU ${p.disability.avpu} | GCS ${gcsTot} (E${p.disability.gcsE} V${p.disability.gcsV} M${p.disability.gcsM}).<br>`;
-        const glucoseVal = parseFloat(p.disability.glucose);
-        const glucoseStr = p.disability.glucose ? `${p.disability.glucose} mmol/L${(!isNaN(glucoseVal) && glucoseVal <= 3.5) ? ' <b style="color:#dc2626">⚠️ HYPOGLYCAEMIA</b>' : ''}` : 'Not recorded';
-        h += `   Pupils: L ${p.disability.pupilL || '-'} | R ${p.disability.pupilR || '-'}. Blood Glucose: ${glucoseStr}.<br>`;
-        if(p.disability.ma4l) h += `   Gross Motor: Moving all 4 limbs.<br>`;
-        let disTx = p.disability.treatmentGiven.map(t => `${t.name}${t.time ? ` (@ ${t.time})` : ''}`);
-        if(p.disability.treatmentGivenFree) disTx.push(p.disability.treatmentGivenFree);
-        if(disTx.length) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${disTx.join(', ')}.<br>`;
-        if(p.disability.headInjury) h += `   <b style="font-weight: bold;">⚠️ Head Injury Suspected</b><br>`;
-        
-        h += `<b style="font-weight: bold;">Exposure:</b> Temp ${p.exposure.temp}°C. ${p.exposure.notes}<br>`;
-        let exposureTx = p.exposure.treatmentGiven.map(t => `${t.name}${t.time ? ` (@ ${t.time})` : ''}`);
-        if(p.exposure.treatmentGivenFree) exposureTx.push(p.exposure.treatmentGivenFree);
-        if(exposureTx.length) h += `   <b style="font-weight: bold;">Treatment Given:</b> ${exposureTx.join(', ')}.<br>`;
-        
+        // Disability
+        const d = p.disability;
+        const gcsTot = gcsTotal(d);
+        const anyGcs = [d.gcsE, d.gcsV, d.gcsM].some(v => v !== '' && v !== undefined && v !== null);
+        const gcsStr = gcsTot !== null ? `${gcsTot} (E${d.gcsE} V${d.gcsV} M${d.gcsM})`
+            : (anyGcs ? `incomplete (E${d.gcsE === '' ? '-' : d.gcsE} V${d.gcsV === '' ? '-' : d.gcsV} M${d.gcsM === '' ? '-' : d.gcsM})` : NA);
+        h += `${B('Disability:')} AVPU ${d.avpu ? esc(d.avpu) : NA} | GCS ${gcsStr}.<br>`;
+        const glucoseVal = parseFloat(d.glucose);
+        const glucoseStr = d.glucose ? `${esc(d.glucose)} mmol/L${(!isNaN(glucoseVal) && glucoseVal <= 3.5) ? ' <b style="color:#dc2626">⚠️ HYPOGLYCAEMIA</b>' : ''}` : NR;
+        h += `   Pupils: L ${d.pupilL ? esc(d.pupilL) : NA} | R ${d.pupilR ? esc(d.pupilR) : NA}. Blood Glucose: ${glucoseStr}.<br>`;
+        if(d.ma4l) h += `   Gross Motor: Moving all 4 limbs.<br>`;
+        const disTx = txList(d);
+        if(disTx.length) h += `   ${B('Treatment Given:')} ${disTx.join(', ')}.<br>`;
+        if(d.headInjury) h += `   ${B('⚠️ Head Injury Suspected')}<br>`;
+
+        // Exposure
+        h += `${B('Exposure:')} Temp ${orNR(p.exposure.temp, '°C')}. ${p.exposure.notes ? nl2br(p.exposure.notes) : `Examination: ${NA}.`}<br>`;
+        const exposureTx = txList(p.exposure);
+        if(exposureTx.length) h += `   ${B('Treatment Given:')} ${exposureTx.join(', ')}.<br>`;
+
         if (p.obs.length > 0) {
-            h += `<br><b style="font-weight: bold;">Serial Observations:</b><br>`;
+            h += `<br>${B('Serial Observations:')}<br>`;
+            const dash = (v) => (v !== '' && v !== undefined && v !== null) ? esc(v) : '-';
             p.obs.forEach(o => {
-                let obsLine = `[${o.time}] HR ${o.hr} | BP ${o.bp} | RR ${o.rr} | SpO2 ${o.spo2}% (${o.onO2 ? 'O2' : 'Air'}) | Temp ${o.temp||'-'}\u00b0C | GCS ${o.gcs}`;
-                if(o.pupils) obsLine += ` | Pupils ${o.pupils}`;
+                let obsLine = `[${dash(o.time)}] HR ${dash(o.hr)} | BP ${dash(o.bp)} | RR ${dash(o.rr)} | SpO2 ${o.spo2 ? esc(o.spo2) + '%' : '-'} (${o.onO2 ? 'O2' : 'Air'}) | Temp ${o.temp ? esc(o.temp) + '°C' : '-'} | GCS ${dash(o.gcs)}`;
+                if(o.pupils) obsLine += ` | Pupils ${esc(o.pupils)}`;
                 const news = calcNews2(o);
-                if(news) obsLine += ` | <b style="font-weight:bold;">NEWS2: ${news.total}${news.partial ? ' (partial)' : ''} - ${news.band}</b>`;
+                if(news) obsLine += ` | ${B(`NEWS2: ${news.total}${news.partial ? ' (partial)' : ''} - ${news.band}`)}`;
                 h += obsLine + `<br>`;
             });
         }
 
-        const v = p.investigations.vbg;
-        h += `<br><b style="font-weight: bold;">Investigations & Plan:</b><br>`;
-        h += `${p.investigations.gasType}: pH ${v.ph} | pCO2 ${v.pco2} | pO2 ${v.po2} | HCO3 ${v.hco3} | BE ${v.be} | Lac ${v.lac} | Ca ${v.ca}`;
-        if(p.investigations.gasType === 'ABG' && v.abgFio2) h+= ` (FiO2: ${v.abgFio2}%)`;
-        h += `<br>`;
-        
-        let efastTxt = [];
-        if(p.investigations.efast.ruq) efastTxt.push(`RUQ ${p.investigations.efast.ruq}`);
-        if(p.investigations.efast.luq) efastTxt.push(`LUQ ${p.investigations.efast.luq}`);
-        if(p.investigations.efast.pelvis) efastTxt.push(`Pelvis ${p.investigations.efast.pelvis}`);
-        if(p.investigations.efast.pericardial) efastTxt.push(`Pericardial ${p.investigations.efast.pericardial}`);
-        if(p.investigations.efast.lung) efastTxt.push(`Lung ${p.investigations.efast.lung}`);
-        if(efastTxt.length > 0) h += `eFAST: ${efastTxt.join(', ')}.<br>`;
-
-        if(p.ecg.done || p.ecg.findings) h += `<b style="font-weight: bold;">ECG:</b> ${p.ecg.time ? `Done @ ${p.ecg.time}${elapsedStr(p.arrival.time, p.ecg.time)}. ` : (p.ecg.done ? 'Done. ' : '')}${p.ecg.findings || ''}<br>`;
-
-        h += `<b style="font-weight: bold;">Plan/Imaging:</b> ${p.investigations.imaging}<br>`;
-        
-        if (p.checkpoints.primary.name || p.checkpoints.primary.agreed) {
-            h += `<br><b style="font-weight: bold;">Consultant/Reg Review (Primary):</b> Discussed with ${p.checkpoints.primary.name}. Plan Agreed: ${p.checkpoints.primary.agreed}. Signed: ${p.checkpoints.primary.time}${elapsedStr(p.arrival.time, p.checkpoints.primary.time)}<br>`;
+        let inv = '';
+        const gas1 = gasLine(p.investigations.vbg);
+        if(gas1) {
+            inv += `${esc(p.investigations.gasType)}: ${gas1}`;
+            if(p.investigations.gasType === 'ABG' && p.investigations.vbg.abgFio2) inv += ` (FiO2: ${esc(p.investigations.vbg.abgFio2)}%)`;
+            inv += `<br>`;
         }
-        getEl('initialNoteOutput').innerHTML = h;
+
+        const ef = p.investigations.efast;
+        const efastTxt = [['RUQ','ruq'],['LUQ','luq'],['Pelvis','pelvis'],['Pericardial','pericardial'],['Lung','lung']].filter(([, k]) => ef[k]).map(([l, k]) => `${l} ${esc(ef[k])}`);
+        if(efastTxt.length > 0) inv += `eFAST: ${efastTxt.join(', ')}.<br>`;
+
+        if(p.ecg.done || p.ecg.findings) inv += `${B('ECG:')} ${p.ecg.time ? `Done @ ${esc(p.ecg.time)}${elapsedStr(p.arrival.time, p.ecg.time)}. ` : (p.ecg.done ? 'Done. ' : '')}${nl2br(p.ecg.findings || '')}<br>`;
+
+        if(p.investigations.imaging) inv += `${B('Plan/Imaging:')} ${nl2br(p.investigations.imaging)}<br>`;
+        if(inv) h += `<br>${B('Investigations & Plan:')}<br>${inv}`;
+
+        const cpLine = (cp, label) => `<br>${B(`Consultant/Reg Review (${label}):`)} Discussed with ${orNR(cp.name)}. Plan Agreed: ${orNR(cp.agreed)}. Signed: ${cp.time ? esc(cp.time) + elapsedStr(p.arrival.time, cp.time) : NR}<br>`;
+        if (p.checkpoints.primary.name || p.checkpoints.primary.agreed) h += cpLine(p.checkpoints.primary, 'Primary');
+        if(!p._manualEdits.initial) getEl('initialNoteOutput').innerHTML = h;
 
         // --- SECONDARY SURVEY HTML ---
-        let s = `<b style="font-weight: bold;">Secondary Survey</b> <span style="font-size:0.85em;color:#64748b;">(Note generated: ${noteTime})</span><br>`;
+        let s = `${B('Secondary Survey')} <span style="font-size:0.85em;color:#64748b;">(Note generated: ${noteStamp})</span><br>`;
         s += `<br>`;
-        const vSec = p.investigations.vbgSec;
-        if(vSec.ph || vSec.lac) {
-            s += `<b style="font-weight: bold;">Repeat ${p.investigations.secGasType}:</b> pH ${vSec.ph} | pCO2 ${vSec.pco2} | pO2 ${vSec.po2} | HCO3 ${vSec.hco3} | BE ${vSec.be} | Lac ${vSec.lac} | Ca ${vSec.ca}<br><br>`;
-        }
-        
+        const gas2 = gasLine(p.investigations.vbgSec);
+        if(gas2) s += `${B(`Repeat ${esc(p.investigations.secGasType)}:`)} ${gas2}<br><br>`;
+
         if(p.secondary.visualAcuity.left || p.secondary.visualAcuity.right) {
-            s += `<b style="font-weight: bold;">Visual Acuity:</b> Left: ${p.secondary.visualAcuity.left || 'Not tested'}, Right: ${p.secondary.visualAcuity.right || 'Not tested'}.<br><br>`;
+            s += `${B('Visual Acuity:')} Left: ${p.secondary.visualAcuity.left ? esc(p.secondary.visualAcuity.left) : 'Not tested'}, Right: ${p.secondary.visualAcuity.right ? esc(p.secondary.visualAcuity.right) : 'Not tested'}.<br><br>`;
         }
 
         if(p.secondary.logroll.done || p.secondary.pr.done) {
-            s += `<b style="font-weight: bold;">Log Roll & Pelvic Check:</b><br>`;
-            if(p.secondary.logroll.done) s += `Log roll performed. Findings: ${p.secondary.logroll.findings || 'No obvious step or tenderness'}.<br>`;
-            if(p.secondary.pr.done) s += `PR exam performed. Findings: ${p.secondary.pr.findings || 'Normal tone, no blood'}.<br>`;
+            s += `${B('Log Roll & PR Exam:')}<br>`;
+            if(p.secondary.logroll.done) s += `Log roll performed. Findings: ${p.secondary.logroll.findings ? esc(p.secondary.logroll.findings) : 'not recorded'}.<br>`;
+            if(p.secondary.pr.done) s += `PR exam performed. Findings: ${p.secondary.pr.findings ? esc(p.secondary.pr.findings) : 'not recorded'}.<br>`;
             s += `<br>`;
         }
 
         SS_AREAS.forEach(area => {
             const data = p.secondary[area.id];
-            if(data) {
-                const hasTags = data.tags.length > 0;
-                const hasText = data.text.length > 0;
-                
-                s += `<b style="font-weight: bold;">${area.label}:</b> `;
-                
-                if (!hasTags && !hasText) {
-                    s += area.normal ? `${area.normal}` : `No abnormalities detected.`;
-                } else {
-                    if (hasTags) s += `${data.tags.join(', ')}. `;
-                    if (hasText) s += `${data.text}`;
-                }
-                s += `<br>`;
-            }
+            if(!data) return;
+            const hasTags = data.tags.length > 0;
+            const hasText = !!data.text;
+            s += `${B(area.label + ':')} `;
+            if (hasTags) s += `${data.tags.map(esc).join(', ')}. `;
+            else if (data.normal) s += `${area.normal} `;
+            if (hasText) s += nl2br(data.text);
+            if (!hasTags && !hasText && !data.normal) s += `${NA}.`;
+            s += `<br>`;
         });
 
         const ne = p.neuroExam;
-        s += `<br><b style="font-weight: bold;">Neurological Examination:</b><br>`;
-        s += `Upper Limbs: L (Pow ${ne.pul}, Sen ${ne.sul}) | R (Pow ${ne.pur}, Sen ${ne.sur})<br>`;
-        s += `Lower Limbs: L (Pow ${ne.pll}, Sen ${ne.sll}) | R (Pow ${ne.plr}, Sen ${ne.slr})<br>`;
-        
-        if (p.checkpoints.secondary.name || p.checkpoints.secondary.agreed) {
-            s += `<br><b style="font-weight: bold;">Consultant/Reg Review (Secondary):</b> Discussed with ${p.checkpoints.secondary.name}. Plan Agreed: ${p.checkpoints.secondary.agreed}. Signed: ${p.checkpoints.secondary.time}${elapsedStr(p.arrival.time, p.checkpoints.secondary.time)}<br>`;
+        const neuroKeys = ['pul','sul','pur','sur','pll','sll','plr','slr'];
+        s += `<br>${B('Neurological Examination:')}`;
+        if(neuroKeys.every(k => !ne[k])) {
+            s += ` ${NA}.<br>`;
+        } else {
+            const nv = (k) => ne[k] ? esc(ne[k]) : 'not assessed';
+            s += `<br>Upper Limbs: L (Pow ${nv('pul')}, Sen ${nv('sul')}) | R (Pow ${nv('pur')}, Sen ${nv('sur')})<br>`;
+            s += `Lower Limbs: L (Pow ${nv('pll')}, Sen ${nv('sll')}) | R (Pow ${nv('plr')}, Sen ${nv('slr')})<br>`;
         }
 
-        s += `<br><b style="font-weight: bold;">Definitive Care Plan</b><br>`;
-        if(p.definitive.furtherImaging) s+= `Further Imaging Required: ${p.definitive.furtherImagingDetails}<br>`;
-        if(p.definitive.tetanus) s+= `Tetanus immunisation up-to-date or given.<br>`;
-        if(p.definitive.meds.length) s += `Time Critical Meds Prescribed: ${p.definitive.meds.join(', ')}<br>`;
-        if(p.definitive.disposition) s += `Disposition: <b style="font-weight: bold;">${p.definitive.disposition}</b><br>`;
-        s += `${p.definitive.plan}<br>`;
-        
-        s += `<br><b style="font-weight: bold;">Problem List</b><br>${p.problemList.replace(/\n/g, '<br>')}`;
-        getEl('secondaryNoteOutput').innerHTML = s;
-        
+        if (p.checkpoints.secondary.name || p.checkpoints.secondary.agreed) s += cpLine(p.checkpoints.secondary, 'Secondary');
+
+        s += `<br>${B('Definitive Care Plan')}<br>`;
+        if(p.definitive.furtherImaging) s += `Further Imaging Required: ${p.definitive.furtherImagingDetails ? esc(p.definitive.furtherImagingDetails) : 'details not recorded'}<br>`;
+        if(p.definitive.tetanus) s += `Tetanus immunisation up-to-date or given.<br>`;
+        if(p.definitive.meds.length) s += `Time Critical Meds Prescribed: ${p.definitive.meds.map(esc).join(', ')}<br>`;
+        if(p.definitive.disposition) s += `Disposition: ${B(esc(p.definitive.disposition))}<br>`;
+        if(p.definitive.plan) s += `${nl2br(p.definitive.plan)}<br>`;
+
+        if(p.problemList) s += `<br>${B('Problem List')}<br>${nl2br(p.problemList)}`;
+        if(!p._manualEdits.secondary) getEl('secondaryNoteOutput').innerHTML = s;
+
         saveState();
     }
 
@@ -1111,7 +1202,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function copyRichText(id) {
         const el = getEl(id);
-        const btn = id.includes('Initial') ? getEl('copyInitial') : getEl('copySecondary');
+        const btn = id === 'initialNoteOutput' ? getEl('copyInitial') : getEl('copySecondary');
         const showSuccess = () => {
             const orig = btn.textContent;
             btn.textContent = '✅ Copied!';
@@ -1160,16 +1251,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const bindSel = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.value; updateNotes(); }); };
     const bindCheck = (id, obj, key) => { const el = getEl(id); if(el) el.addEventListener('change', e => { obj[key] = e.target.checked; updateNotes(); }); };
 
-    window._updateArrivalTime = (v) => { patientData.arrival.time = v; updateNotes(); };
+    // The editable arrival time lives outside the button, so clicking into it can never re-stamp arrival as "now"
     getEl('btn-arrival-now').addEventListener('click', () => {
         const t = getTime();
         patientData.arrival.time = t;
-        const btn = getEl('btn-arrival-now');
-        btn.innerHTML = `ARRIVAL TIME: <input type="time" value="${t}" class="arrival-time-edit" oninput="window._updateArrivalTime(this.value)">`;
-        btn.classList.add('bg-green-600', 'hover:bg-green-700');
-        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        showArrivalTime(t);
         updateNotes();
     });
+    getEl('arrival_time').addEventListener('input', e => { patientData.arrival.time = e.target.value; updateNotes(); });
 
     const specInput = getEl('customSpecInput');
     const specBtn = getEl('btnAddSpec');
@@ -1198,10 +1287,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if(type === 'Binder' || type === 'KTD' || type === 'Tourniquet') {
             const prop = type.toLowerCase();
-            const current = patientData.circulation[prop];
-            if(!current) { patientData.circulation[prop] = true; patientData.circulation[`${prop}Time`] = getTime(); } 
-            else { patientData.circulation[`${prop}Time`] = getTime(); }
+            patientData.circulation[prop] = true;
+            patientData.circulation[`${prop}Time`] = getTime();
             toggleAccessBtn(type, true);
+            updateTimeBtn(type, true, patientData.circulation[`${prop}Time`]);
         } else if (e.target.id === 'btn-txa-now') {
             const t = getTime();
             patientData.circulation.txaTime = t;
@@ -1223,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(e.target.dataset.adj) {
             e.target.classList.toggle('active');
             const adj = e.target.dataset.adj;
-            if(adj === 'None') patientData.airway.adjuncts = ['None'];
+            if(adj === 'None') patientData.airway.adjuncts = e.target.classList.contains('active') ? ['None'] : [];
             else {
                 patientData.airway.adjuncts = patientData.airway.adjuncts.filter(x => x !== 'None');
                 if(patientData.airway.adjuncts.includes(adj)) patientData.airway.adjuncts = patientData.airway.adjuncts.filter(x => x !== adj);
@@ -1287,7 +1376,7 @@ document.addEventListener('DOMContentLoaded', () => {
         patientData.atmist.phDrugs.forEach((d, i) => {
             const div = document.createElement('div');
             div.className = 'spec-chip';
-            div.innerHTML = `${d.name} <input type="time" class="ph-drug-time-edit" value="${d.time||''}" onchange="updatePhDrugTime(${i}, this.value)">`;
+            div.innerHTML = `${esc(d.name)} <input type="time" class="ph-drug-time-edit" title="Time given (enter from handover)" value="${esc(d.time||'')}" onchange="updatePhDrugTime(${i}, this.value)">`;
             const remBtn = document.createElement('button');
             remBtn.innerHTML = '&times;';
             remBtn.onclick = () => removePhDrug(i);
@@ -1382,7 +1471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         arr.forEach((d, i) => {
             const div = document.createElement('div');
             div.className = 'treat-chip';
-            div.innerHTML = `${d.name} <input type="time" class="ph-drug-time-edit" value="${d.time||''}" onchange="window._updateTreatmentTime('${listContainerId}', ${i}, this.value)">`;
+            div.innerHTML = `${esc(d.name)} <input type="time" class="ph-drug-time-edit" value="${esc(d.time||'')}" onchange="window._updateTreatmentTime('${listContainerId}', ${i}, this.value)">`;
             const remBtn = document.createElement('button');
             remBtn.innerHTML = '&times;';
             remBtn.onclick = () => {
@@ -1462,21 +1551,13 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.classList.toggle('active');
         const txt = e.target.dataset.text;
         const isActive = e.target.classList.contains('active');
-        if(txt.includes('Binder')) {
-            patientData.circulation.binder = isActive;
-            if(isActive && !patientData.circulation.binderTime) patientData.circulation.binderTime = getTime();
-            if(!isActive) patientData.circulation.binderTime = '';
-        }
-        if(txt.includes('KTD')) {
-            patientData.circulation.ktd = isActive;
-            if(isActive && !patientData.circulation.ktdTime) patientData.circulation.ktdTime = getTime();
-            if(!isActive) patientData.circulation.ktdTime = '';
-        }
-        if(txt.includes('Tourniquet')) {
-            patientData.circulation.tourniquet = isActive;
-            if(isActive && !patientData.circulation.tourniquetTime) patientData.circulation.tourniquetTime = getTime();
-            if(!isActive) patientData.circulation.tourniquetTime = '';
-        }
+        [['Binder', 'binder'], ['KTD', 'ktd'], ['Tourniquet', 'tourniquet']].forEach(([type, prop]) => {
+            if(!txt.includes(type)) return;
+            patientData.circulation[prop] = isActive;
+            if(isActive && !patientData.circulation[`${prop}Time`]) patientData.circulation[`${prop}Time`] = getTime();
+            if(!isActive) patientData.circulation[`${prop}Time`] = '';
+            updateTimeBtn(type, isActive, patientData.circulation[`${prop}Time`]);
+        });
         updateNotes();
     }));
 
@@ -1492,7 +1573,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.classList.toggle('active');
         const d = e.target.dataset.d;
         const isActive = e.target.classList.contains('active');
-        if(isActive) patientData.atmist.phDrugs.push({ name: d, time: getTime() });
+        if(isActive) patientData.atmist.phDrugs.push({ name: d, time: '' });
         else patientData.atmist.phDrugs = patientData.atmist.phDrugs.filter(x => x.name !== d);
         renderPhDrugs();
         updateNotes();
@@ -1732,154 +1813,171 @@ document.addEventListener('DOMContentLoaded', () => {
             const areaId = e.target.dataset.area;
             if (e.target.classList.contains('tag-checkbox') && areaId) {
             const tag = e.target.value;
-            if (e.target.checked) patientData.secondary[areaId].tags.push(tag);
+            if (e.target.checked) {
+                patientData.secondary[areaId].tags.push(tag);
+                patientData.secondary[areaId].normal = false; // an abnormal finding replaces "Normal"
+                updateSsNormalBtn(areaId);
+            }
             else patientData.secondary[areaId].tags = patientData.secondary[areaId].tags.filter(t => t !== tag);
             updateNotes();
             }
     });
 
     getEl('resetData').addEventListener('click', () => {
-        if(confirm('Reset form? All data will be lost.')) {
-            localStorage.removeItem('wmebem_trauma_data');
-            location.reload();
-        }
+        if(confirm('Reset form? All data will be lost.')) clearRecordAndReload();
     });
 
     // Quick Action Listeners
+    // "Set Normal" only records normal examination findings. It never removes treatments, interventions,
+    // oxygen, C-spine immobilisation or measured values, and asks before overwriting any abnormal finding.
     getEl('btnNormalAirway').addEventListener('click', () => {
-        const hasExistingAirway = patientData.airway.adjuncts.some(a => a !== 'None') || patientData.airway.collar || patientData.airway.blocks;
-        if(hasExistingAirway && !confirm('This will clear existing airway adjunct/C-spine entries. Continue?')) return;
-        patientData.airway.status = 'Patent';
-        patientData.airway.adjuncts = ['None'];
-        patientData.airway.collar = false;
-        patientData.airway.blocks = false;
+        const a = patientData.airway;
+        const hasExisting = (a.status && a.status !== 'Patent') || a.adjuncts.some(x => x !== 'None');
+        if(hasExisting && !confirm('This will set the airway to Patent with no adjuncts, replacing the current airway status/adjuncts. Continue?')) return;
+        a.status = 'Patent';
+        a.adjuncts = ['None'];
         document.querySelector('input[name="airwayStatus"][value="Patent"]').checked = true;
-        document.querySelectorAll('[data-adj]').forEach(b => b.classList.remove('active'));
-        const noneBtn = document.querySelector('[data-adj="None"]');
-        if(noneBtn) noneBtn.classList.add('active');
-        getEl('cspine_collar').checked = false;
-        getEl('cspine_blocks').checked = false;
-        patientData.airway.treatmentGiven = [];
-        patientData.airway.treatmentGivenFree = '';
-        getEl('airway_treatmentGivenFree').value = '';
-        document.querySelectorAll('#airway_treatment_btns .treat-btn').forEach(b => b.classList.remove('active'));
-        renderTreatmentList('airway_treatment_list');
+        document.querySelectorAll('[data-adj]').forEach(b => b.classList.toggle('active', b.dataset.adj === 'None'));
         updateNotes();
     });
 
     getEl('btnNormalBreathing').addEventListener('click', () => {
-        const hasExistingBreathing = patientData.breathing.findings.some(f => f.s && f.s !== 'None');
-        if(hasExistingBreathing && !confirm('This will clear existing breathing findings. Continue?')) return;
+        const hasExisting = patientData.breathing.findings.some(f => f.s && f.s !== 'None');
+        if(hasExisting && !confirm('This will clear the positive chest findings already recorded. Continue?')) return;
         patientData.breathing.findings = BREATHING_OPTS.map(opt => ({ f: opt, s: 'None' }));
-        patientData.breathing.o2 = 'Air';
-        document.querySelectorAll('#breathing_findings .lr-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('#breathing_findings .lr-btn[data-s="None"]').forEach(b => b.classList.add('active'));
-        const airRadio = document.querySelector('input[name="breathing_o2"][value="Air"]');
-        if(airRadio) airRadio.checked = true;
-        getEl('fio2_container').classList.add('hidden');
-        patientData.breathing.treatmentGiven = [];
-        patientData.breathing.treatmentGivenFree = '';
-        getEl('breathing_treatmentGivenFree').value = '';
-        document.querySelectorAll('#breathing_treatment_btns .treat-btn').forEach(b => b.classList.remove('active'));
-        renderTreatmentList('breathing_treatment_list');
+        document.querySelectorAll('#breathing_findings .lr-btn').forEach(b => b.classList.toggle('active', b.dataset.s === 'None'));
         updateNotes();
     });
 
+    // Appends a canned normal statement to a notes field rather than overwriting what is already there
+    function appendCanned(obj, key, elId, canned) {
+        const cur = (obj[key] || '').trim();
+        if(cur.includes(canned)) return;
+        obj[key] = cur ? `${cur}\n${canned}` : canned;
+        getEl(elId).value = obj[key];
+    }
+
     getEl('btnNormalCirc').addEventListener('click', () => {
-        const cannedCircNotes = "No external bleeding, abdomen SNT, pelvis symmetrical and appears stable, no long bone deformity.";
-        const hasExistingCirc = (patientData.circulation.notes && patientData.circulation.notes !== cannedCircNotes) ||
-            patientData.circulation.bodyFindings.some(f => f.s && f.s !== 'None') ||
-            patientData.circulation.binder || patientData.circulation.ktd || patientData.circulation.tourniquet ||
-            (patientData.circulation.txa && patientData.circulation.txa !== 'None');
-        if(hasExistingCirc && !confirm('This will clear existing circulation findings/interventions. Continue?')) return;
-        patientData.circulation.txa = 'None';
-        patientData.circulation.txaTime = '';
+        const hasExisting = patientData.circulation.bodyFindings.some(f => f.s && f.s !== 'None');
+        if(hasExisting && !confirm('This will clear the positive injury/bleeding findings already recorded. Continue?')) return;
         patientData.circulation.bodyFindings = BODY_REGION_OPTS.map(opt => ({ f: opt, s: 'None' }));
-        patientData.circulation.binder = false;
-        patientData.circulation.ktd = false;
-        patientData.circulation.tourniquet = false;
-        
-        document.querySelector('input[name="txaGiven"][value="None"]').checked = true;
-        document.querySelectorAll('#circ_body_findings .lr-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('#circ_body_findings .lr-btn[data-s="None"]').forEach(b => b.classList.add('active'));
-        
-        patientData.circulation.binderTime = '';
-        patientData.circulation.ktdTime = '';
-        patientData.circulation.tourniquetTime = '';
-        toggleAccessBtn('Binder', false);
-        toggleAccessBtn('KTD', false);
-        toggleAccessBtn('Tourniquet', false);
-        updateTimeBtn('Binder', false);
-        updateTimeBtn('KTD', false);
-        updateTimeBtn('Tourniquet', false);
-        
-        const txaBtn = getEl('btn-txa-now');
-        txaBtn.classList.remove('recorded');
-        txaBtn.innerText = '🕒 Now';
-
-        patientData.circulation.notes = "No external bleeding, abdomen SNT, pelvis symmetrical and appears stable, no long bone deformity.";
-        getEl('circ_notes').value = patientData.circulation.notes;
-
-        patientData.circulation.treatmentGiven = [];
-        patientData.circulation.treatmentGivenFree = '';
-        getEl('circ_treatmentGivenFree').value = '';
-        document.querySelectorAll('#circ_treatment_btns .treat-btn').forEach(b => b.classList.remove('active'));
-        renderTreatmentList('circ_treatment_list');
-
+        document.querySelectorAll('#circ_body_findings .lr-btn').forEach(b => b.classList.toggle('active', b.dataset.s === 'None'));
+        appendCanned(patientData.circulation, 'notes', 'circ_notes', 'No external bleeding, abdomen SNT, pelvis symmetrical and appears stable, no long bone deformity.');
         updateNotes();
     });
 
     getEl('btnNormalDisability').addEventListener('click', () => {
-        const hasExistingDisability = patientData.disability.avpu !== 'Alert' ||
-            patientData.disability.gcsE !== 4 || patientData.disability.gcsV !== 5 || patientData.disability.gcsM !== 6 ||
-            patientData.disability.headInjury ||
-            (patientData.disability.pupilL && patientData.disability.pupilL !== '3mm') ||
-            (patientData.disability.pupilR && patientData.disability.pupilR !== '3mm');
-        if(hasExistingDisability && !confirm('This will clear existing disability findings. Continue?')) return;
-        patientData.disability.avpu = 'Alert';
-        patientData.disability.gcsE = 4;
-        patientData.disability.gcsV = 5;
-        patientData.disability.gcsM = 6;
-        patientData.disability.headInjury = false;
-        patientData.disability.pupilL = '3mm';
-        patientData.disability.pupilR = '3mm';
-        patientData.disability.glucose = '';
-        patientData.disability.ma4l = true;
-
+        const d = patientData.disability;
+        const NORMAL_PUPIL = 'Equal & reactive';
+        const hasExisting = (d.avpu && d.avpu !== 'Alert') ||
+            (d.gcsE !== '' && d.gcsE !== 4) || (d.gcsV !== '' && d.gcsV !== 5) || (d.gcsM !== '' && d.gcsM !== 6) ||
+            (d.pupilL && d.pupilL !== NORMAL_PUPIL) || (d.pupilR && d.pupilR !== NORMAL_PUPIL);
+        if(hasExisting && !confirm('This will replace the AVPU/GCS/pupil findings already recorded with normal values. Continue?')) return;
+        d.avpu = 'Alert';
+        d.gcsE = 4; d.gcsV = 5; d.gcsM = 6;
+        d.pupilL = NORMAL_PUPIL;
+        d.pupilR = NORMAL_PUPIL;
+        d.ma4l = true;
         const avpuR = document.querySelector('input[name="disability_avpu"][value="Alert"]');
         if(avpuR) avpuR.checked = true;
         { const r = document.querySelector('input[name="disability_gcsE"][value="4"]'); if(r) r.checked = true; }
         { const r = document.querySelector('input[name="disability_gcsV"][value="5"]'); if(r) r.checked = true; }
         { const r = document.querySelector('input[name="disability_gcsM"][value="6"]'); if(r) r.checked = true; }
-        getEl('headInjury').checked = false;
-        getEl('disability_pupil_left').value = '3mm';
-        getEl('disability_pupil_right').value = '3mm';
-        getEl('disability_glucose').value = '';
+        getEl('disability_pupil_left').value = NORMAL_PUPIL;
+        getEl('disability_pupil_right').value = NORMAL_PUPIL;
         getEl('disability_ma4l').checked = true;
-
-        patientData.disability.treatmentGiven = [];
-        patientData.disability.treatmentGivenFree = '';
-        getEl('disability_treatmentGivenFree').value = '';
-        document.querySelectorAll('#disability_treatment_btns .treat-btn').forEach(b => b.classList.remove('active'));
-        renderTreatmentList('disability_treatment_list');
-
         updateNotes();
     });
 
     getEl('btnNormalExposure').addEventListener('click', () => {
-        const cannedExpNotes = 'Fully exposed. No rashes, skin wounds or bruising not already documented. Skin warm and dry.';
-        const hasExistingExposure = patientData.exposure.notes && patientData.exposure.notes !== cannedExpNotes;
-        if(hasExistingExposure && !confirm('This will clear existing exposure findings. Continue?')) return;
-        patientData.exposure.notes = 'Fully exposed. No rashes, skin wounds or bruising not already documented. Skin warm and dry.';
-        getEl('exposure_notes').value = patientData.exposure.notes;
-        patientData.exposure.treatmentGiven = [];
-        patientData.exposure.treatmentGivenFree = '';
-        getEl('exposure_treatmentGivenFree').value = '';
-        document.querySelectorAll('#exposure_treatment_btns .treat-btn').forEach(b => b.classList.remove('active'));
-        renderTreatmentList('exposure_treatment_list');
+        appendCanned(patientData.exposure, 'notes', 'exposure_notes', 'Fully exposed. No rashes, skin wounds or bruising not already documented. Skin warm and dry.');
         updateNotes();
     });
 
+    getEl('btnNKDA').addEventListener('click', () => {
+        const el = getEl('history_a');
+        if(el.value.trim() && !/^\s*nkda\s*$/i.test(el.value) && !confirm(`Replace the recorded allergies ("${el.value}") with NKDA?`)) return;
+        el.value = 'NKDA';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+    getEl('btnNeuroNormal').addEventListener('click', () => {
+        const ne = patientData.neuroExam;
+        const abnormal = Object.keys(ne).some(k => ne[k] && ne[k] !== '5/5' && ne[k] !== 'Intact');
+        if(abnormal && !confirm('This will replace the abnormal neurological findings already recorded. Continue?')) return;
+        Object.keys(ne).forEach(k => {
+            ne[k] = k.startsWith('p') ? '5/5' : 'Intact';
+            const el = getEl(`neuro_${k}`); if(el) el.value = ne[k];
+        });
+        updateNotes();
+    });
+
+    // --- SECONDARY SURVEY: explicit per-area Normal ---
+    secContainer.addEventListener('click', e => {
+        const btn = e.target.closest('.ss-normal-btn');
+        if(!btn) return;
+        const areaId = btn.dataset.area;
+        const data = patientData.secondary[areaId];
+        if(!data.normal && data.tags.length) {
+            if(!confirm(`Clear the abnormal findings ticked for ${btn.dataset.label} and mark it Normal?`)) return;
+            data.tags = [];
+            document.querySelectorAll(`.tag-checkbox[data-area="${areaId}"]`).forEach(c => { c.checked = false; });
+        }
+        data.normal = !data.normal;
+        updateSsNormalBtn(areaId);
+        updateNotes();
+    });
+
+    getEl('btnSsRemainingNormal').addEventListener('click', () => {
+        const remaining = SS_AREAS.filter(a => { const d = patientData.secondary[a.id]; return !d.normal && !d.tags.length && !d.text; });
+        if(remaining.length === 0) return;
+        if(!confirm(`Mark these unassessed areas as Normal?\n${remaining.map(a => a.label).join(', ')}`)) return;
+        remaining.forEach(a => { patientData.secondary[a.id].normal = true; updateSsNormalBtn(a.id); });
+        updateNotes();
+    });
+
+    // --- MANUAL EDITS TO THE NOTE PANELS ---
+    // Once a note panel is edited by hand it is locked: form changes no longer overwrite it until the
+    // clinician explicitly discards the edits.
+    ['initial', 'secondary'].forEach(panel => {
+        const out = getEl(`${panel}NoteOutput`);
+        out.addEventListener('input', () => {
+            patientData._manualEdits[panel] = out.innerHTML;
+            setEditedBanner(panel, true);
+            saveState();
+        });
+    });
+    document.querySelectorAll('.regen-btn').forEach(btn => btn.addEventListener('click', () => {
+        if(!confirm('Discard your manual edits to this note and regenerate it from the form?')) return;
+        patientData._manualEdits[btn.dataset.panel] = null;
+        setEditedBanner(btn.dataset.panel, false);
+        updateNotes();
+    }));
+
+    // --- RESUME / NEW PATIENT PROMPT ---
+    const stripMeta = (obj) => { const { _savedAt, _manualEdits, _version, ...rest } = obj; return JSON.stringify(rest); };
+    const PRISTINE = stripMeta(patientData);
+
+    getEl('btnResumeContinue').addEventListener('click', () => getEl('resume-modal').classList.add('hidden'));
+    getEl('btnResumeNew').addEventListener('click', () => clearRecordAndReload());
+
+    function maybeShowResumePrompt() {
+        if(stripMeta(patientData) === PRISTINE) return;
+        const savedAt = patientData._savedAt ? new Date(patientData._savedAt) : null;
+        getEl('resume-saved-at').textContent = savedAt && !isNaN(savedAt)
+            ? `Last saved ${savedAt.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}.`
+            : 'Last saved time unknown.';
+        const bits = [];
+        if(patientData.arrival.time) bits.push(`Arrival ${patientData.arrival.time}`);
+        if(patientData.atmist.age) bits.push(`Age ${patientData.atmist.age}`);
+        if(patientData.atmist.mech) bits.push(patientData.atmist.mech);
+        getEl('resume-summary').textContent = bits.length ? bits.join(' · ') : '';
+        const old = !savedAt || isNaN(savedAt) || (Date.now() - savedAt.getTime()) > 12 * 3600 * 1000;
+        getEl('resume-old-warning').classList.toggle('hidden', !old);
+        getEl('resume-modal').classList.remove('hidden');
+    }
+
     loadState();
+    maybeShowResumePrompt();
     updateNotes();
 });
