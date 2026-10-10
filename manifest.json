@@ -9,12 +9,12 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "https://iili.io/KGQOvkl.md.png",
+      "src": "https://raw.githubusercontent.com/shakeymedic/wmem/main/emevidence_logo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://iili.io/KGQOvkl.md.png",
+      "src": "https://raw.githubusercontent.com/shakeymedic/wmem/main/emevidence_logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
