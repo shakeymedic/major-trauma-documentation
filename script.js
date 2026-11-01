@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Restore glucose alert
         const glucoseAlert = getEl('glucose_alert');
         const gv = parseFloat(p.disability.glucose);
-        if(glucoseAlert) glucoseAlert.classList.toggle('hidden', isNaN(gv) || gv > 3.5);
+        if(glucoseAlert) glucoseAlert.classList.toggle('hidden', isNaN(gv) || gv >= 4.0);
         // Restore HR / BP alerts
         const hrEl = getEl('hr_alert');
         if(hrEl && p.circulation.hr) { const hv = parseInt(p.circulation.hr); if(hv < 40) { hrEl.textContent = '⚠️ Bradycardia'; hrEl.style.color='#dc2626'; hrEl.classList.remove('hidden'); } else if(hv > 150) { hrEl.textContent = '⚠️ Tachycardia'; hrEl.style.color='#dc2626'; hrEl.classList.remove('hidden'); } else if(hv > 100) { hrEl.textContent = '↑ Tachycardia'; hrEl.style.color='#d97706'; hrEl.classList.remove('hidden'); } }
@@ -1066,7 +1066,7 @@ document.addEventListener('DOMContentLoaded', () => {
             : (anyGcs ? `incomplete (E${d.gcsE === '' ? '-' : d.gcsE} V${d.gcsV === '' ? '-' : d.gcsV} M${d.gcsM === '' ? '-' : d.gcsM})` : NA);
         h += `${B('Disability:')} AVPU ${d.avpu ? esc(d.avpu) : NA} | GCS ${gcsStr}.<br>`;
         const glucoseVal = parseFloat(d.glucose);
-        const glucoseStr = d.glucose ? `${esc(d.glucose)} mmol/L${(!isNaN(glucoseVal) && glucoseVal <= 3.5) ? ' <b style="color:#dc2626">⚠️ HYPOGLYCAEMIA</b>' : ''}` : NR;
+        const glucoseStr = d.glucose ? `${esc(d.glucose)} mmol/L${(!isNaN(glucoseVal) && glucoseVal < 4.0) ? ' <b style="color:#dc2626">⚠️ HYPOGLYCAEMIA</b>' : ''}` : NR;
         h += `   Pupils: L ${d.pupilL ? esc(d.pupilL) : NA} | R ${d.pupilR ? esc(d.pupilR) : NA}. Blood Glucose: ${glucoseStr}.<br>`;
         if(d.ma4l) h += `   Gross Motor: Moving all 4 limbs.<br>`;
         const disTx = txList(d);
@@ -1716,7 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
     getEl('disability_glucose').addEventListener('input', e => {
         const v = parseFloat(e.target.value);
         const alert = getEl('glucose_alert');
-        if(alert) alert.classList.toggle('hidden', isNaN(v) || v > 3.5);
+        if(alert) alert.classList.toggle('hidden', isNaN(v) || v >= 4.0);
     });
     bindCheck('disability_ma4l', patientData.disability, 'ma4l');
     
