@@ -1308,7 +1308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const SS_AREAS = [
         { id: 'head', label: 'Head', normal: 'Normocephalic, atraumatic. No boggy masses.', tags: ['Laceration', 'Haematoma', 'Bony Tenderness', 'Depressed Fracture', 'Base of Skull Signs'] },
         { id: 'face', label: 'Face', normal: 'No bony tenderness, deformity or asymmetry.', tags: ['Laceration', 'Bony Tenderness', 'Le Fort instability', 'Nasal Deformity', 'Septal Haematoma'] },
-        { id: 'eyes', label: 'Eyes', normal: 'PERLA. Extra-ocular movements intact. No injury.', tags: ['Racoon Eyes', 'Subconj. Haem', 'Hyphema', 'Global Rupture Suspected', 'Entrapment'] },
+        { id: 'eyes', label: 'Eyes', normal: 'PERLA. Extra-ocular movements intact. No injury.', tags: ['Racoon Eyes', 'Subconj. Haem', 'Hyphaema', 'Globe Rupture Suspected', 'Entrapment'] },
         { id: 'neck', label: 'Neck', normal: 'Trachea central. No step deformity or tenderness. Soft tissues normal.', tags: ['C-Spine Tenderness', 'Step Deformity', 'Tracheal Deviation', 'Subcut Emphysema', 'Haematoma'] },
         { id: 'chest', label: 'Chest', normal: 'Chest expansion equal. Resonant. Vesicular breath sounds. No tenderness.', tags: ['Crepitus', 'Bruising', 'Rib Tenderness', 'Reduced Expansion', 'Surgical Emphysema'] },
         { id: 'abdo', label: 'Abdomen', normal: 'Soft, non-tender, non-distended. No guarding.', tags: ['Distended', 'Seatbelt Sign', 'Guarding', 'Rigidity', 'Tenderness', 'Evisceration'] },
@@ -1506,6 +1506,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     delete patientData.mhp.ffp;
                     delete patientData.mhp.plt;
                     delete patientData.mhp.cryo;
+                }
+                // Migrate renamed Eyes tags (spelling fixes) so records saved before the rename still restore their selections
+                if(patientData.secondary && patientData.secondary.eyes && Array.isArray(patientData.secondary.eyes.tags)) {
+                    const renamedEyeTags = { 'Hyphema': 'Hyphaema', 'Global Rupture Suspected': 'Globe Rupture Suspected' };
+                    patientData.secondary.eyes.tags = patientData.secondary.eyes.tags.map(t => renamedEyeTags[t] || t);
                 }
                 if(!patientData.mhp.units) patientData.mhp.units = { rbc: [], ffp: [], plt: [], cryo: [] };
                 ['rbc','ffp','plt','cryo'].forEach(k => { if(!Array.isArray(patientData.mhp.units[k])) patientData.mhp.units[k] = []; });
